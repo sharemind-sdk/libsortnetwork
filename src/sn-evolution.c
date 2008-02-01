@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <assert.h>
+#include <limits.h>
 
 #include "sn_network.h"
 
@@ -21,7 +22,7 @@ struct population_entry_s
 };
 typedef struct population_entry_s population_entry_t;
 
-static int iterations_num  = 1000000;
+static int iterations_num  = INT_MAX;
 static int max_population_size = 128;
 static int olymp_size = 96;
 static int inputs_num      = 16;
