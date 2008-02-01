@@ -1,3 +1,6 @@
+#define _ISOC99_SOURCE
+#define _POSIX_C_SOURCE 200112L
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -6,6 +9,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <signal.h>
 #include <assert.h>
 
 #include "sn_network.h"
@@ -17,12 +21,17 @@ struct population_entry_s
 };
 typedef struct population_entry_s population_entry_t;
 
-static int iterations_num  = 10000;
-static int max_population_size = 64;
+static int iterations_num  = 1000000;
+static int max_population_size = 128;
 static int inputs_num      = 16;
 
 static population_entry_t *population = NULL;
 int population_size = 0;
+
+static void sigint_handler (int signal)
+{
+  iterations_num = 0;
+} /* void sigint_handler */
 
 static int init_random (void)
 {
@@ -147,6 +156,10 @@ static int create_offspring (void)
     sn_network_cut_at (n, pos, dir);
   }
 
+  sn_network_compress (n);
+
+  assert (SN_NETWORK_INPUT_NUM (n) == inputs_num);
+
   insert_into_population (n);
 
   return (0);
@@ -158,7 +171,7 @@ static int start_evolution (void)
 
   for (i = 0; i < iterations_num; i++)
   {
-    if ((i % 100) == 0)
+    if ((i % 1000) == 0)
       population_print_stats (i);
 
     create_offspring ();
@@ -169,10 +182,16 @@ static int start_evolution (void)
 
 int main (int argc, char **argv)
 {
+  struct sigaction sigint_action;
+
   if (argc != 2)
     exit_usage (argv[0]);
 
   init_random ();
+
+  memset (&sigint_action, '\0', sizeof (sigint_action));
+  sigint_action.sa_handler = sigint_handler;
+  sigaction (SIGINT, &sigint_action, NULL);
 
   population = (population_entry_t *) malloc (max_population_size
       * sizeof (population_entry_t));
@@ -198,13 +217,21 @@ int main (int argc, char **argv)
 
   start_evolution ();
 
-  if (0) {
+  {
     int i;
+    int best_rate = -1;
+    int best_index = -1;
+
     for (i = 0; i < population_size; i++)
     {
-      sn_network_show (population[i].network);
-      printf ("=============\n");
+      if ((best_rate == -1) || (best_rate > population[i].rating))
+      {
+	best_rate = population[i].rating;
+	best_index = i;
+      }
     }
+
+    sn_network_show (population[best_index].network);
   }
 
   return (0);
