@@ -23,6 +23,7 @@ typedef struct population_entry_s population_entry_t;
 
 static int iterations_num  = 1000000;
 static int max_population_size = 128;
+static int olymp_size = 96;
 static int inputs_num      = 16;
 
 static population_entry_t *population = NULL;
@@ -102,6 +103,9 @@ static int population_print_stats (int iterations)
 static int insert_into_population (sn_network_t *n)
 {
   int rating;
+  int worst_rating;
+  int worst_index;
+  int nmemb;
   int i;
 
   rating = rate_network (n);
@@ -114,20 +118,26 @@ static int insert_into_population (sn_network_t *n)
     return (0);
   }
 
-  for (i = 0; i < population_size; i++)
-    if (population[i].rating > rating)
-      break;
+  worst_rating = -1;
+  worst_index  = -1;
+  for (i = 0; i < olymp_size; i++)
+    if (population[i].rating > worst_rating)
+    {
+      worst_rating = population[i].rating;
+      worst_index  = i;
+    }
 
-  if (i < population_size)
-  {
-    sn_network_destroy (population[i].network);
-    population[i].network = n;
-    population[i].rating  = rating;
-  }
-  else
-  {
-    sn_network_destroy (n);
-  }
+  nmemb = max_population_size - (worst_index + 1);
+
+  sn_network_destroy (population[worst_index].network);
+  population[worst_index].network = NULL;
+
+  memmove (population + worst_index,
+      population + (worst_index + 1),
+      nmemb * sizeof (population_entry_t));
+
+  population[max_population_size - 1].network = n;
+  population[max_population_size - 1].rating  = rating;
 
   return (0);
 } /* int insert_into_population */
