@@ -73,11 +73,19 @@ int sn_network_stage_remove (sn_network_t *n, int s_num)
   n->stages_num--;
 
   /* Free the unused memory */
-  temp = (sn_stage_t **) realloc (n->stages,
-      n->stages_num * sizeof (sn_stage_t *));
-  if (temp == NULL)
-    return (-1);
-  n->stages = temp;
+  if (n->stages_num == 0)
+  {
+    free (n->stages);
+    n->stages = NULL;
+  }
+  else
+  {
+    temp = (sn_stage_t **) realloc (n->stages,
+	n->stages_num * sizeof (sn_stage_t *));
+    if (temp == NULL)
+      return (-1);
+    n->stages = temp;
+  }
 
   return (0);
 } /* int sn_network_stage_remove */
@@ -145,6 +153,10 @@ int sn_network_compress (sn_network_t *n)
     }
   }
 
+  while ((n->stages_num > 0)
+      && (SN_STAGE_COMP_NUM (n->stages[n->stages_num - 1]) == 0))
+    sn_network_stage_remove (n, n->stages_num - 1);
+
   return (0);
 } /* int sn_network_compress */
 
@@ -174,7 +186,6 @@ int sn_network_cut_at (sn_network_t *n, int input, enum sn_network_cut_dir_e dir
 
   assert (((dir == DIR_MIN) && (position == 0))
       || ((dir == DIR_MAX) && (position == (n->inputs_num - 1))));
-
 
   for (i = 0; i < n->stages_num; i++)
     sn_stage_remove_input (n->stages[i], position);

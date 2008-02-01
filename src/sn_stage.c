@@ -64,6 +64,7 @@ int sn_stage_comparator_remove (sn_stage_t *s, int c_num)
   sn_comparator_t *temp;
 
   assert (c_num < s->comparators_num);
+  assert (c_num >= 0);
 
   if (nmemb > 0)
     memmove (s->comparators + c_num, s->comparators + (c_num + 1),
@@ -71,11 +72,19 @@ int sn_stage_comparator_remove (sn_stage_t *s, int c_num)
   s->comparators_num--;
 
   /* Free the unused memory */
-  temp = (sn_comparator_t *) realloc (s->comparators,
-      s->comparators_num * sizeof (sn_comparator_t));
-  if (temp == NULL)
-    return (-1);
-  s->comparators = temp;
+  if (s->comparators_num == 0)
+  {
+    free (s->comparators);
+    s->comparators = NULL;
+  }
+  else
+  {
+    temp = (sn_comparator_t *) realloc (s->comparators,
+	s->comparators_num * sizeof (sn_comparator_t));
+    if (temp == NULL)
+      return (-1);
+    s->comparators = temp;
+  }
 
   return (0);
 } /* int sn_stage_comparator_remove */

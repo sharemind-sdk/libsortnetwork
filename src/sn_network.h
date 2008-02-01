@@ -16,6 +16,7 @@ typedef struct sn_network_s sn_network_t;
 
 #define SN_NETWORK_STAGE_NUM(n) (n)->stages_num
 #define SN_NETWORK_STAGE_GET(n,i) ((n)->stages[i])
+#define SN_NETWORK_INPUT_NUM(n) (n)->inputs_num
 
 sn_network_t *sn_network_create (int inputs_num);
 void sn_network_destroy (sn_network_t *n);
