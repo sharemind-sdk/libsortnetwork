@@ -34,6 +34,7 @@ void sn_network_destroy (sn_network_t *n)
       sn_stage_destroy (n->stages[i]);
       n->stages[i] = NULL;
     }
+    free (n->stages);
     n->stages = NULL;
   }
 
@@ -68,8 +69,11 @@ int sn_network_stage_remove (sn_network_t *n, int s_num)
   n->stages[s_num] = NULL;
 
   if (nmemb > 0)
+  {
     memmove (n->stages + s_num, n->stages + (s_num + 1),
 	nmemb * sizeof (sn_stage_t *));
+    n->stages[n->stages_num - 1] = NULL;
+  }
   n->stages_num--;
 
   /* Free the unused memory */
@@ -202,12 +206,12 @@ static int sn_network_add_bitonic_merger_recursive (sn_network_t *n,
   int m;
   int i;
 
+  if (num == 1)
+    return (0);
+
   s = sn_stage_create (n->stages_num);
   if (s == NULL)
     return (-1);
-
-  if (num == 1)
-    return (0);
 
   m = num / 2;
 
