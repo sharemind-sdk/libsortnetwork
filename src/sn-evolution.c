@@ -245,6 +245,19 @@ int main (int argc, char **argv)
     sn_network_show (population[best_index].network);
   }
 
+  {
+    int i;
+
+    for (i = 0; i < population_size; i++)
+    {
+      sn_network_destroy (population[i].network);
+      population[i].network = NULL;
+    }
+
+    free (population);
+    population = 0;
+  }
+
   return (0);
 } /* int main */
 
