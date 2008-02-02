@@ -4,6 +4,10 @@ CFLAGS = -Wall -Werror -std=c99 -O3
 
 all: sn-cut sn-evolution sn-merge sn-show
 
+clean:
+	rm -f *.o
+	rm -f sn-cut sn-evolution sn-merge sn-show
+
 sn_comparator.o: sn_comparator.c sn_comparator.h
 
 sn_stage.o: sn_stage.c sn_stage.h sn_comparator.h
@@ -17,4 +21,6 @@ sn-evolution: sn-evolution.c sn_network.o sn_stage.o sn_comparator.o
 sn-merge: sn-merge.c sn_network.o sn_stage.o sn_comparator.o
 
 sn-show: sn-show.c sn_network.o sn_stage.o sn_comparator.o
+
+.PHONY: clean
 
