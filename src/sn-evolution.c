@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 
 #include <sys/types.h>
@@ -15,6 +16,10 @@
 
 #include "sn_network.h"
 
+/* Yes, this is ugly, but the GNU libc doesn't export it with the above flags.
+ * */
+char *strdup (const char *s);
+
 struct population_entry_s
 {
   sn_network_t *network;
@@ -22,17 +27,24 @@ struct population_entry_s
 };
 typedef struct population_entry_s population_entry_t;
 
-static int iterations_num  = INT_MAX;
+static uint64_t iteration_counter = 0;
 static int max_population_size = 128;
 static int olymp_size = 96;
 static int inputs_num      = 16;
 
+static char *initial_input_file = NULL;
+static char *best_output_file = NULL;
+
+static int stats_interval = 0;
+
 static population_entry_t *population = NULL;
-int population_size = 0;
+static int population_size = 0;
+
+static int do_loop = 0;
 
 static void sigint_handler (int signal)
 {
-  iterations_num = 0;
+  do_loop++;
 } /* void sigint_handler */
 
 static int init_random (void)
@@ -63,9 +75,74 @@ static int bounded_random (int upper_bound)
 
 static void exit_usage (const char *name)
 {
-  printf ("%s <file0>\n", name);
+  printf ("Usage: %s [options]\n"
+      "\n"
+      "Valid options are:\n"
+      "  -i <file>     Initial input file (REQUIRED)\n"
+      "  -o <file>     Write the current best solution to <file>\n"
+      "  -p <num>      Size of the population (default: 128)\n"
+      "  -P <num>      Size of the \"olymp\" (default: 96)\n"
+      "\n",
+      name);
   exit (1);
 } /* void exit_usage */
+
+int read_options (int argc, char **argv)
+{
+  int option;
+
+  while ((option = getopt (argc, argv, "i:o:p:P:s:h")) != -1)
+  {
+    switch (option)
+    {
+      case 'i':
+      {
+	if (initial_input_file != NULL)
+	  free (initial_input_file);
+	initial_input_file = strdup (optarg);
+	break;
+      }
+
+      case 'o':
+      {
+	if (best_output_file != NULL)
+	  free (best_output_file);
+	best_output_file = strdup (optarg);
+	break;
+      }
+
+      case 'p':
+      {
+	int tmp = atoi (optarg);
+	if (tmp > 0)
+	  max_population_size = tmp;
+	break;
+      }
+
+      case 'P':
+      {
+	int tmp = atoi (optarg);
+	if (tmp > 0)
+	  olymp_size = tmp;
+	break;
+      }
+
+      case 's':
+      {
+	int tmp = atoi (optarg);
+	if (tmp > 0)
+	  stats_interval = tmp;
+	break;
+      }
+
+      case 'h':
+      default:
+	exit_usage (argv[0]);
+    }
+  }
+
+  return (0);
+} /* int read_options */
 
 static int rate_network (const sn_network_t *n)
 {
@@ -106,6 +183,7 @@ static int insert_into_population (sn_network_t *n)
   int rating;
   int worst_rating;
   int worst_index;
+  int best_rating;
   int nmemb;
   int i;
 
@@ -121,12 +199,33 @@ static int insert_into_population (sn_network_t *n)
 
   worst_rating = -1;
   worst_index  = -1;
+  best_rating  = -1;
   for (i = 0; i < olymp_size; i++)
+  {
     if (population[i].rating > worst_rating)
     {
       worst_rating = population[i].rating;
       worst_index  = i;
     }
+    if ((population[i].rating < best_rating)
+	|| (best_rating == -1))
+      best_rating = population[i].rating;
+  }
+
+  if (rating < best_rating)
+  {
+    if (best_output_file != NULL)
+    {
+      printf ("Writing network with rating %i to %s\n",
+	  rating, best_output_file);
+      sn_network_write_file (n, best_output_file);
+    }
+    else
+    {
+      printf ("New best solution has rating %i\n",
+	  rating);
+    }
+  }
 
   nmemb = max_population_size - (worst_index + 1);
 
@@ -178,14 +277,17 @@ static int create_offspring (void)
 
 static int start_evolution (void)
 {
-  int i;
+  uint64_t i;
 
-  for (i = 0; i < iterations_num; i++)
+  while (do_loop == 0)
   {
-    if ((i % 1000) == 0)
-      population_print_stats (i);
-
     create_offspring ();
+
+    iteration_counter++;
+    i = iteration_counter;
+
+    if ((stats_interval > 0) && ((i % stats_interval) == 0))
+      population_print_stats (i);
   }
 
   return (0);
@@ -195,7 +297,8 @@ int main (int argc, char **argv)
 {
   struct sigaction sigint_action;
 
-  if (argc != 2)
+  read_options (argc, argv);
+  if (initial_input_file == NULL)
     exit_usage (argv[0]);
 
   init_random ();
@@ -215,7 +318,7 @@ int main (int argc, char **argv)
       * sizeof (population_entry_t));
 
   {
-    sn_network_t *n = sn_network_read_file (argv[1]);
+    sn_network_t *n = sn_network_read_file (initial_input_file);
     if (n == NULL)
     {
       printf ("n == NULL\n");
@@ -224,10 +327,23 @@ int main (int argc, char **argv)
     population[0].network = n;
     population[0].rating  = rate_network (n);
     population_size++;
+
+    inputs_num = SN_NETWORK_INPUT_NUM(n);
   }
+
+  printf ("Current configuration:\n"
+      "  Initial network:  %s\n"
+      "  Number of inputs: %3i\n"
+      "  Population size:  %3i\n"
+      "  Olymp size:       %3i\n"
+      "=======================\n",
+      initial_input_file, inputs_num, max_population_size, olymp_size);
 
   start_evolution ();
 
+  printf ("Exiting after %llu iterations.\n", iteration_counter);
+
+  if (best_output_file == NULL)
   {
     int i;
     int best_rate = -1;

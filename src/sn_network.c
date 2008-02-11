@@ -403,4 +403,20 @@ int sn_network_write (sn_network_t *n, FILE *fh)
   return (0);
 } /* int sn_network_write */
 
+int sn_network_write_file (sn_network_t *n, const char *file)
+{
+  int status;
+  FILE *fh;
+
+  fh = fopen (file, "w");
+  if (fh == NULL)
+    return (-1);
+
+  status = sn_network_write (n, fh);
+
+  fclose (fh);
+
+  return (status);
+} /* int sn_network_write_file */
+
 /* vim: set shiftwidth=2 softtabstop=2 : */

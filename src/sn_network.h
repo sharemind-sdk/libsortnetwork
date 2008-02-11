@@ -34,6 +34,7 @@ sn_network_t *sn_network_combine (sn_network_t *n0, sn_network_t *n1);
 sn_network_t *sn_network_read (FILE *fh);
 sn_network_t *sn_network_read_file (const char *file);
 int sn_network_write (sn_network_t *n, FILE *fh);
+int sn_network_write_file (sn_network_t *n, const char *file);
 
 #endif /* SN_NETWORK_H */
 
