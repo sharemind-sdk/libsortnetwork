@@ -15,30 +15,22 @@
 #include <limits.h>
 
 #include "sn_network.h"
+#include "sn_population.h"
 
 /* Yes, this is ugly, but the GNU libc doesn't export it with the above flags.
  * */
 char *strdup (const char *s);
 
-struct population_entry_s
-{
-  sn_network_t *network;
-  int rating;
-};
-typedef struct population_entry_s population_entry_t;
-
 static uint64_t iteration_counter = 0;
-static int max_population_size = 128;
-static int olymp_size = 96;
-static int inputs_num      = 16;
+static int inputs_num = 16;
 
 static char *initial_input_file = NULL;
 static char *best_output_file = NULL;
 
 static int stats_interval = 0;
 
-static population_entry_t *population = NULL;
-static int population_size = 0;
+static int max_population_size = 128;
+static sn_population_t *population;
 
 static int do_loop = 0;
 
@@ -81,7 +73,6 @@ static void exit_usage (const char *name)
       "  -i <file>     Initial input file (REQUIRED)\n"
       "  -o <file>     Write the current best solution to <file>\n"
       "  -p <num>      Size of the population (default: 128)\n"
-      "  -P <num>      Size of the \"olymp\" (default: 96)\n"
       "\n",
       name);
   exit (1);
@@ -119,14 +110,6 @@ int read_options (int argc, char **argv)
 	break;
       }
 
-      case 'P':
-      {
-	int tmp = atoi (optarg);
-	if (tmp > 0)
-	  olymp_size = tmp;
-	break;
-      }
-
       case 's':
       {
 	int tmp = atoi (optarg);
@@ -144,6 +127,7 @@ int read_options (int argc, char **argv)
   return (0);
 } /* int read_options */
 
+#if 0
 static int rate_network (const sn_network_t *n)
 {
   int rate;
@@ -158,7 +142,9 @@ static int rate_network (const sn_network_t *n)
 
   return (rate);
 } /* int rate_network */
+#endif
 
+#if 0
 static int population_print_stats (int iterations)
 {
   int best = -1;
@@ -177,7 +163,9 @@ static int population_print_stats (int iterations)
 
   return (0);
 } /* int population_print_stats */
+#endif
 
+#if 0
 static int insert_into_population (sn_network_t *n)
 {
   int rating;
@@ -241,18 +229,27 @@ static int insert_into_population (sn_network_t *n)
 
   return (0);
 } /* int insert_into_population */
+#endif
 
 static int create_offspring (void)
 {
-  int p0;
-  int p1;
+  sn_network_t *p0;
+  sn_network_t *p1;
   sn_network_t *n;
 
-  p0 = bounded_random (population_size);
-  p1 = bounded_random (population_size);
+  p0 = sn_population_pop (population);
+  p1 = sn_population_pop (population);
 
-  n = sn_network_combine (population[p0].network, population[p1].network);
+  assert (p0 != NULL);
+  assert (p1 != NULL);
 
+  /* combine the two parents */
+  n = sn_network_combine (p0, p1);
+
+  sn_network_destroy (p0);
+  sn_network_destroy (p1);
+
+  /* randomly chose an input and do a min- or max-cut. */
   while (SN_NETWORK_INPUT_NUM (n) > inputs_num)
   {
     int pos;
@@ -266,11 +263,14 @@ static int create_offspring (void)
     sn_network_cut_at (n, pos, dir);
   }
 
+  /* compress the network to get a compact representation */
   sn_network_compress (n);
 
   assert (SN_NETWORK_INPUT_NUM (n) == inputs_num);
 
-  insert_into_population (n);
+  sn_population_push (population, n);
+
+  sn_network_destroy (n);
 
   return (0);
 } /* int create_offspring */
@@ -286,8 +286,10 @@ static int start_evolution (void)
     iteration_counter++;
     i = iteration_counter;
 
+#if 0
     if ((stats_interval > 0) && ((i % stats_interval) == 0))
       population_print_stats (i);
+#endif
   }
 
   return (0);
@@ -307,37 +309,35 @@ int main (int argc, char **argv)
   sigint_action.sa_handler = sigint_handler;
   sigaction (SIGINT, &sigint_action, NULL);
 
-  population = (population_entry_t *) malloc (max_population_size
-      * sizeof (population_entry_t));
+  population = sn_population_create (max_population_size);
   if (population == NULL)
   {
-    printf ("Malloc failed.\n");
-    return (-1);
+    fprintf (stderr, "sn_population_create failed.\n");
+    return (1);
   }
-  memset (population, '\0', max_population_size
-      * sizeof (population_entry_t));
 
   {
-    sn_network_t *n = sn_network_read_file (initial_input_file);
+    sn_network_t *n;
+
+    n = sn_network_read_file (initial_input_file);
     if (n == NULL)
     {
       printf ("n == NULL\n");
       return (1);
     }
-    population[0].network = n;
-    population[0].rating  = rate_network (n);
-    population_size++;
 
     inputs_num = SN_NETWORK_INPUT_NUM(n);
+
+    sn_population_push (population, n);
+    sn_network_destroy (n);
   }
 
   printf ("Current configuration:\n"
       "  Initial network:  %s\n"
       "  Number of inputs: %3i\n"
       "  Population size:  %3i\n"
-      "  Olymp size:       %3i\n"
       "=======================\n",
-      initial_input_file, inputs_num, max_population_size, olymp_size);
+      initial_input_file, inputs_num, max_population_size);
 
   start_evolution ();
 
@@ -345,34 +345,17 @@ int main (int argc, char **argv)
 
   if (best_output_file == NULL)
   {
-    int i;
-    int best_rate = -1;
-    int best_index = -1;
+    sn_network_t *n;
 
-    for (i = 0; i < population_size; i++)
+    n = sn_population_best (population);
+    if (n != NULL)
     {
-      if ((best_rate == -1) || (best_rate > population[i].rating))
-      {
-	best_rate = population[i].rating;
-	best_index = i;
-      }
+      sn_network_show (n);
+      sn_network_destroy (n);
     }
-
-    sn_network_show (population[best_index].network);
   }
 
-  {
-    int i;
-
-    for (i = 0; i < population_size; i++)
-    {
-      sn_network_destroy (population[i].network);
-      population[i].network = NULL;
-    }
-
-    free (population);
-    population = 0;
-  }
+  sn_population_destroy (population);
 
   return (0);
 } /* int main */
