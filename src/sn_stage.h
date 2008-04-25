@@ -24,6 +24,7 @@ enum sn_network_cut_dir_e
 #define SN_STAGE_COMP_GET(s,n) ((s)->comparators + (n))
 
 sn_stage_t *sn_stage_create (int depth);
+sn_stage_t *sn_stage_clone (const sn_stage_t *s);
 void sn_stage_destroy (sn_stage_t *s);
 
 int sn_stage_comparator_add (sn_stage_t *s, const sn_comparator_t *c);

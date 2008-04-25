@@ -89,6 +89,29 @@ int sn_stage_comparator_remove (sn_stage_t *s, int c_num)
   return (0);
 } /* int sn_stage_comparator_remove */
 
+sn_stage_t *sn_stage_clone (const sn_stage_t *s)
+{
+  sn_stage_t *s_copy;
+
+  s_copy = sn_stage_create (s->depth);
+  if (s_copy == NULL)
+    return (NULL);
+
+  s_copy->comparators = (sn_comparator_t *) malloc (s->comparators_num
+      * sizeof (sn_comparator_t));
+  if (s_copy->comparators == NULL)
+  {
+    free (s_copy);
+    return (NULL);
+  }
+
+  memcpy (s_copy->comparators, s->comparators,
+      s->comparators_num * sizeof (sn_comparator_t));
+  s_copy->comparators_num = s->comparators_num;
+
+  return (s_copy);
+} /* sn_stage_t *sn_stage_clone */
+
 int sn_stage_comparator_check_conflict (sn_stage_t *s, const sn_comparator_t *c0)
 {
   int i;
