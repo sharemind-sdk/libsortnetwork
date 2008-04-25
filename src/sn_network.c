@@ -94,6 +94,38 @@ int sn_network_stage_remove (sn_network_t *n, int s_num)
   return (0);
 } /* int sn_network_stage_remove */
 
+sn_network_t *sn_network_clone (const sn_network_t *n)
+{
+  sn_network_t *n_copy;
+  int i;
+
+  n_copy = sn_network_create (n->inputs_num);
+  if (n_copy == NULL)
+    return (NULL);
+
+  for (i = 0; i < n->stages_num; i++)
+  {
+    sn_stage_t *s;
+    int status;
+
+    s = sn_stage_clone (n->stages[i]);
+    if (s == NULL)
+      break;
+
+    status = sn_network_stage_add (n_copy, s);
+    if (status != 0)
+      break;
+  }
+
+  if (i < n->stages_num)
+  {
+    sn_network_destroy (n_copy);
+    return (NULL);
+  }
+
+  return (n_copy);
+} /* sn_network_t *sn_network_clone */
+
 int sn_network_show (sn_network_t *n)
 {
   int i;
