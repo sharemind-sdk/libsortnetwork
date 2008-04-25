@@ -16,6 +16,7 @@
 
 #include "sn_network.h"
 #include "sn_population.h"
+#include "sn_random.h"
 
 /* Yes, this is ugly, but the GNU libc doesn't export it with the above flags.
  * */
@@ -38,32 +39,6 @@ static void sigint_handler (int signal)
 {
   do_loop++;
 } /* void sigint_handler */
-
-static int init_random (void)
-{
-  int fd;
-  unsigned int r;
-
-  fd = open ("/dev/random", O_RDONLY);
-  if (fd < 0)
-  {
-    perror ("open");
-    return (-1);
-  }
-
-  read (fd, (void *) &r, sizeof (r));
-  close (fd);
-
-  srand (r);
-
-  return (0);
-} /* int init_random */
-
-static int bounded_random (int upper_bound)
-{
-  double r = ((double) rand ()) / ((double) RAND_MAX);
-  return ((int) (r * upper_bound));
-}
 
 static void exit_usage (const char *name)
 {
@@ -255,8 +230,8 @@ static int create_offspring (void)
     int pos;
     enum sn_network_cut_dir_e dir;
 
-    pos = bounded_random (SN_NETWORK_INPUT_NUM (n));
-    dir = (bounded_random (2) == 0) ? DIR_MIN : DIR_MAX;
+    pos = sn_bounded_random (0, SN_NETWORK_INPUT_NUM (n) - 1);
+    dir = (sn_bounded_random (0, 1) == 0) ? DIR_MIN : DIR_MAX;
 
     assert ((pos >= 0) && (pos < SN_NETWORK_INPUT_NUM (n)));
 
@@ -302,8 +277,6 @@ int main (int argc, char **argv)
   read_options (argc, argv);
   if (initial_input_file == NULL)
     exit_usage (argv[0]);
-
-  init_random ();
 
   memset (&sigint_action, '\0', sizeof (sigint_action));
   sigint_action.sa_handler = sigint_handler;
