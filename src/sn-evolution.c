@@ -343,14 +343,16 @@ int main (int argc, char **argv)
 
   printf ("Exiting after %llu iterations.\n", iteration_counter);
 
-  if (best_output_file == NULL)
   {
     sn_network_t *n;
 
     n = sn_population_best (population);
     if (n != NULL)
     {
-      sn_network_show (n);
+      if (best_output_file != NULL)
+	sn_network_write_file (n, best_output_file);
+      else
+	sn_network_show (n);
       sn_network_destroy (n);
     }
   }
