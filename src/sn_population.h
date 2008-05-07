@@ -35,5 +35,6 @@ int sn_population_push (sn_population_t *p, sn_network_t *n);
 sn_network_t *sn_population_pop (sn_population_t *p);
 
 sn_network_t *sn_population_best (sn_population_t *p);
+int sn_population_best_rating (sn_population_t *p);
 
 #endif /* SN_POPULATION_H */

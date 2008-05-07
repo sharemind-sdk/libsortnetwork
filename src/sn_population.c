@@ -201,4 +201,26 @@ sn_network_t *sn_population_best (sn_population_t *p)
   return (n_copy);
 } /* sn_network_t *sn_population_best */
 
+int sn_population_best_rating (sn_population_t *p)
+{
+  uint32_t i;
+  int rating = -1;
+
+  pthread_mutex_lock (&p->lock);
+
+  if (p->networks_num <= 0)
+  {
+    pthread_mutex_unlock (&p->lock);
+    return (-1);
+  }
+
+  for (i = 0; i < p->networks_num; i++)
+    if ((p->ratings[i] < rating) || (rating < 0))
+      rating = p->ratings[i];
+
+  pthread_mutex_unlock (&p->lock);
+
+  return (rating);
+} /* int sn_population_best_rating */
+
 /* vim: set shiftwidth=2 softtabstop=2 : */
