@@ -261,10 +261,11 @@ static int start_evolution (void)
     iteration_counter++;
     i = iteration_counter;
 
-#if 0
-    if ((stats_interval > 0) && ((i % stats_interval) == 0))
-      population_print_stats (i);
-#endif
+    if ((i % 1000) == 0)
+    {
+      int rating = sn_population_best_rating (population);
+      printf ("After %10llu iterations: Best rating: %4i\n", i, rating);
+    }
   }
 
   return (0);
