@@ -6,6 +6,7 @@
 #include <assert.h>
 
 #include "sn_network.h"
+#include "sn_random.h"
 
 sn_network_t *sn_network_create (int inputs_num)
 {
@@ -196,6 +197,41 @@ int sn_network_compress (sn_network_t *n)
   return (0);
 } /* int sn_network_compress */
 
+int sn_network_normalize (sn_network_t *n)
+{
+  int i;
+
+  for (i = n->stages_num - 1; i >= 0; i--)
+  {
+    sn_stage_t *s;
+    int j;
+
+    s = n->stages[i];
+
+    for (j = 0; j < SN_STAGE_COMP_NUM (s); j++)
+    {
+      sn_comparator_t *c;
+      int min;
+      int max;
+
+      c = SN_STAGE_COMP_GET (s, j);
+
+      min = c->min;
+      max = c->max;
+
+      if (min > max)
+      {
+	int k;
+
+	for (k = i; k >= 0; k--)
+	  sn_stage_swap (n->stages[k], min, max);
+      }
+    } /* for (j = 0 .. #comparators) */
+  } /* for (i = n->stages_num - 1 .. 0) */
+
+  return (0);
+} /* int sn_network_normalize */
+
 int sn_network_cut_at (sn_network_t *n, int input, enum sn_network_cut_dir_e dir)
 {
   int i;
@@ -295,6 +331,104 @@ static int sn_network_add_bitonic_merger (sn_network_t *n)
   return (0);
 } /* int sn_network_add_bitonic_merger */
 
+static int sn_network_add_odd_even_merger_recursive (sn_network_t *n,
+    int *indizes, int indizes_num)
+{
+  if (indizes_num > 2)
+  {
+    sn_comparator_t c;
+    sn_stage_t *s;
+    int indizes_half_num;
+    int *indizes_half;
+    int status;
+    int i;
+
+    indizes_half_num = indizes_num / 2;
+    indizes_half = (int *) malloc (indizes_num * sizeof (int));
+    if (indizes_half == NULL)
+      return (-1);
+
+    for (i = 0; i < indizes_half_num; i++)
+    {
+      indizes_half[i] = indizes[2 * i];
+      indizes_half[indizes_half_num + i] = indizes[(2 * i) + 1];
+    }
+
+    status = sn_network_add_odd_even_merger_recursive (n,
+	indizes_half, indizes_half_num);
+    if (status != 0)
+    {
+      free (indizes_half);
+      return (status);
+    }
+
+    status = sn_network_add_odd_even_merger_recursive (n,
+	indizes_half + indizes_half_num, indizes_half_num);
+    if (status != 0)
+    {
+      free (indizes_half);
+      return (status);
+    }
+
+    free (indizes_half);
+
+    s = sn_stage_create (n->stages_num);
+    if (s == NULL)
+      return (-1);
+
+    for (i = 1; i < (indizes_num - 2); i += 2)
+    {
+      c.min = indizes[i];
+      c.max = indizes[i + 1];
+
+      sn_stage_comparator_add (s, &c);
+    }
+
+    sn_network_stage_add (n, s);
+  }
+  else
+  {
+    sn_comparator_t c;
+    sn_stage_t *s;
+
+    assert (indizes_num == 2);
+
+    c.min = indizes[0];
+    c.max = indizes[1];
+
+    s = sn_stage_create (n->stages_num);
+    if (s == NULL)
+      return (-1);
+
+    sn_stage_comparator_add (s, &c);
+    sn_network_stage_add (n, s);
+  }
+
+  return (0);
+} /* int sn_network_add_odd_even_merger_recursive */
+
+static int sn_network_add_odd_even_merger (sn_network_t *n)
+{
+  int *indizes;
+  int indizes_num;
+  int status;
+  int i;
+
+  indizes_num = n->inputs_num;
+  indizes = (int *) malloc (indizes_num * sizeof (int));
+  if (indizes == NULL)
+    return (-1);
+
+  for (i = 0; i < indizes_num; i++)
+    indizes[i] = i;
+
+  status = sn_network_add_odd_even_merger_recursive (n,
+      indizes, indizes_num);
+  
+  free (indizes);
+  return (status);
+} /* int sn_network_add_bitonic_merger */
+
 sn_network_t *sn_network_combine (sn_network_t *n0, sn_network_t *n1)
 {
   sn_network_t *n;
@@ -336,7 +470,15 @@ sn_network_t *sn_network_combine (sn_network_t *n0, sn_network_t *n1)
     sn_network_stage_add (n, s);
   }
 
-  sn_network_add_bitonic_merger (n);
+  if (sn_bounded_random (0, 1) == 0)
+  {
+    sn_network_add_bitonic_merger (n);
+  }
+  else
+  {
+    sn_network_add_odd_even_merger (n);
+  }
+
   sn_network_compress (n);
 
   return (n);

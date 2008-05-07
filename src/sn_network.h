@@ -28,6 +28,7 @@ int sn_network_stage_remove (sn_network_t *n, int s_num);
 int sn_network_show (sn_network_t *n);
 int sn_network_invert (sn_network_t *n);
 int sn_network_compress (sn_network_t *n);
+int sn_network_normalize (sn_network_t *n);
 
 int sn_network_cut_at (sn_network_t *n, int input, enum sn_network_cut_dir_e dir);
 sn_network_t *sn_network_combine (sn_network_t *n0, sn_network_t *n1);
