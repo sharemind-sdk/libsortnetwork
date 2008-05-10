@@ -19,8 +19,12 @@
  *   Florian octo Forster <octo at verplant.org>
  **/
 
-#define _ISOC99_SOURCE
-#define _POSIX_C_SOURCE 200112L
+#ifndef _ISOC99_SOURCE
+# define _ISOC99_SOURCE
+#endif
+#ifndef _POSIX_C_SOURCE
+# define _POSIX_C_SOURCE 200112L
+#endif
 
 #include <stdlib.h>
 #include <stdio.h>
