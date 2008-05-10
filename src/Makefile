@@ -6,7 +6,7 @@ all: sn-apply sn-cut sn-evolution sn-merge sn-normalize sn-show sn-tex
 
 clean:
 	rm -f *.o
-	rm -f sn-cut sn-evolution sn-merge sn-show
+	rm -f sn-apply sn-cut sn-evolution sn-merge sn-normalize sn-show sn-tex
 
 sn_comparator.o: sn_comparator.c sn_comparator.h
 
