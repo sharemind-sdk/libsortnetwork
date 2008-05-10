@@ -56,6 +56,27 @@ void sn_stage_destroy (sn_stage_t *s)
   free (s);
 } /* void sn_stage_destroy */
 
+int sn_stage_sort (sn_stage_t *s, int *values)
+{
+  sn_comparator_t *c;
+  int i;
+
+  for (i = 0; i < s->comparators_num; i++)
+  {
+    c = s->comparators + i;
+    if (values[c->min] > values[c->max])
+    {
+      int temp;
+      
+      temp = values[c->min];
+      values[c->min] = values[c->max];
+      values[c->max] = temp;
+    }
+  }
+
+  return (0);
+} /* int sn_stage_sort */
+
 int sn_stage_comparator_add (sn_stage_t *s, const sn_comparator_t *c)
 {
   sn_comparator_t *temp;
@@ -171,7 +192,6 @@ int sn_stage_show (sn_stage_t *s)
   int i;
   int j;
   int k;
-
 
   for (i = 0; i < s->comparators_num; i++)
   {

@@ -512,6 +512,76 @@ sn_network_t *sn_network_combine (sn_network_t *n0, sn_network_t *n1)
   return (n);
 } /* sn_network_t *sn_network_combine */
 
+int sn_network_sort (sn_network_t *n, int *values)
+{
+  int status;
+  int i;
+
+  status = 0;
+  for (i = 0; i < n->stages_num; i++)
+  {
+    status = sn_stage_sort (n->stages[i], values);
+    if (status != 0)
+      return (status);
+  }
+
+  return (status);
+} /* int sn_network_sort */
+
+int sn_network_brute_force_check (sn_network_t *n)
+{
+  int test_pattern[n->inputs_num];
+  int values[n->inputs_num];
+  int status;
+  int i;
+
+  memset (test_pattern, 0, sizeof (test_pattern));
+  while (42)
+  {
+    int previous;
+    int overflow;
+
+    /* Copy the current pattern and let the network sort it */
+    memcpy (values, test_pattern, sizeof (values));
+    status = sn_network_sort (n, values);
+    if (status != 0)
+      return (status);
+
+    /* Check if the array is now sorted. */
+    previous = values[0];
+    for (i = 1; i < n->inputs_num; i++)
+    {
+      if (previous > values[i])
+	return (1);
+      previous = values[i];
+    }
+
+    /* Generate the next test pattern */
+    overflow = 1;
+    for (i = 0; i < n->inputs_num; i++)
+    {
+      if (test_pattern[i] == 0)
+      {
+	test_pattern[i] = 1;
+	overflow = 0;
+	break;
+      }
+      else
+      {
+	test_pattern[i] = 0;
+	overflow = 1;
+      }
+    }
+
+    /* Break out of the while loop if we tested all possible patterns */
+    if (overflow == 1)
+      break;
+  } /* while (42) */
+
+  /* All tests successfull */
+  return (0);
+} /* int sn_network_brute_force_check */
+
 sn_network_t *sn_network_read (FILE *fh)
 {
   sn_network_t *n;

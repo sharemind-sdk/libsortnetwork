@@ -48,6 +48,8 @@ sn_stage_t *sn_stage_create (int depth);
 sn_stage_t *sn_stage_clone (const sn_stage_t *s);
 void sn_stage_destroy (sn_stage_t *s);
 
+int sn_stage_sort (sn_stage_t *s, int *values);
+
 int sn_stage_comparator_add (sn_stage_t *s, const sn_comparator_t *c);
 int sn_stage_comparator_remove (sn_stage_t *s, int c_num);
 int sn_stage_comparator_check_conflict (sn_stage_t *s, const sn_comparator_t *c);

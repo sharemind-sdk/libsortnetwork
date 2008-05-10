@@ -46,6 +46,9 @@ void sn_network_destroy (sn_network_t *n);
 int sn_network_stage_add (sn_network_t *n, sn_stage_t *s);
 int sn_network_stage_remove (sn_network_t *n, int s_num);
 
+int sn_network_sort (sn_network_t *n, int *values);
+int sn_network_brute_force_check (sn_network_t *n);
+
 int sn_network_show (sn_network_t *n);
 int sn_network_invert (sn_network_t *n);
 int sn_network_compress (sn_network_t *n);
