@@ -280,6 +280,7 @@ static int evolution_start (int threads_num)
 int main (int argc, char **argv)
 {
   struct sigaction sigint_action;
+  struct sigaction sigterm_action;
 
   read_options (argc, argv);
   if (initial_input_file == NULL)
@@ -288,6 +289,10 @@ int main (int argc, char **argv)
   memset (&sigint_action, '\0', sizeof (sigint_action));
   sigint_action.sa_handler = sigint_handler;
   sigaction (SIGINT, &sigint_action, NULL);
+
+  memset (&sigterm_action, '\0', sizeof (sigterm_action));
+  sigterm_action.sa_handler = sigint_handler;
+  sigaction (SIGTERM, &sigterm_action, NULL);
 
   population = sn_population_create (max_population_size);
   if (population == NULL)
