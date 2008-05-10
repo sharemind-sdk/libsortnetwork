@@ -142,23 +142,9 @@ static int show_sort (int *values)
   for (i = 0; i < stages_num; i++)
   {
     sn_stage_t *s;
-    int j;
 
     s = SN_NETWORK_STAGE_GET (network, i);
-
-    for (j = 0; j < SN_STAGE_COMP_NUM (s); j++)
-    {
-      sn_comparator_t *c;
-
-      c = SN_STAGE_COMP_GET (s, j);
-
-      if (values[c->min] > values[c->max])
-      {
-	int temp = values[c->min];
-	values[c->min] = values[c->max];
-	values[c->max] = temp;
-      }
-    } /* for (comparators) */
+    sn_stage_sort (s, values);
 
     show_values (SN_NETWORK_INPUT_NUM (network), values);
   } /* for (stages) */
