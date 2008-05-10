@@ -1,6 +1,6 @@
 CC = gcc
-#CFLAGS = -Wall -Werror -std=c99 -O3
-CFLAGS = -Wall -Werror -std=c99 -O0 -g
+CFLAGS = -Wall -Werror -std=c99 -O3 -pthread
+#CFLAGS = -Wall -Werror -std=c99 -O0 -g -pthread
 
 all: sn-apply sn-cut sn-evolution sn-merge sn-normalize sn-show sn-tex
 

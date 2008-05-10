@@ -35,6 +35,8 @@
 #include <assert.h>
 #include <limits.h>
 
+#include <pthread.h>
+
 #include "sn_network.h"
 #include "sn_population.h"
 #include "sn_random.h"
@@ -271,26 +273,62 @@ static int create_offspring (void)
   return (0);
 } /* int create_offspring */
 
-static int start_evolution (void)
+static void *evolution_thread (void *arg)
 {
-  uint64_t i;
-
   while (do_loop == 0)
   {
     create_offspring ();
-
+    /* XXX: Not synchronized! */
     iteration_counter++;
-    i = iteration_counter;
+  }
 
-    if ((i % 1000) == 0)
+  return ((void *) 0);
+} /* int start_evolution */
+
+static int evolution_start (int threads_num)
+{
+  pthread_t threads[threads_num]; /* C99 ftw! */
+  int i;
+
+  for (i = 0; i < threads_num; i++)
+  {
+    int status;
+
+    status = pthread_create (&threads[i], /* attr = */ NULL,
+	evolution_thread, /* arg = */ NULL);
+    if (status != 0)
     {
-      int rating = sn_population_best_rating (population);
-      printf ("After %10llu iterations: Best rating: %4i\n", i, rating);
+      fprintf (stderr, "evolution_start: pthread_create[%i] failed "
+	  "with status %i.\n",
+	  i, status);
+      threads[i] = 0;
     }
   }
 
+  while (do_loop == 0)
+  {
+    int status;
+    
+    status = sleep (1);
+    if (status == 0)
+    {
+      int best_rating;
+      i = iteration_counter;
+
+      best_rating = sn_population_best_rating (population);
+      printf ("After approximately %i iterations: Currently best rating: %i\n", i, best_rating);
+    }
+  }
+
+  for (i = 0; i < threads_num; i++)
+  {
+    if (threads[i] == 0)
+      continue;
+    pthread_join (threads[i], /* value_ptr = */ NULL);
+  }
+
   return (0);
-} /* int start_evolution */
+} /* int evolution_start */
 
 int main (int argc, char **argv)
 {
@@ -334,9 +372,10 @@ int main (int argc, char **argv)
       "=======================\n",
       initial_input_file, inputs_num, max_population_size);
 
-  start_evolution ();
+  evolution_start (3);
 
-  printf ("Exiting after %llu iterations.\n", iteration_counter);
+  printf ("Exiting after %llu iterations.\n",
+      (unsigned long long) iteration_counter);
 
   {
     sn_network_t *n;
