@@ -205,13 +205,7 @@ static int create_offspring (void)
   assert (SN_NETWORK_INPUT_NUM (n) == inputs_num);
 
   if (sn_bounded_random (0, 100) <= 1)
-  {
-    int status;
-
-    status = mutate_network (n);
-    if (status == 0)
-      printf ("Debug: Mutation successfull.\n");
-  }
+    mutate_network (n);
 
   sn_population_push (population, n);
 

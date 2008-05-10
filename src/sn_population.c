@@ -41,6 +41,9 @@ struct sn_population_s
 {
   uint32_t size;
 
+  sn_network_t *best_network;
+  int best_rating;
+
   sn_network_t **networks;
   int *ratings;
   uint32_t networks_num;
@@ -62,6 +65,58 @@ static int rate_network (const sn_network_t *n)
 
   return (rate);
 } /* int rate_network */
+
+static int brute_force_minimize (sn_network_t *n_orig)
+{
+  int stage_index;
+  int comparator_index;
+
+  printf ("brute_force_minimize: Running full fledged brute force optimization.\n");
+
+  for (stage_index = 0;
+      stage_index < SN_NETWORK_STAGE_NUM (n_orig);
+      stage_index++)
+  {
+    sn_stage_t *s_orig;
+
+    s_orig = SN_NETWORK_STAGE_GET (n_orig, stage_index);
+
+    for (comparator_index = 0;
+	comparator_index < SN_STAGE_COMP_NUM (s_orig);
+	comparator_index++)
+    {
+      sn_network_t *n_copy;
+      sn_stage_t *s_copy;
+      int status;
+
+      n_copy = sn_network_clone (n_orig);
+      if (n_copy == NULL)
+	continue;
+
+      s_copy = SN_NETWORK_STAGE_GET (n_copy, stage_index);
+      sn_stage_comparator_remove (s_copy, comparator_index);
+
+      status = sn_network_brute_force_check (n_copy);
+      if (status == 0)
+      {
+	printf ("brute_force_minimize: Removed a comparator "
+	    "(stage %i, comparator %i).\n",
+	    stage_index, comparator_index);
+	sn_stage_comparator_remove (s_orig, comparator_index);
+
+	comparator_index--;
+      }
+
+      sn_network_destroy (n_copy);
+      n_copy = NULL;
+    } /* for (comparator_index) */
+  } /* for (stage_index) */
+
+  /* FIXME: Remove this check after debugging. */
+  assert (sn_network_brute_force_check (n_orig) == 0);
+  
+  return (0);
+} /* int brute_force_minimize */
 
 sn_population_t *sn_population_create (uint32_t size)
 {
@@ -137,6 +192,31 @@ int sn_population_push (sn_population_t *p, sn_network_t *n)
   rating = rate_network (n_copy);
 
   pthread_mutex_lock (&p->lock);
+
+  if (p->best_rating >= rating)
+  {
+    pthread_mutex_unlock (&p->lock);
+
+    brute_force_minimize (n_copy);
+    rating = rate_network (n_copy);
+
+    pthread_mutex_lock (&p->lock);
+  }
+
+  if ((p->best_rating >= rating)
+      || (p->best_network == NULL))
+  {
+    sn_network_t *n_copy_best;
+
+    n_copy_best = sn_network_clone (n);
+    if (n_copy_best != NULL)
+    {
+      if (p->best_network != NULL)
+	sn_network_destroy (p->best_network);
+      p->best_network = n_copy_best;
+      p->best_rating = rating;
+    }
+  }
 
   if (p->networks_num < p->size)
   {
