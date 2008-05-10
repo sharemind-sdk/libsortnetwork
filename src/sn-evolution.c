@@ -129,109 +129,43 @@ int read_options (int argc, char **argv)
   return (0);
 } /* int read_options */
 
-#if 0
-static int rate_network (const sn_network_t *n)
+static int mutate_network (sn_network_t *n)
 {
-  int rate;
-  int i;
+  sn_network_t *n_copy;
+  int stage_index;
+  sn_stage_t *s;
+  int comparator_index;
+  int status;
 
-  rate = SN_NETWORK_STAGE_NUM (n) * SN_NETWORK_INPUT_NUM (n);
-  for (i = 0; i < SN_NETWORK_STAGE_NUM (n); i++)
+  n_copy = sn_network_clone (n);
+  if (n_copy == NULL)
   {
-    sn_stage_t *s = SN_NETWORK_STAGE_GET (n, i);
-    rate += SN_STAGE_COMP_NUM (s);
+    fprintf (stderr, "mutate_network: sn_network_clone failed.\n");
+    return (-1);
   }
 
-  return (rate);
-} /* int rate_network */
-#endif
+  stage_index = sn_bounded_random (0, SN_NETWORK_STAGE_NUM (n_copy) - 1);
+  s = SN_NETWORK_STAGE_GET (n_copy, stage_index);
 
-#if 0
-static int population_print_stats (int iterations)
-{
-  int best = -1;
-  int total = 0;
-  int i;
+  comparator_index = sn_bounded_random (0, SN_STAGE_COMP_NUM (s) - 1);
+  sn_stage_comparator_remove (s, comparator_index);
 
-  for (i = 0; i < population_size; i++)
-  {
-    if ((best == -1) || (best > population[i].rating))
-      best = population[i].rating;
-    total += population[i].rating;
-  }
+  status = sn_network_brute_force_check (n_copy);
+  
+  sn_network_destroy (n_copy);
 
-  printf ("Iterations: %6i; Best: %i; Average: %.2f;\n",
-      iterations, best, ((double) total) / ((double) population_size));
+  if (status < 0)
+    return (-1);
+  else if (status > 0) /* Mutated network does not sort anymore. */
+    return (1);
+
+  /* We saved one comparator \o/ Let's do the same change on the original
+   * network. */
+  s = SN_NETWORK_STAGE_GET (n, stage_index);
+  sn_stage_comparator_remove (s, comparator_index);
 
   return (0);
-} /* int population_print_stats */
-#endif
-
-#if 0
-static int insert_into_population (sn_network_t *n)
-{
-  int rating;
-  int worst_rating;
-  int worst_index;
-  int best_rating;
-  int nmemb;
-  int i;
-
-  rating = rate_network (n);
-
-  if (population_size < max_population_size)
-  {
-    population[population_size].network = n;
-    population[population_size].rating  = rating;
-    population_size++;
-    return (0);
-  }
-
-  worst_rating = -1;
-  worst_index  = -1;
-  best_rating  = -1;
-  for (i = 0; i < olymp_size; i++)
-  {
-    if (population[i].rating > worst_rating)
-    {
-      worst_rating = population[i].rating;
-      worst_index  = i;
-    }
-    if ((population[i].rating < best_rating)
-	|| (best_rating == -1))
-      best_rating = population[i].rating;
-  }
-
-  if (rating < best_rating)
-  {
-    if (best_output_file != NULL)
-    {
-      printf ("Writing network with rating %i to %s\n",
-	  rating, best_output_file);
-      sn_network_write_file (n, best_output_file);
-    }
-    else
-    {
-      printf ("New best solution has rating %i\n",
-	  rating);
-    }
-  }
-
-  nmemb = max_population_size - (worst_index + 1);
-
-  sn_network_destroy (population[worst_index].network);
-  population[worst_index].network = NULL;
-
-  memmove (population + worst_index,
-      population + (worst_index + 1),
-      nmemb * sizeof (population_entry_t));
-
-  population[max_population_size - 1].network = n;
-  population[max_population_size - 1].rating  = rating;
-
-  return (0);
-} /* int insert_into_population */
-#endif
+} /* int mutate_network */
 
 static int create_offspring (void)
 {
@@ -269,6 +203,15 @@ static int create_offspring (void)
   sn_network_compress (n);
 
   assert (SN_NETWORK_INPUT_NUM (n) == inputs_num);
+
+  if (sn_bounded_random (0, 100) <= 1)
+  {
+    int status;
+
+    status = mutate_network (n);
+    if (status == 0)
+      printf ("Debug: Mutation successfull.\n");
+  }
 
   sn_population_push (population, n);
 
