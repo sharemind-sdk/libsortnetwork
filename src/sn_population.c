@@ -71,7 +71,7 @@ static int brute_force_minimize (sn_network_t *n_orig)
   int stage_index;
   int comparator_index;
 
-  printf ("brute_force_minimize: Running full fledged brute force optimization.\n");
+  /* printf ("brute_force_minimize: Running full fledged brute force optimization.\n"); */
 
   for (stage_index = 0;
       stage_index < SN_NETWORK_STAGE_NUM (n_orig);
@@ -99,9 +99,11 @@ static int brute_force_minimize (sn_network_t *n_orig)
       status = sn_network_brute_force_check (n_copy);
       if (status == 0)
       {
+	/*
 	printf ("brute_force_minimize: Removed a comparator "
 	    "(stage %i, comparator %i).\n",
 	    stage_index, comparator_index);
+	*/
 	sn_stage_comparator_remove (s_orig, comparator_index);
 
 	comparator_index--;
@@ -193,7 +195,7 @@ int sn_population_push (sn_population_t *p, sn_network_t *n)
 
   pthread_mutex_lock (&p->lock);
 
-  if (p->best_rating >= rating)
+  if (p->best_rating >= (rating - 4))
   {
     pthread_mutex_unlock (&p->lock);
 
