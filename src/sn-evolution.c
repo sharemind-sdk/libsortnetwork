@@ -41,8 +41,9 @@
 
 #include <pthread.h>
 
+#include <population.h>
+
 #include "sn_network.h"
-#include "sn_population.h"
 #include "sn_random.h"
 
 /* Yes, this is ugly, but the GNU libc doesn't export it with the above flags.
@@ -58,7 +59,7 @@ static char *best_output_file = NULL;
 static int stats_interval = 0;
 
 static int max_population_size = 128;
-static sn_population_t *population;
+static population_t *population;
 
 static int do_loop = 0;
 
@@ -129,6 +130,21 @@ int read_options (int argc, char **argv)
   return (0);
 } /* int read_options */
 
+static int rate_network (const sn_network_t *n)
+{
+  int rate;
+  int i;
+
+  rate = SN_NETWORK_STAGE_NUM (n) * SN_NETWORK_INPUT_NUM (n);
+  for (i = 0; i < SN_NETWORK_STAGE_NUM (n); i++)
+  {
+    sn_stage_t *s = SN_NETWORK_STAGE_GET (n, i);
+    rate += SN_STAGE_COMP_NUM (s);
+  }
+
+  return (rate);
+} /* int rate_network */
+
 static int mutate_network (sn_network_t *n)
 {
   sn_network_t *n_copy;
@@ -173,8 +189,8 @@ static int create_offspring (void)
   sn_network_t *p1;
   sn_network_t *n;
 
-  p0 = sn_population_pop (population);
-  p1 = sn_population_pop (population);
+  p0 = population_get_random (population);
+  p1 = population_get_random (population);
 
   assert (p0 != NULL);
   assert (p1 != NULL);
@@ -207,7 +223,7 @@ static int create_offspring (void)
   if (sn_bounded_random (0, 100) <= 1)
     mutate_network (n);
 
-  sn_population_push (population, n);
+  population_insert (population, n);
 
   sn_network_destroy (n);
 
@@ -253,11 +269,18 @@ static int evolution_start (int threads_num)
     status = sleep (1);
     if (status == 0)
     {
-      int best_rating;
+      sn_network_t *n;
+      int rating;
+
       i = iteration_counter;
 
-      best_rating = sn_population_best_rating (population);
-      printf ("After approximately %i iterations: Currently best rating: %i\n", i, best_rating);
+      n = population_get_fittest (population);
+      rating = rate_network (n);
+      sn_network_destroy (n);
+
+      printf ("After approximately %i iterations: "
+	  "Currently best rating: %i\n",
+	  i, rating);
     }
   }
 
@@ -288,10 +311,12 @@ int main (int argc, char **argv)
   sigterm_action.sa_handler = sigint_handler;
   sigaction (SIGTERM, &sigterm_action, NULL);
 
-  population = sn_population_create (max_population_size);
+  population = population_create ((pi_rate_f) rate_network,
+      (pi_copy_f) sn_network_clone,
+      (pi_free_f) sn_network_destroy);
   if (population == NULL)
   {
-    fprintf (stderr, "sn_population_create failed.\n");
+    fprintf (stderr, "population_create failed.\n");
     return (1);
   }
 
@@ -307,7 +332,7 @@ int main (int argc, char **argv)
 
     inputs_num = SN_NETWORK_INPUT_NUM(n);
 
-    sn_population_push (population, n);
+    population_insert (population, n);
     sn_network_destroy (n);
   }
 
@@ -326,7 +351,7 @@ int main (int argc, char **argv)
   {
     sn_network_t *n;
 
-    n = sn_population_best (population);
+    n = population_get_fittest (population);
     if (n != NULL)
     {
       if (best_output_file != NULL)
@@ -337,7 +362,7 @@ int main (int argc, char **argv)
     }
   }
 
-  sn_population_destroy (population);
+  population_destroy (population);
 
   return (0);
 } /* int main */
