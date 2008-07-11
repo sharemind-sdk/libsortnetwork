@@ -405,4 +405,122 @@ int sn_stage_write (sn_stage_t *s, FILE *fh)
   return (0);
 } /* int sn_stage_write */
 
-/* vim: set shiftwidth=2 softtabstop=2 : */
+int sn_stage_serialize (sn_stage_t *s,
+    char **ret_buffer, size_t *ret_buffer_size)
+{
+  char *buffer;
+  size_t buffer_size;
+  int status;
+  int i;
+
+  if (s->comparators_num <= 0)
+    return (0);
+
+  buffer = *ret_buffer;
+  buffer_size = *ret_buffer_size;
+
+#define SNPRINTF_OR_FAIL(...) \
+  status = snprintf (buffer, buffer_size, __VA_ARGS__); \
+  if ((status < 1) || (status >= buffer_size)) \
+    return (-1); \
+  buffer += status; \
+  buffer_size -= status;
+
+  for (i = 0; i < s->comparators_num; i++)
+  {
+    SNPRINTF_OR_FAIL ("%i %i\r\n",
+	SN_COMP_MIN (s->comparators + i),
+	SN_COMP_MAX (s->comparators + i));
+  }
+
+  SNPRINTF_OR_FAIL ("\r\n");
+
+  *ret_buffer = buffer;
+  *ret_buffer_size = buffer_size;
+  return (0);
+} /* int sn_stage_serialize */
+
+sn_stage_t *sn_stage_unserialize (char **ret_buffer, size_t *ret_buffer_size)
+{
+  sn_stage_t *s;
+  char *buffer;
+  size_t buffer_size;
+  int status;
+
+  buffer = *ret_buffer;
+  buffer_size = *ret_buffer_size;
+
+  if (buffer_size == 0)
+    return (NULL);
+
+  s = sn_stage_create (0);
+  if (s == NULL)
+    return (NULL);
+
+  status = 0;
+  while (buffer_size > 0)
+  {
+    sn_comparator_t c;
+    char *endptr;
+    char *substr;
+    size_t substr_length;
+
+    endptr = strchr (buffer, '\n');
+    if (endptr == NULL)
+    {
+      status = -1;
+      break;
+    }
+
+    *endptr = 0;
+    endptr++;
+
+    substr = buffer;
+    substr_length = strlen (buffer);
+    buffer = endptr;
+    buffer_size -= (substr_length + 1);
+
+    if ((substr_length > 0) && (substr[substr_length - 1] == '\r'))
+    {
+      substr[substr_length - 1] = 0;
+      substr_length--;
+    }
+
+    if (substr_length == 0)
+    {
+      status = 0;
+      break;
+    }
+
+    endptr = NULL;
+    c.min = (int) strtol (substr, &endptr, 0);
+    if (substr == endptr)
+    {
+      status = -1;
+      break;
+    }
+
+    substr = endptr;
+    endptr = NULL;
+    c.max = (int) strtol (substr, &endptr, 0);
+    if (substr == endptr)
+    {
+      status = -1;
+      break;
+    }
+
+    sn_stage_comparator_add (s, &c);
+  } /* while (buffer_size > 0) */
+
+  if ((status != 0) || (s->comparators_num == 0))
+  {
+    sn_stage_destroy (s);
+    return (NULL);
+  }
+
+  *ret_buffer = buffer;
+  *ret_buffer_size = buffer_size;
+  return (s);
+} /* sn_stage_t *sn_stage_unserialize */
+
+/* vim: set shiftwidth=2 softtabstop=2 expandtab : */

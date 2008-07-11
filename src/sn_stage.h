@@ -63,6 +63,10 @@ int sn_stage_remove_input (sn_stage_t *s, int input);
 sn_stage_t *sn_stage_read (FILE *fh);
 int sn_stage_write (sn_stage_t *s, FILE *fh);
 
+int sn_stage_serialize (sn_stage_t *s,
+    char **ret_buffer, size_t *ret_buffer_size);
+sn_stage_t *sn_stage_unserialize (char **buffer, size_t *buffer_size);
+
 #endif /* SN_STAGE_H */
 
 /* vim: set shiftwidth=2 softtabstop=2 : */
