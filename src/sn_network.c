@@ -760,10 +760,10 @@ sn_network_t *sn_network_unserialize (char *buffer, size_t buffer_size)
       break;
 
     str_key = line;
-    str_value = strchr (buffer, ':');
+    str_value = strchr (line, ':');
     if (str_value == NULL)
     {
-      printf ("Cannot parse line: %s\n", buffer);
+      printf ("Cannot parse line: %s\n", line);
       continue;
     }
 
