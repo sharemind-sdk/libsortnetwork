@@ -41,8 +41,9 @@
 
 #include <pthread.h>
 
+#include <population.h>
+
 #include "sn_network.h"
-#include "sn_population.h"
 #include "sn_random.h"
 
 /* Yes, this is ugly, but the GNU libc doesn't export it with the above flags.
@@ -58,7 +59,9 @@ static char *best_output_file = NULL;
 static int stats_interval = 0;
 
 static int max_population_size = 128;
-static sn_population_t *population;
+static population_t *population;
+
+static int evolution_threads_num = 4;
 
 static int do_loop = 0;
 
@@ -75,6 +78,8 @@ static void exit_usage (const char *name)
       "  -i <file>     Initial input file (REQUIRED)\n"
       "  -o <file>     Write the current best solution to <file>\n"
       "  -p <num>      Size of the population (default: 128)\n"
+      "  -P <peer>     Send individuals to <peer> (may be repeated)\n"
+      "  -t <num>      Number of threads (default: 4)\n"
       "\n",
       name);
   exit (1);
@@ -84,7 +89,7 @@ int read_options (int argc, char **argv)
 {
   int option;
 
-  while ((option = getopt (argc, argv, "i:o:p:P:s:h")) != -1)
+  while ((option = getopt (argc, argv, "i:o:p:P:s:t:h")) != -1)
   {
     switch (option)
     {
@@ -108,7 +113,23 @@ int read_options (int argc, char **argv)
       {
 	int tmp = atoi (optarg);
 	if (tmp > 0)
+	{
 	  max_population_size = tmp;
+	  population_set_size (population, (size_t) max_population_size);
+	}
+	break;
+      }
+
+      case 'P':
+      {
+	int status;
+
+	status = population_add_peer (population, optarg, /* port = */ NULL);
+	if (status != 0)
+	{
+	  fprintf (stderr, "population_add_peer failed with status %i.\n",
+	      status);
+	}
 	break;
       }
 
@@ -120,6 +141,14 @@ int read_options (int argc, char **argv)
 	break;
       }
 
+      case 't':
+      {
+	int tmp = atoi (optarg);
+	if (tmp >= 1)
+	  evolution_threads_num = tmp;
+	break;
+      }
+
       case 'h':
       default:
 	exit_usage (argv[0]);
@@ -128,6 +157,21 @@ int read_options (int argc, char **argv)
 
   return (0);
 } /* int read_options */
+
+static int rate_network (const sn_network_t *n)
+{
+  int rate;
+  int i;
+
+  rate = SN_NETWORK_STAGE_NUM (n) * SN_NETWORK_INPUT_NUM (n);
+  for (i = 0; i < SN_NETWORK_STAGE_NUM (n); i++)
+  {
+    sn_stage_t *s = SN_NETWORK_STAGE_GET (n, i);
+    rate += SN_STAGE_COMP_NUM (s);
+  }
+
+  return (rate);
+} /* int rate_network */
 
 static int mutate_network (sn_network_t *n)
 {
@@ -173,8 +217,8 @@ static int create_offspring (void)
   sn_network_t *p1;
   sn_network_t *n;
 
-  p0 = sn_population_pop (population);
-  p1 = sn_population_pop (population);
+  p0 = population_get_random (population);
+  p1 = population_get_random (population);
 
   assert (p0 != NULL);
   assert (p1 != NULL);
@@ -207,7 +251,7 @@ static int create_offspring (void)
   if (sn_bounded_random (0, 100) <= 1)
     mutate_network (n);
 
-  sn_population_push (population, n);
+  population_insert (population, n);
 
   sn_network_destroy (n);
 
@@ -253,11 +297,18 @@ static int evolution_start (int threads_num)
     status = sleep (1);
     if (status == 0)
     {
-      int best_rating;
+      sn_network_t *n;
+      int rating;
+
       i = iteration_counter;
 
-      best_rating = sn_population_best_rating (population);
-      printf ("After approximately %i iterations: Currently best rating: %i\n", i, best_rating);
+      n = population_get_fittest (population);
+      rating = rate_network (n);
+      sn_network_destroy (n);
+
+      printf ("After approximately %i iterations: "
+	  "Currently best rating: %i\n",
+	  i, rating);
     }
   }
 
@@ -276,6 +327,19 @@ int main (int argc, char **argv)
   struct sigaction sigint_action;
   struct sigaction sigterm_action;
 
+  population = population_create ((pi_rate_f) rate_network,
+      (pi_copy_f) sn_network_clone,
+      (pi_free_f) sn_network_destroy);
+  if (population == NULL)
+  {
+    fprintf (stderr, "population_create failed.\n");
+    return (1);
+  }
+
+  population_set_serialization (population,
+      (pi_serialize_f) sn_network_serialize,
+      (pi_unserialize_f) sn_network_unserialize);
+
   read_options (argc, argv);
   if (initial_input_file == NULL)
     exit_usage (argv[0]);
@@ -288,12 +352,7 @@ int main (int argc, char **argv)
   sigterm_action.sa_handler = sigint_handler;
   sigaction (SIGTERM, &sigterm_action, NULL);
 
-  population = sn_population_create (max_population_size);
-  if (population == NULL)
-  {
-    fprintf (stderr, "sn_population_create failed.\n");
-    return (1);
-  }
+  population_start_listen_thread (population, NULL, NULL);
 
   {
     sn_network_t *n;
@@ -307,7 +366,7 @@ int main (int argc, char **argv)
 
     inputs_num = SN_NETWORK_INPUT_NUM(n);
 
-    sn_population_push (population, n);
+    population_insert (population, n);
     sn_network_destroy (n);
   }
 
@@ -318,7 +377,7 @@ int main (int argc, char **argv)
       "=======================\n",
       initial_input_file, inputs_num, max_population_size);
 
-  evolution_start (3);
+  evolution_start (evolution_threads_num);
 
   printf ("Exiting after %llu iterations.\n",
       (unsigned long long) iteration_counter);
@@ -326,18 +385,17 @@ int main (int argc, char **argv)
   {
     sn_network_t *n;
 
-    n = sn_population_best (population);
+    n = population_get_fittest (population);
     if (n != NULL)
     {
       if (best_output_file != NULL)
 	sn_network_write_file (n, best_output_file);
-      else
-	sn_network_show (n);
+      sn_network_show (n);
       sn_network_destroy (n);
     }
   }
 
-  sn_population_destroy (population);
+  population_destroy (population);
 
   return (0);
 } /* int main */

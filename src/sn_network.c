@@ -691,4 +691,115 @@ int sn_network_write_file (sn_network_t *n, const char *file)
   return (status);
 } /* int sn_network_write_file */
 
+int sn_network_serialize (sn_network_t *n, char **ret_buffer,
+    size_t *ret_buffer_size)
+{
+  char *buffer;
+  size_t buffer_size;
+  int status;
+  int i;
+
+  buffer = *ret_buffer;
+  buffer_size = *ret_buffer_size;
+
+#define SNPRINTF_OR_FAIL(...) \
+  status = snprintf (buffer, buffer_size, __VA_ARGS__); \
+  if ((status < 1) || (status >= buffer_size)) \
+    return (-1); \
+  buffer += status; \
+  buffer_size -= status;
+
+  SNPRINTF_OR_FAIL ("Inputs: %i\r\n\r\n", n->inputs_num);
+
+  for (i = 0; i < n->stages_num; i++)
+  {
+    status = sn_stage_serialize (n->stages[i], &buffer, &buffer_size);
+    if (status != 0)
+      return (status);
+  }
+
+  *ret_buffer = buffer;
+  *ret_buffer_size = buffer_size;
+  return (0);
+} /* int sn_network_serialize */
+
+sn_network_t *sn_network_unserialize (char *buffer, size_t buffer_size)
+{
+  sn_network_t *n;
+  int opt_inputs = 0;
+
+  if (buffer_size == 0)
+    return (NULL);
+
+  /* Read options first */
+  while (buffer_size > 0)
+  {
+    char *endptr;
+    char *str_key;
+    char *str_value;
+    char *line;
+    int   line_len;
+
+    line = buffer;
+    endptr = strchr (buffer, '\n');
+    if (endptr == NULL)
+      return (NULL);
+
+    *endptr = 0;
+    endptr++;
+    buffer = endptr;
+    line_len = strlen (line);
+
+    if ((line_len > 0) && (line[line_len - 1] == '\r'))
+    {
+      line[line_len - 1] = 0;
+      line_len--;
+    }
+
+    if (line_len == 0)
+      break;
+
+    str_key = line;
+    str_value = strchr (line, ':');
+    if (str_value == NULL)
+    {
+      printf ("Cannot parse line: %s\n", line);
+      continue;
+    }
+
+    *str_value = '\0'; str_value++;
+    while ((*str_value != '\0') && (isspace (*str_value) != 0))
+      str_value++;
+
+    if (strcasecmp ("Inputs", str_key) == 0)
+      opt_inputs = atoi (str_value);
+    else
+      printf ("Unknown key: %s\n", str_key);
+  } /* while (fgets) */
+
+  if (opt_inputs < 2)
+    return (NULL);
+
+  n = sn_network_create (opt_inputs);
+
+  while (42)
+  {
+    sn_stage_t *s;
+
+    s = sn_stage_unserialize (&buffer, &buffer_size);
+    if (s == NULL)
+      break;
+
+    sn_network_stage_add (n, s);
+  }
+
+  if (SN_NETWORK_STAGE_NUM (n) < 1)
+  {
+    sn_network_destroy (n);
+    return (NULL);
+  }
+
+  return (n);
+} /* sn_network_t *sn_network_unserialize */
+
 /* vim: set shiftwidth=2 softtabstop=2 : */

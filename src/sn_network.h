@@ -62,6 +62,9 @@ sn_network_t *sn_network_read_file (const char *file);
 int sn_network_write (sn_network_t *n, FILE *fh);
 int sn_network_write_file (sn_network_t *n, const char *file);
 
+int sn_network_serialize (sn_network_t *n, char **ret_buffer,
+    size_t *ret_buffer_size);
+sn_network_t *sn_network_unserialize (char *buffer, size_t buffer_size);
 #endif /* SN_NETWORK_H */
 
 /* vim: set shiftwidth=2 softtabstop=2 : */
