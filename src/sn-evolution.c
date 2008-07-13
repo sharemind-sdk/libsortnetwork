@@ -61,6 +61,8 @@ static int stats_interval = 0;
 static int max_population_size = 128;
 static population_t *population;
 
+static int evolution_threads_num = 4;
+
 static int do_loop = 0;
 
 static void sigint_handler (int signal)
@@ -76,6 +78,8 @@ static void exit_usage (const char *name)
       "  -i <file>     Initial input file (REQUIRED)\n"
       "  -o <file>     Write the current best solution to <file>\n"
       "  -p <num>      Size of the population (default: 128)\n"
+      "  -P <peer>     Send individuals to <peer> (may be repeated)\n"
+      "  -t <num>      Number of threads (default: 4)\n"
       "\n",
       name);
   exit (1);
@@ -85,7 +89,7 @@ int read_options (int argc, char **argv)
 {
   int option;
 
-  while ((option = getopt (argc, argv, "i:o:p:P:s:h")) != -1)
+  while ((option = getopt (argc, argv, "i:o:p:P:s:t:h")) != -1)
   {
     switch (option)
     {
@@ -109,7 +113,23 @@ int read_options (int argc, char **argv)
       {
 	int tmp = atoi (optarg);
 	if (tmp > 0)
+	{
 	  max_population_size = tmp;
+	  population_set_size (population, (size_t) max_population_size);
+	}
+	break;
+      }
+
+      case 'P':
+      {
+	int status;
+
+	status = population_add_peer (population, optarg, /* port = */ NULL);
+	if (status != 0)
+	{
+	  fprintf (stderr, "population_add_peer failed with status %i.\n",
+	      status);
+	}
 	break;
       }
 
@@ -118,6 +138,14 @@ int read_options (int argc, char **argv)
 	int tmp = atoi (optarg);
 	if (tmp > 0)
 	  stats_interval = tmp;
+	break;
+      }
+
+      case 't':
+      {
+	int tmp = atoi (optarg);
+	if (tmp >= 1)
+	  evolution_threads_num = tmp;
 	break;
       }
 
@@ -299,6 +327,19 @@ int main (int argc, char **argv)
   struct sigaction sigint_action;
   struct sigaction sigterm_action;
 
+  population = population_create ((pi_rate_f) rate_network,
+      (pi_copy_f) sn_network_clone,
+      (pi_free_f) sn_network_destroy);
+  if (population == NULL)
+  {
+    fprintf (stderr, "population_create failed.\n");
+    return (1);
+  }
+
+  population_set_serialization (population,
+      (pi_serialize_f) sn_network_serialize,
+      (pi_unserialize_f) sn_network_unserialize);
+
   read_options (argc, argv);
   if (initial_input_file == NULL)
     exit_usage (argv[0]);
@@ -311,14 +352,7 @@ int main (int argc, char **argv)
   sigterm_action.sa_handler = sigint_handler;
   sigaction (SIGTERM, &sigterm_action, NULL);
 
-  population = population_create ((pi_rate_f) rate_network,
-      (pi_copy_f) sn_network_clone,
-      (pi_free_f) sn_network_destroy);
-  if (population == NULL)
-  {
-    fprintf (stderr, "population_create failed.\n");
-    return (1);
-  }
+  population_start_listen_thread (population, NULL, NULL);
 
   {
     sn_network_t *n;
@@ -343,7 +377,7 @@ int main (int argc, char **argv)
       "=======================\n",
       initial_input_file, inputs_num, max_population_size);
 
-  evolution_start (3);
+  evolution_start (evolution_threads_num);
 
   printf ("Exiting after %llu iterations.\n",
       (unsigned long long) iteration_counter);
@@ -356,8 +390,7 @@ int main (int argc, char **argv)
     {
       if (best_output_file != NULL)
 	sn_network_write_file (n, best_output_file);
-      else
-	sn_network_show (n);
+      sn_network_show (n);
       sn_network_destroy (n);
     }
   }
