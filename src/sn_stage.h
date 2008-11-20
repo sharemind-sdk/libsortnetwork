@@ -56,6 +56,7 @@ int sn_stage_comparator_check_conflict (sn_stage_t *s, const sn_comparator_t *c)
 
 int sn_stage_show (sn_stage_t *s);
 int sn_stage_invert (sn_stage_t *s);
+int sn_stage_shift (sn_stage_t *s, int sw, int inputs_num);
 int sn_stage_swap (sn_stage_t *s, int con0, int con1);
 int sn_stage_cut_at (sn_stage_t *s, int input, enum sn_network_cut_dir_e dir);
 int sn_stage_remove_input (sn_stage_t *s, int input);
