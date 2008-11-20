@@ -26,6 +26,12 @@
 # define _POSIX_C_SOURCE 200112L
 #endif
 
+#if 0
+# define DPRINTF(...) fprintf (stderr, "sn_network: " __VA_ARGS__)
+#else
+# define DPRINTF(...) /**/
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -306,6 +312,56 @@ int sn_network_cut_at (sn_network_t *n, int input, /* {{{ */
   return (0);
 } /* }}} int sn_network_cut_at */
 
+/* sn_network_concatenate
+ *
+ * `Glues' two networks together, resulting in a comparator network with twice
+ * as many inputs but one that doesn't really sort anymore. It produces a
+ * bitonic sequence, though, that can be used by the mergers below. */
+static sn_network_t *sn_network_concatenate (sn_network_t *n0, /* {{{ */
+    sn_network_t *n1)
+{
+  sn_network_t *n;
+  int stages_num;
+  int i;
+  int j;
+
+  stages_num = (n0->stages_num > n1->stages_num)
+    ? n0->stages_num
+    : n1->stages_num;
+
+  n = sn_network_create (n0->inputs_num + n1->inputs_num);
+  if (n == NULL)
+    return (NULL);
+
+  for (i = 0; i < stages_num; i++)
+  {
+    sn_stage_t *s = sn_stage_create (i);
+
+    if (i < n0->stages_num)
+      for (j = 0; j < SN_STAGE_COMP_NUM (n0->stages[i]); j++)
+      {
+	sn_comparator_t *c = SN_STAGE_COMP_GET (n0->stages[i], j);
+	sn_stage_comparator_add (s, c);
+      }
+
+    if (i < n1->stages_num)
+      for (j = 0; j < SN_STAGE_COMP_NUM (n1->stages[i]); j++)
+      {
+	sn_comparator_t *c_orig = SN_STAGE_COMP_GET (n1->stages[i], j);
+	sn_comparator_t  c_copy;
+
+	SN_COMP_MIN(&c_copy) = SN_COMP_MIN(c_orig) + n0->inputs_num;
+	SN_COMP_MAX(&c_copy) = SN_COMP_MAX(c_orig) + n0->inputs_num;
+
+	sn_stage_comparator_add (s, &c_copy);
+      }
+
+    sn_network_stage_add (n, s);
+  }
+
+  return (n);
+} /* }}} sn_network_t *sn_network_concatenate */
+
 static int sn_network_add_bitonic_merger_recursive (sn_network_t *n, /* {{{ */
     int low, int num)
 {
@@ -342,6 +398,7 @@ static int sn_network_add_bitonic_merger_recursive (sn_network_t *n, /* {{{ */
 
 static int sn_network_add_bitonic_merger (sn_network_t *n) /* {{{ */
 {
+#if 0
   sn_stage_t *s;
   int m;
   int i;
@@ -366,6 +423,9 @@ static int sn_network_add_bitonic_merger (sn_network_t *n) /* {{{ */
 
   sn_network_add_bitonic_merger_recursive (n, 0, m);
   sn_network_add_bitonic_merger_recursive (n, m, m);
+#else
+  sn_network_add_bitonic_merger_recursive (n, 0, SN_NETWORK_INPUT_NUM (n));
+#endif
 
   return (0);
 } /* }}} int sn_network_add_bitonic_merger */
@@ -468,54 +528,53 @@ static int sn_network_add_odd_even_merger (sn_network_t *n) /* {{{ */
   return (status);
 } /* }}} int sn_network_add_bitonic_merger */
 
+static sn_network_t *sn_network_combine_bitonic (sn_network_t *n0, /* {{{ */
+    sn_network_t *n1)
+{
+  sn_network_t *n;
+  sn_network_t *n1_clone;
+  int shift;
+
+  n1_clone = sn_network_clone (n1);
+  if (n1_clone == NULL)
+    return (NULL);
+
+  sn_network_invert (n1_clone);
+
+  n = sn_network_concatenate (n0, n1_clone);
+  if (n == NULL)
+    return (NULL);
+
+  sn_network_destroy (n1_clone);
+
+  shift = sn_bounded_random (0, SN_NETWORK_INPUT_NUM (n) - 1);
+  if (shift > 0)
+  {
+    DPRINTF ("sn_network_combine_bitonic: Shifting by %i.\n", shift);
+    sn_network_shift (n, shift);
+  }
+
+  sn_network_add_bitonic_merger (n);
+
+  return (n);
+} /* }}} sn_network_t *sn_network_combine_bitonic */
+
 sn_network_t *sn_network_combine (sn_network_t *n0, /* {{{ */
     sn_network_t *n1)
 {
   sn_network_t *n;
-  int stages_num;
-  int i;
-  int j;
 
-  stages_num = (n0->stages_num > n1->stages_num)
-    ? n0->stages_num
-    : n1->stages_num;
-
-  n = sn_network_create (n0->inputs_num + n1->inputs_num);
-  if (n == NULL)
-    return (NULL);
-
-  for (i = 0; i < stages_num; i++)
+  if (sn_bounded_random (0, 2) < 2)
   {
-    sn_stage_t *s = sn_stage_create (i);
-
-    if (i < n0->stages_num)
-      for (j = 0; j < SN_STAGE_COMP_NUM (n0->stages[i]); j++)
-      {
-	sn_comparator_t *c = SN_STAGE_COMP_GET (n0->stages[i], j);
-	sn_stage_comparator_add (s, c);
-      }
-
-    if (i < n1->stages_num)
-      for (j = 0; j < SN_STAGE_COMP_NUM (n1->stages[i]); j++)
-      {
-	sn_comparator_t *c_orig = SN_STAGE_COMP_GET (n1->stages[i], j);
-	sn_comparator_t  c_copy;
-
-	SN_COMP_MIN(&c_copy) = SN_COMP_MIN(c_orig) + n0->inputs_num;
-	SN_COMP_MAX(&c_copy) = SN_COMP_MAX(c_orig) + n0->inputs_num;
-
-	sn_stage_comparator_add (s, &c_copy);
-      }
-
-    sn_network_stage_add (n, s);
-  }
-
-  if (sn_bounded_random (0, 1) == 0)
-  {
-    sn_network_add_bitonic_merger (n);
+    DPRINTF ("sn_network_combine: Using the bitonic merger.\n");
+    n = sn_network_combine_bitonic (n0, n1);
   }
   else
   {
+    DPRINTF ("sn_network_combine: Using the odd-even merger.\n");
+    n = sn_network_concatenate (n0, n1);
+    if (n == NULL)
+      return (NULL);
     sn_network_add_odd_even_merger (n);
   }
 
