@@ -36,7 +36,7 @@
 #include "sn_network.h"
 #include "sn_random.h"
 
-sn_network_t *sn_network_create (int inputs_num)
+sn_network_t *sn_network_create (int inputs_num) /* {{{ */
 {
   sn_network_t *n;
 
@@ -48,9 +48,9 @@ sn_network_t *sn_network_create (int inputs_num)
   n->inputs_num = inputs_num;
 
   return (n);
-} /* sn_network_t *sn_network_create */
+} /* }}} sn_network_t *sn_network_create */
 
-void sn_network_destroy (sn_network_t *n)
+void sn_network_destroy (sn_network_t *n) /* {{{ */
 {
   if (n == NULL)
     return;
@@ -68,9 +68,9 @@ void sn_network_destroy (sn_network_t *n)
   }
 
   free (n);
-} /* void sn_network_destroy */
+} /* }}} void sn_network_destroy */
 
-int sn_network_stage_add (sn_network_t *n, sn_stage_t *s)
+int sn_network_stage_add (sn_network_t *n, sn_stage_t *s) /* {{{ */
 {
   sn_stage_t **temp;
 
@@ -85,9 +85,9 @@ int sn_network_stage_add (sn_network_t *n, sn_stage_t *s)
   n->stages_num++;
 
   return (0);
-} /* int sn_network_stage_add */
+} /* }}} int sn_network_stage_add */
 
-int sn_network_stage_remove (sn_network_t *n, int s_num)
+int sn_network_stage_remove (sn_network_t *n, int s_num) /* {{{ */
 {
   int nmemb = n->stages_num - (s_num + 1);
   sn_stage_t **temp;
@@ -121,9 +121,9 @@ int sn_network_stage_remove (sn_network_t *n, int s_num)
   }
 
   return (0);
-} /* int sn_network_stage_remove */
+} /* }}} int sn_network_stage_remove */
 
-sn_network_t *sn_network_clone (const sn_network_t *n)
+sn_network_t *sn_network_clone (const sn_network_t *n) /* {{{ */
 {
   sn_network_t *n_copy;
   int i;
@@ -153,9 +153,9 @@ sn_network_t *sn_network_clone (const sn_network_t *n)
   }
 
   return (n_copy);
-} /* sn_network_t *sn_network_clone */
+} /* }}} sn_network_t *sn_network_clone */
 
-int sn_network_show (sn_network_t *n)
+int sn_network_show (sn_network_t *n) /* {{{ */
 {
   int i;
 
@@ -163,9 +163,9 @@ int sn_network_show (sn_network_t *n)
     sn_stage_show (n->stages[i]);
 
   return (0);
-} /* int sn_network_show */
+} /* }}} int sn_network_show */
 
-int sn_network_invert (sn_network_t *n)
+int sn_network_invert (sn_network_t *n) /* {{{ */
 {
   int i;
 
@@ -173,9 +173,9 @@ int sn_network_invert (sn_network_t *n)
     sn_stage_invert (n->stages[i]);
 
   return (0);
-} /* int sn_network_invert */
+} /* }}} int sn_network_invert */
 
-int sn_network_compress (sn_network_t *n)
+int sn_network_compress (sn_network_t *n) /* {{{ */
 {
   int i;
   int j;
@@ -223,9 +223,9 @@ int sn_network_compress (sn_network_t *n)
     sn_network_stage_remove (n, n->stages_num - 1);
 
   return (0);
-} /* int sn_network_compress */
+} /* }}} int sn_network_compress */
 
-int sn_network_normalize (sn_network_t *n)
+int sn_network_normalize (sn_network_t *n) /* {{{ */
 {
   int i;
 
@@ -258,9 +258,10 @@ int sn_network_normalize (sn_network_t *n)
   } /* for (i = n->stages_num - 1 .. 0) */
 
   return (0);
-} /* int sn_network_normalize */
+} /* }}} int sn_network_normalize */
 
-int sn_network_cut_at (sn_network_t *n, int input, enum sn_network_cut_dir_e dir)
+int sn_network_cut_at (sn_network_t *n, int input, /* {{{ */
+    enum sn_network_cut_dir_e dir)
 {
   int i;
   int position = input;
@@ -293,9 +294,9 @@ int sn_network_cut_at (sn_network_t *n, int input, enum sn_network_cut_dir_e dir
   n->inputs_num--;
 
   return (0);
-} /* int sn_network_cut_at */
+} /* }}} int sn_network_cut_at */
 
-static int sn_network_add_bitonic_merger_recursive (sn_network_t *n,
+static int sn_network_add_bitonic_merger_recursive (sn_network_t *n, /* {{{ */
     int low, int num)
 {
   sn_stage_t *s;
@@ -327,9 +328,9 @@ static int sn_network_add_bitonic_merger_recursive (sn_network_t *n,
   sn_network_add_bitonic_merger_recursive (n, low + m, m);
 
   return (0);
-} /* int sn_network_add_bitonic_merger_recursive */
+} /* }}} int sn_network_add_bitonic_merger_recursive */
 
-static int sn_network_add_bitonic_merger (sn_network_t *n)
+static int sn_network_add_bitonic_merger (sn_network_t *n) /* {{{ */
 {
   sn_stage_t *s;
   int m;
@@ -357,9 +358,9 @@ static int sn_network_add_bitonic_merger (sn_network_t *n)
   sn_network_add_bitonic_merger_recursive (n, m, m);
 
   return (0);
-} /* int sn_network_add_bitonic_merger */
+} /* }}} int sn_network_add_bitonic_merger */
 
-static int sn_network_add_odd_even_merger_recursive (sn_network_t *n,
+static int sn_network_add_odd_even_merger_recursive (sn_network_t *n, /* {{{ */
     int *indizes, int indizes_num)
 {
   if (indizes_num > 2)
@@ -433,9 +434,9 @@ static int sn_network_add_odd_even_merger_recursive (sn_network_t *n,
   }
 
   return (0);
-} /* int sn_network_add_odd_even_merger_recursive */
+} /* }}} int sn_network_add_odd_even_merger_recursive */
 
-static int sn_network_add_odd_even_merger (sn_network_t *n)
+static int sn_network_add_odd_even_merger (sn_network_t *n) /* {{{ */
 {
   int *indizes;
   int indizes_num;
@@ -455,9 +456,10 @@ static int sn_network_add_odd_even_merger (sn_network_t *n)
   
   free (indizes);
   return (status);
-} /* int sn_network_add_bitonic_merger */
+} /* }}} int sn_network_add_bitonic_merger */
 
-sn_network_t *sn_network_combine (sn_network_t *n0, sn_network_t *n1)
+sn_network_t *sn_network_combine (sn_network_t *n0, /* {{{ */
+    sn_network_t *n1)
 {
   sn_network_t *n;
   int stages_num;
@@ -510,9 +512,9 @@ sn_network_t *sn_network_combine (sn_network_t *n0, sn_network_t *n1)
   sn_network_compress (n);
 
   return (n);
-} /* sn_network_t *sn_network_combine */
+} /* }}} sn_network_t *sn_network_combine */
 
-int sn_network_sort (sn_network_t *n, int *values)
+int sn_network_sort (sn_network_t *n, int *values) /* {{{ */
 {
   int status;
   int i;
@@ -526,9 +528,9 @@ int sn_network_sort (sn_network_t *n, int *values)
   }
 
   return (status);
-} /* int sn_network_sort */
+} /* }}} int sn_network_sort */
 
-int sn_network_brute_force_check (sn_network_t *n)
+int sn_network_brute_force_check (sn_network_t *n) /* {{{ */
 {
   int test_pattern[n->inputs_num];
   int values[n->inputs_num];
@@ -580,9 +582,9 @@ int sn_network_brute_force_check (sn_network_t *n)
 
   /* All tests successfull */
   return (0);
-} /* int sn_network_brute_force_check */
+} /* }}} int sn_network_brute_force_check */
 
-sn_network_t *sn_network_read (FILE *fh)
+sn_network_t *sn_network_read (FILE *fh) /* {{{ */
 {
   sn_network_t *n;
   char buffer[64];
@@ -644,9 +646,9 @@ sn_network_t *sn_network_read (FILE *fh)
   }
 
   return (n);
-} /* sn_network_t *sn_network_read */
+} /* }}} sn_network_t *sn_network_read */
 
-sn_network_t *sn_network_read_file (const char *file)
+sn_network_t *sn_network_read_file (const char *file) /* {{{ */
 {
   sn_network_t *n;
   FILE *fh;
@@ -660,9 +662,9 @@ sn_network_t *sn_network_read_file (const char *file)
   fclose (fh);
 
   return (n);
-} /* sn_network_t *sn_network_read_file */
+} /* }}} sn_network_t *sn_network_read_file */
 
-int sn_network_write (sn_network_t *n, FILE *fh)
+int sn_network_write (sn_network_t *n, FILE *fh) /* {{{ */
 {
   int i;
 
@@ -673,9 +675,9 @@ int sn_network_write (sn_network_t *n, FILE *fh)
     sn_stage_write (n->stages[i], fh);
 
   return (0);
-} /* int sn_network_write */
+} /* }}} int sn_network_write */
 
-int sn_network_write_file (sn_network_t *n, const char *file)
+int sn_network_write_file (sn_network_t *n, const char *file) /* {{{ */
 {
   int status;
   FILE *fh;
@@ -689,9 +691,9 @@ int sn_network_write_file (sn_network_t *n, const char *file)
   fclose (fh);
 
   return (status);
-} /* int sn_network_write_file */
+} /* }}} int sn_network_write_file */
 
-int sn_network_serialize (sn_network_t *n, char **ret_buffer,
+int sn_network_serialize (sn_network_t *n, char **ret_buffer, /* {{{ */
     size_t *ret_buffer_size)
 {
   char *buffer;
@@ -721,9 +723,10 @@ int sn_network_serialize (sn_network_t *n, char **ret_buffer,
   *ret_buffer = buffer;
   *ret_buffer_size = buffer_size;
   return (0);
-} /* int sn_network_serialize */
+} /* }}} int sn_network_serialize */
 
-sn_network_t *sn_network_unserialize (char *buffer, size_t buffer_size)
+sn_network_t *sn_network_unserialize (char *buffer, /* {{{ */
+    size_t buffer_size)
 {
   sn_network_t *n;
   int opt_inputs = 0;
@@ -800,6 +803,6 @@ sn_network_t *sn_network_unserialize (char *buffer, size_t buffer_size)
   }
 
   return (n);
-} /* sn_network_t *sn_network_unserialize */
+} /* }}} sn_network_t *sn_network_unserialize */
 
-/* vim: set shiftwidth=2 softtabstop=2 : */
+/* vim: set sw=2 sts=2 et fdm=marker : */
