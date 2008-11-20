@@ -51,6 +51,7 @@ int sn_network_brute_force_check (sn_network_t *n);
 
 int sn_network_show (sn_network_t *n);
 int sn_network_invert (sn_network_t *n);
+int sn_network_shift (sn_network_t *n, int s);
 int sn_network_compress (sn_network_t *n);
 int sn_network_normalize (sn_network_t *n);
 

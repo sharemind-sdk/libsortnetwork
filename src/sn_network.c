@@ -175,6 +175,16 @@ int sn_network_invert (sn_network_t *n) /* {{{ */
   return (0);
 } /* }}} int sn_network_invert */
 
+int sn_network_shift (sn_network_t *n, int sw) /* {{{ */
+{
+  int i;
+
+  for (i = 0; i < n->stages_num; i++)
+    sn_stage_shift (n->stages[i], sw, SN_NETWORK_INPUT_NUM (n));
+
+  return (0);
+} /* }}} int sn_network_shift */
+
 int sn_network_compress (sn_network_t *n) /* {{{ */
 {
   int i;
