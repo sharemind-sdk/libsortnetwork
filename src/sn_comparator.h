@@ -37,6 +37,7 @@ typedef struct sn_comparator_s sn_comparator_t;
 sn_comparator_t *sn_comparator_create (int min, int max);
 void sn_comparator_destroy (sn_comparator_t *c);
 void sn_comparator_invert (sn_comparator_t *c);
+void sn_comparator_shift (sn_comparator_t *c, int sw, int inputs_num);
 void sn_comparator_swap (sn_comparator_t *c, int con0, int con1);
 
 int sn_comparator_compare (const void *, const void *);

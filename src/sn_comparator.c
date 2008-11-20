@@ -61,6 +61,12 @@ void sn_comparator_invert (sn_comparator_t *c)
   c->max = max;
 } /* void sn_comparator_invert */
 
+void sn_comparator_shift (sn_comparator_t *c, int sw, int inputs_num)
+{
+  c->min = (c->min + sw) % inputs_num;
+  c->max = (c->max + sw) % inputs_num;
+} /* void sn_comparator_shift */
+
 void sn_comparator_swap (sn_comparator_t *c, int con0, int con1)
 {
   if (c->min == con0)
