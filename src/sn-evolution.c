@@ -298,17 +298,32 @@ static int evolution_start (int threads_num)
     if (status == 0)
     {
       sn_network_t *n;
+      int stages_num;
+      int comparators_num;
       int rating;
+      int iter;
 
-      i = iteration_counter;
+      iter = iteration_counter;
 
       n = population_get_fittest (population);
+
       rating = rate_network (n);
+
+      stages_num = SN_NETWORK_STAGE_NUM (n);
+      comparators_num = 0;
+      for (i = 0; i < stages_num; i++)
+      {
+	sn_stage_t *s;
+
+	s = SN_NETWORK_STAGE_GET (n, i);
+	comparators_num += SN_STAGE_COMP_NUM (s);
+      }
+
       sn_network_destroy (n);
 
-      printf ("After approximately %i iterations: "
-	  "Currently best rating: %i\n",
-	  i, rating);
+      printf ("Best after approximately %i iterations: "
+	  "%i comparators in %i stages. Rating: %i.\n",
+	  iter, comparators_num, stages_num, rating);
     }
   }
 
