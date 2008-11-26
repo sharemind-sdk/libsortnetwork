@@ -248,7 +248,7 @@ static int create_offspring (void)
 
   assert (SN_NETWORK_INPUT_NUM (n) == inputs_num);
 
-  if (sn_bounded_random (0, 100) <= 1)
+  if ((SN_NETWORK_INPUT_NUM (n) <= 16) && (sn_bounded_random (0, 100) <= 1))
     mutate_network (n);
 
   population_insert (population, n);
