@@ -39,6 +39,8 @@
 #include <assert.h>
 #include <limits.h>
 
+#include <math.h>
+
 #include <pthread.h>
 
 #include <population.h>
@@ -252,10 +254,23 @@ static sn_comparator_t get_random_comparator (void) /* {{{ */
 
 static int mutate_network (sn_comparator_t *comparators, int comparators_num)
 {
+  static int old_comparators_num = -1;
+  static int cut_off = 1000000;
+
   int i;
 
+  if (old_comparators_num != comparators_num)
+  {
+    double p;
+
+    p = powl (0.5, (1.0 / ((double) comparators_num)));
+    cut_off = (int) (((double) 1000000) * p);
+
+    old_comparators_num = comparators_num;
+  }
+
   for (i = 0; i < comparators_num; i++)
-    if (sn_bounded_random (0, 1000000) >= 972655)
+    if (sn_bounded_random (0, 1000000) >= cut_off)
       comparators[i] = get_random_comparator ();
 
   return (0);

@@ -3,12 +3,12 @@ CFLAGS = -Wall -Werror -std=c99 -O3 -pthread
 #CFLAGS = -Wall -Werror -std=c99 -O0 -g -pthread
 
 APPLICATIONS = sn-apply sn-batcher sn-check-bf sn-cut sn-cut-loop \
-	       sn-evolution sn-find-9 sn-merge \
+	       sn-evolution sn-evolution2 sn-find-9 sn-merge \
 	       sn-normalize sn-oddevenmerge sn-show sn-tex
 
-POPULATION_CFLAGS = -I/tmp/sifnfors/libpopulation/include
+POPULATION_CFLAGS = -I/tmp/libpopulation/include
 
-POPULATION_LDFLAGS = -L/tmp/sifnfors/libpopulation/lib -Wl,--rpath -Wl,/tmp/sifnfors/libpopulation/lib -lpopulation
+POPULATION_LDFLAGS = -L/tmp/libpopulation/lib -Wl,--rpath -Wl,/tmp/libpopulation/lib -lpopulation
 
 all: $(APPLICATIONS)
 
@@ -39,7 +39,7 @@ sn-evolution: LDFLAGS += $(POPULATION_LDFLAGS)
 sn-evolution: sn-evolution.c sn_network.o sn_stage.o sn_comparator.o sn_population.o sn_random.o
 
 sn-evolution2: CFLAGS += $(POPULATION_CFLAGS)
-sn-evolution2: LDFLAGS += $(POPULATION_LDFLAGS)
+sn-evolution2: LDFLAGS += $(POPULATION_LDFLAGS) -lm
 sn-evolution2: sn-evolution2.c sn_network.o sn_stage.o sn_comparator.o sn_population.o sn_random.o
 
 sn-find-9: sn-find-9.c sn_network.o sn_stage.o sn_comparator.o sn_random.o
