@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -Werror -std=c99 -O3 -pthread
 #CFLAGS = -Wall -Werror -std=c99 -O0 -g -pthread
 
-APPLICATIONS = sn-apply sn-batcher sn-check-bf sn-cut sn-cut-loop \
+APPLICATIONS = sn-apply sn-batcher sn-check-bf sn-cut \
 	       sn-evolution sn-evolution2 sn-find-9 sn-merge \
 	       sn-normalize sn-oddevenmerge sn-show sn-tex
 
@@ -15,6 +15,8 @@ all: $(APPLICATIONS)
 clean:
 	rm -f *.o
 	rm -f $(APPLICATIONS)
+
+sn-batcher: sn-batcher.c sn_network.o sn_stage.o sn_comparator.o sn_random.o
 
 sn_comparator.o: sn_comparator.c sn_comparator.h
 
