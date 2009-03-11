@@ -48,6 +48,10 @@ sn_network_t *sn_network_create_odd_even_mergesort (int inputs_num);
 int sn_network_stage_add (sn_network_t *n, sn_stage_t *s);
 int sn_network_stage_remove (sn_network_t *n, int s_num);
 
+int sn_network_comparator_add (sn_network_t *n, const sn_comparator_t *c);
+
+int sn_network_get_comparator_num (const sn_network_t *n);
+
 int sn_network_sort (sn_network_t *n, int *values);
 int sn_network_brute_force_check (sn_network_t *n);
 

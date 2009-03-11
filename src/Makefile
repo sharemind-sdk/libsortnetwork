@@ -38,6 +38,12 @@ sn-evolution: CFLAGS += $(POPULATION_CFLAGS)
 sn-evolution: LDFLAGS += $(POPULATION_LDFLAGS)
 sn-evolution: sn-evolution.c sn_network.o sn_stage.o sn_comparator.o sn_population.o sn_random.o
 
+sn-evolution2: CFLAGS += $(POPULATION_CFLAGS)
+sn-evolution2: LDFLAGS += $(POPULATION_LDFLAGS)
+sn-evolution2: sn-evolution2.c sn_network.o sn_stage.o sn_comparator.o sn_population.o sn_random.o
+
+sn-find-9: sn-find-9.c sn_network.o sn_stage.o sn_comparator.o sn_random.o
+
 sn-merge: sn-merge.c sn_network.o sn_stage.o sn_comparator.o sn_random.o
 
 sn-normalize: sn-normalize.c sn_network.o sn_stage.o sn_comparator.o sn_random.o

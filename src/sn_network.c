@@ -219,6 +219,47 @@ sn_network_t *sn_network_clone (const sn_network_t *n) /* {{{ */
   return (n_copy);
 } /* }}} sn_network_t *sn_network_clone */
 
+int sn_network_comparator_add (sn_network_t *n, /* {{{ */
+    const sn_comparator_t *c)
+{
+  sn_stage_t *s;
+
+  if ((n == NULL) || (c == NULL))
+    return (-1);
+
+  if (n->stages_num > 0)
+  {
+    s = n->stages[n->stages_num - 1];
+    
+    if (sn_stage_comparator_check_conflict (s, c) == 0)
+    {
+      sn_stage_comparator_add (s, c);
+      return (0);
+    }
+  }
+
+  s = sn_stage_create (n->stages_num);
+  sn_stage_comparator_add (s, c);
+  sn_network_stage_add (n, s);
+
+  return (0);
+} /* }}} int sn_network_comparator_add */
+
+int sn_network_get_comparator_num (const sn_network_t *n) /* {{{ */
+{
+  int num;
+  int i;
+
+  if (n == NULL)
+    return (-1);
+
+  num = 0;
+  for (i = 0; i < n->stages_num; i++)
+    num += n->stages[i]->comparators_num;
+
+  return (num);
+} /* }}} int sn_network_get_comparator_num */
+
 int sn_network_show (sn_network_t *n) /* {{{ */
 {
   int i;
