@@ -303,7 +303,7 @@ int sn_network_normalize (sn_network_t *n) /* {{{ */
 {
   int i;
 
-  for (i = n->stages_num - 1; i >= 0; i--)
+  for (i = 0; i < n->stages_num; i++)
   {
     sn_stage_t *s;
     int j;
@@ -325,8 +325,11 @@ int sn_network_normalize (sn_network_t *n) /* {{{ */
       {
 	int k;
 
-	for (k = i; k >= 0; k--)
+	for (k = i; k < n->stages_num; k++) 
 	  sn_stage_swap (n->stages[k], min, max);
+
+        i = -1;
+        break; /* for (j) */
       }
     } /* for (j = 0 .. #comparators) */
   } /* for (i = n->stages_num - 1 .. 0) */
