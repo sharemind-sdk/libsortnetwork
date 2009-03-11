@@ -4,7 +4,7 @@ CFLAGS = -Wall -Werror -std=c99 -O3 -pthread
 
 APPLICATIONS = sn-apply sn-batcher sn-check-bf sn-cut \
 	       sn-evolution sn-evolution2 sn-find-9 sn-merge \
-	       sn-normalize sn-oddevenmerge sn-show sn-tex
+	       sn-normalize sn-oddevenmerge sn-shmoo sn-show sn-tex
 
 POPULATION_CFLAGS = -I/tmp/libpopulation/include
 
@@ -51,6 +51,8 @@ sn-merge: sn-merge.c sn_network.o sn_stage.o sn_comparator.o sn_random.o
 sn-normalize: sn-normalize.c sn_network.o sn_stage.o sn_comparator.o sn_random.o
 
 sn-oddevenmerge: sn-oddevenmerge.c sn_network.o sn_stage.o sn_comparator.o sn_random.o
+
+sn-shmoo: sn-shmoo.c sn_network.o sn_stage.o sn_comparator.o sn_random.o
 
 sn-show: sn-show.c sn_network.o sn_stage.o sn_comparator.o sn_random.o
 
