@@ -1,6 +1,6 @@
 /**
- * collectd - src/sn-merge.c
- * Copyright (C) 2008  Florian octo Forster
+ * collectd - src/sn-oddevenmerge.c
+ * Copyright (C) 2008,2009  Florian octo Forster
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -31,38 +31,30 @@
 
 #include "sn_network.h"
 
-void exit_usage (const char *name)
-{
-  printf ("%s <file0> <file1>\n", name);
-  exit (1);
-} /* void exit_usage */
-
 int main (int argc, char **argv)
 {
-  sn_network_t *n0;
-  sn_network_t *n1;
   sn_network_t *n;
+  size_t inputs_num;
 
-  if (argc != 3)
-    exit_usage (argv[0]);
-
-  n0 = sn_network_read_file (argv[1]);
-  if (n0 == NULL)
+  if (argc != 2)
   {
-    printf ("n0 == NULL\n");
+    printf ("Usage: %s <num inputs>\n", argv[0]);
+    return (0);
+  }
+
+  inputs_num = (size_t) atoi (argv[1]);
+  if (inputs_num < 2)
+  {
+    fprintf (stderr, "Invalid number of inputs: %zu\n", inputs_num);
     return (1);
   }
 
-  n1 = sn_network_read_file (argv[2]);
-  if (n1 == NULL)
+  n = sn_network_create_odd_even_mergesort (inputs_num);
+  if (n == NULL)
   {
-    printf ("n1 == NULL\n");
+    printf ("n == NULL!\n");
     return (1);
   }
-
-  n = sn_network_combine (n0, n1, /* is power of two = */ 0);
-  sn_network_destroy (n0);
-  sn_network_destroy (n1);
 
   sn_network_write (n, stdout);
 

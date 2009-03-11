@@ -1,6 +1,6 @@
 /**
  * collectd - src/sn-evolution.c
- * Copyright (C) 2008  Florian octo Forster
+ * Copyright (C) 2008,2009  Florian octo Forster
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -52,6 +52,7 @@ char *strdup (const char *s);
 
 static uint64_t iteration_counter = 0;
 static int inputs_num = 16;
+static int inputs_num_is_power_of_two = 1;
 
 static char *initial_input_file = NULL;
 static char *best_output_file = NULL;
@@ -224,7 +225,7 @@ static int create_offspring (void)
   assert (p1 != NULL);
 
   /* combine the two parents */
-  n = sn_network_combine (p0, p1);
+  n = sn_network_combine (p0, p1, inputs_num_is_power_of_two);
 
   sn_network_destroy (p0);
   sn_network_destroy (p1);
@@ -371,6 +372,7 @@ int main (int argc, char **argv)
 
   {
     sn_network_t *n;
+    int tmp;
 
     n = sn_network_read_file (initial_input_file);
     if (n == NULL)
@@ -380,6 +382,23 @@ int main (int argc, char **argv)
     }
 
     inputs_num = SN_NETWORK_INPUT_NUM(n);
+
+    /* Determine if `inputs_num' is a power of two. If so, more merge
+     * algorithms can be used. */
+    tmp = inputs_num;
+    inputs_num_is_power_of_two = 1;
+    while (tmp > 0)
+    {
+      if ((tmp % 2) != 0)
+      {
+	if (tmp == 1)
+	  inputs_num_is_power_of_two = 1;
+	else
+	  inputs_num_is_power_of_two = 0;
+	break;
+      }
+      tmp = tmp >> 1;
+    }
 
     population_insert (population, n);
     sn_network_destroy (n);

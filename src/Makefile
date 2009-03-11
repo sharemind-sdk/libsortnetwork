@@ -2,8 +2,9 @@ CC = gcc
 CFLAGS = -Wall -Werror -std=c99 -O3 -pthread
 #CFLAGS = -Wall -Werror -std=c99 -O0 -g -pthread
 
-APPLICATIONS = sn-apply sn-check-bf sn-cut sn-evolution sn-merge \
-	       sn-normalize sn-show sn-tex
+APPLICATIONS = sn-apply sn-batcher sn-check-bf sn-cut sn-cut-loop \
+	       sn-evolution sn-find-9 sn-merge \
+	       sn-normalize sn-oddevenmerge sn-show sn-tex
 
 POPULATION_CFLAGS = -I/tmp/sifnfors/libpopulation/include
 
@@ -40,6 +41,8 @@ sn-evolution: sn-evolution.c sn_network.o sn_stage.o sn_comparator.o sn_populati
 sn-merge: sn-merge.c sn_network.o sn_stage.o sn_comparator.o sn_random.o
 
 sn-normalize: sn-normalize.c sn_network.o sn_stage.o sn_comparator.o sn_random.o
+
+sn-oddevenmerge: sn-oddevenmerge.c sn_network.o sn_stage.o sn_comparator.o sn_random.o
 
 sn-show: sn-show.c sn_network.o sn_stage.o sn_comparator.o sn_random.o
 

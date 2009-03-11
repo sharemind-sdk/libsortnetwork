@@ -1,6 +1,6 @@
 /**
  * collectd - src/sn_network.h
- * Copyright (C) 2008  Florian octo Forster
+ * Copyright (C) 2008,2009  Florian octo Forster
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -43,6 +43,8 @@ sn_network_t *sn_network_create (int inputs_num);
 sn_network_t *sn_network_clone (const sn_network_t *n);
 void sn_network_destroy (sn_network_t *n);
 
+sn_network_t *sn_network_create_odd_even_mergesort (int inputs_num);
+
 int sn_network_stage_add (sn_network_t *n, sn_stage_t *s);
 int sn_network_stage_remove (sn_network_t *n, int s_num);
 
@@ -56,7 +58,10 @@ int sn_network_compress (sn_network_t *n);
 int sn_network_normalize (sn_network_t *n);
 
 int sn_network_cut_at (sn_network_t *n, int input, enum sn_network_cut_dir_e dir);
-sn_network_t *sn_network_combine (sn_network_t *n0, sn_network_t *n1);
+sn_network_t *sn_network_combine (sn_network_t *n0, sn_network_t *n1,
+    int is_power_of_two);
+sn_network_t *sn_network_combine_bitonic (sn_network_t *n0, sn_network_t *n1);
+sn_network_t *sn_network_combine_odd_even_merge (sn_network_t *n0, sn_network_t *n1);
 
 sn_network_t *sn_network_read (FILE *fh);
 sn_network_t *sn_network_read_file (const char *file);
