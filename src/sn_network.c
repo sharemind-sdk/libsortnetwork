@@ -164,7 +164,7 @@ int sn_network_stage_remove (sn_network_t *n, int s_num) /* {{{ */
   if (nmemb > 0)
   {
     memmove (n->stages + s_num, n->stages + (s_num + 1),
-	nmemb * sizeof (sn_stage_t *));
+        nmemb * sizeof (sn_stage_t *));
     n->stages[n->stages_num - 1] = NULL;
   }
   n->stages_num--;
@@ -178,7 +178,7 @@ int sn_network_stage_remove (sn_network_t *n, int s_num) /* {{{ */
   else
   {
     temp = (sn_stage_t **) realloc (n->stages,
-	n->stages_num * sizeof (sn_stage_t *));
+        n->stages_num * sizeof (sn_stage_t *));
     if (temp == NULL)
       return (-1);
     n->stages = temp;
@@ -258,9 +258,9 @@ int sn_network_compress (sn_network_t *n) /* {{{ */
   for (i = 1; i < n->stages_num; i++)
   {
     sn_stage_t *s;
-    
+
     s = n->stages[i];
-    
+
     for (j = 0; j < SN_STAGE_COMP_NUM (s); j++)
     {
       sn_comparator_t *c = SN_STAGE_COMP_GET (s, j);
@@ -268,26 +268,26 @@ int sn_network_compress (sn_network_t *n) /* {{{ */
 
       for (k = i - 1; k >= 0; k--)
       {
-	int conflict;
+        int conflict;
 
-	conflict = sn_stage_comparator_check_conflict (n->stages[k], c);
-	if (conflict == 0)
-	{
-	  move_to = k;
-	  continue;
-	}
+        conflict = sn_stage_comparator_check_conflict (n->stages[k], c);
+        if (conflict == 0)
+        {
+          move_to = k;
+          continue;
+        }
 
-	if (conflict == 2)
-	  move_to = -1;
-	break;
+        if (conflict == 2)
+          move_to = -1;
+        break;
       }
 
       if (move_to < i)
       {
-	if (move_to >= 0)
-	  sn_stage_comparator_add (n->stages[move_to], c);
-	sn_stage_comparator_remove (s, j);
-	j--;
+        if (move_to >= 0)
+          sn_stage_comparator_add (n->stages[move_to], c);
+        sn_stage_comparator_remove (s, j);
+        j--;
       }
     }
   }
@@ -323,10 +323,10 @@ int sn_network_normalize (sn_network_t *n) /* {{{ */
 
       if (min > max)
       {
-	int k;
+        int k;
 
-	for (k = i; k < n->stages_num; k++) 
-	  sn_stage_swap (n->stages[k], min, max);
+        for (k = i; k < n->stages_num; k++) 
+          sn_stage_swap (n->stages[k], min, max);
 
         i = -1;
         break; /* for (j) */
@@ -356,7 +356,7 @@ int sn_network_cut_at (sn_network_t *n, int input, /* {{{ */
       int j;
 
       for (j = 0; j < i; j++)
-	sn_stage_swap (n->stages[j], position, new_position);
+        sn_stage_swap (n->stages[j], position, new_position);
     }
 
     position = new_position;
@@ -401,20 +401,20 @@ static sn_network_t *sn_network_concatenate (sn_network_t *n0, /* {{{ */
     if (i < n0->stages_num)
       for (j = 0; j < SN_STAGE_COMP_NUM (n0->stages[i]); j++)
       {
-	sn_comparator_t *c = SN_STAGE_COMP_GET (n0->stages[i], j);
-	sn_stage_comparator_add (s, c);
+        sn_comparator_t *c = SN_STAGE_COMP_GET (n0->stages[i], j);
+        sn_stage_comparator_add (s, c);
       }
 
     if (i < n1->stages_num)
       for (j = 0; j < SN_STAGE_COMP_NUM (n1->stages[i]); j++)
       {
-	sn_comparator_t *c_orig = SN_STAGE_COMP_GET (n1->stages[i], j);
-	sn_comparator_t  c_copy;
+        sn_comparator_t *c_orig = SN_STAGE_COMP_GET (n1->stages[i], j);
+        sn_comparator_t  c_copy;
 
-	SN_COMP_MIN(&c_copy) = SN_COMP_MIN(c_orig) + n0->inputs_num;
-	SN_COMP_MAX(&c_copy) = SN_COMP_MAX(c_orig) + n0->inputs_num;
+        SN_COMP_MIN(&c_copy) = SN_COMP_MIN(c_orig) + n0->inputs_num;
+        SN_COMP_MAX(&c_copy) = SN_COMP_MAX(c_orig) + n0->inputs_num;
 
-	sn_stage_comparator_add (s, &c_copy);
+        sn_stage_comparator_add (s, &c_copy);
       }
 
     sn_network_stage_add (n, s);
@@ -719,7 +719,7 @@ int sn_network_brute_force_check (sn_network_t *n) /* {{{ */
     for (i = 1; i < n->inputs_num; i++)
     {
       if (previous > values[i])
-	return (1);
+        return (1);
       previous = values[i];
     }
 
@@ -729,14 +729,14 @@ int sn_network_brute_force_check (sn_network_t *n) /* {{{ */
     {
       if (test_pattern[i] == 0)
       {
-	test_pattern[i] = 1;
-	overflow = 0;
-	break;
+        test_pattern[i] = 1;
+        overflow = 0;
+        break;
       }
       else
       {
-	test_pattern[i] = 0;
-	overflow = 1;
+        test_pattern[i] = 0;
+        overflow = 1;
       }
     }
 
@@ -763,7 +763,7 @@ sn_network_t *sn_network_read (FILE *fh) /* {{{ */
     int   buffer_len = strlen (buffer);
 
     while ((buffer_len > 0) && ((buffer[buffer_len - 1] == '\n')
-	  || (buffer[buffer_len - 1] == '\r')))
+          || (buffer[buffer_len - 1] == '\r')))
     {
       buffer_len--;
       buffer[buffer_len] = '\0';
