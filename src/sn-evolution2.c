@@ -255,7 +255,7 @@ static int mutate_network (sn_comparator_t *comparators, int comparators_num)
   int i;
 
   for (i = 0; i < comparators_num; i++)
-    if (sn_bounded_random (0, 1000) == 0)
+    if (sn_bounded_random (0, 1000000) >= 972655)
       comparators[i] = get_random_comparator ();
 
   return (0);
@@ -349,8 +349,7 @@ static int create_offspring (void)
 
   }
 
-  if (sn_bounded_random (0, 1000) == 0)
-    mutate_network (n_comparators, n_comparators_num);
+  mutate_network (n_comparators, n_comparators_num);
 
   n = sn_network_create (inputs_num);
   for (i = 0; i < n_comparators_num; i++)
