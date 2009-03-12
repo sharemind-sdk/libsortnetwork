@@ -265,22 +265,20 @@ static sn_comparator_t get_random_comparator (void) /* {{{ */
 static int mutate_network (sn_comparator_t *comparators, int comparators_num)
 {
   static int old_comparators_num = -1;
-  static int cut_off = 1000000;
+  static double mutate_probability = 0.0;
 
   int i;
 
   if (old_comparators_num != comparators_num)
   {
-    double p;
-
-    p = powl (0.5, (1.0 / ((double) comparators_num)));
-    cut_off = (int) (((double) 1000000) * p);
-
+    /* Probability that NO mutation takes place: 1/3 */
+    mutate_probability = powl (1.0 / 3.0, (1.0 / ((double) comparators_num)));
     old_comparators_num = comparators_num;
   }
 
+  /* `mutate_probability' actually holds 1-p, i. e. it is close to one */
   for (i = 0; i < comparators_num; i++)
-    if (sn_bounded_random (0, 1000000) >= cut_off)
+    if (sn_double_random () >= mutate_probability)
       comparators[i] = get_random_comparator ();
 
   return (0);

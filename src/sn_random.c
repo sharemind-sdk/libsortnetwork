@@ -144,4 +144,9 @@ int sn_bounded_random (int min, int max)
   return (rand);
 } /* int sn_bounded_random */
 
+double sn_double_random (void)
+{
+  return (((double) sn_random ()) / (((double) RAND_MAX) + 1.0));
+} /* double sn_double_random */
+
 /* vim: set shiftwidth=2 softtabstop=2 : */

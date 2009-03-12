@@ -26,5 +26,6 @@ int sn_random (void);
 int sn_true_random (void);
 
 int sn_bounded_random (int min, int max);
+double sn_double_random (void);
 
 #endif /* SN_RANDOM_H */
