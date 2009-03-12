@@ -60,6 +60,7 @@ static int inputs_num = -1;
 
 static int comparators_num = -1;
 
+static char *initial_input_file = NULL;
 static char *best_output_file = NULL;
 
 static int stats_interval = 0;
@@ -83,6 +84,7 @@ static void exit_usage (const char *name)
       "Valid options are:\n"
       "  -i <inputs>       Number of inputs\n"
       "  -c <comparators>  Number of comparators\n"
+      "  -I <file>         Initial input file\n"
       "  -o <file>         Write the current best solution to <file>\n"
       "  -p <num>          Size of the population (default: 128)\n"
       "  -P <peer>         Send individuals to <peer> (may be repeated)\n"
@@ -96,7 +98,7 @@ int read_options (int argc, char **argv)
 {
   int option;
 
-  while ((option = getopt (argc, argv, "i:c:o:p:P:s:t:h")) != -1)
+  while ((option = getopt (argc, argv, "i:c:I:o:p:P:s:t:h")) != -1)
   {
     switch (option)
     {
@@ -115,6 +117,14 @@ int read_options (int argc, char **argv)
 	tmp = atoi (optarg);
 	if (tmp > 0)
 	  comparators_num = tmp;
+	break;
+      }
+
+      case 'I':
+      {
+	if (initial_input_file != NULL)
+	  free (initial_input_file);
+	initial_input_file = strdup (optarg);
 	break;
       }
 
@@ -495,6 +505,30 @@ int main (int argc, char **argv)
 
   population_start_listen_thread (population, NULL, NULL);
 
+  if (initial_input_file != NULL)
+  {
+    sn_network_t *n;
+
+    n = sn_network_read_file (initial_input_file);
+    if (n == NULL)
+    {
+      fprintf (stderr, "Cannot read network from `%s'.\n",
+	  initial_input_file);
+      exit (EXIT_FAILURE);
+    }
+
+    if (n->inputs_num != inputs_num)
+    {
+      fprintf (stderr, "Network `%s' has %i inputs, but %i were configured "
+	  "on the command line.\n",
+	  initial_input_file, n->inputs_num, inputs_num);
+      exit (EXIT_FAILURE);
+    }
+
+    population_insert (population, n);
+    sn_network_destroy (n);
+  }
+  else /* if (initial_input_file == NULL) */
   {
     sn_network_t *n;
     int i;
