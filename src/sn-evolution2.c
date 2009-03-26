@@ -72,6 +72,10 @@ static int evolution_threads_num = 4;
 
 static int do_loop = 0;
 
+static int weight_overall = 50;
+static int weight_fails = 2;
+static int weight_stages = 1;
+
 static void sigint_handler (int signal)
 {
   do_loop++;
@@ -247,7 +251,7 @@ static int rate_network (sn_network_t *n) /* {{{ */
   } /* while (42) */
 
   /* All tests successfull */
-  return (SN_NETWORK_STAGE_NUM (n) + patterns_failed);
+  return (weight_overall + (weight_stages * SN_NETWORK_STAGE_NUM (n)) + (weight_fails * patterns_failed));
 } /* }}} int rate_network */
 
 static sn_comparator_t get_random_comparator (void) /* {{{ */
@@ -456,7 +460,7 @@ static int evolution_start (int threads_num)
       printf ("Best after approximately %i iterations: "
 	  "%i comparators in %i stages. Rating: %i (%i not sorted).\n",
 	  iter, comparators_num, stages_num, rating,
-	  rating - stages_num);
+	  (rating - (weight_overall + (weight_stages * stages_num))) / weight_fails);
     }
   }
 
