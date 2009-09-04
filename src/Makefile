@@ -29,6 +29,7 @@ sn_random.o: sn_random.c sn_random.h
 
 sn_stage.o: sn_stage.c sn_stage.h sn_comparator.h
 
+pop_stats.o: pop_stats.c pop_stats.h
 
 sn-apply: sn-apply.c sn_network.o sn_stage.o sn_comparator.o sn_random.o
 
@@ -38,7 +39,7 @@ sn-cut: sn-cut.c sn_network.o sn_stage.o sn_comparator.o sn_random.o
 
 sn-evolution: CFLAGS += $(POPULATION_CFLAGS)
 sn-evolution: LDFLAGS += $(POPULATION_LDFLAGS)
-sn-evolution: sn-evolution.c sn_network.o sn_stage.o sn_comparator.o sn_population.o sn_random.o
+sn-evolution: sn-evolution.c sn_network.o sn_stage.o sn_comparator.o sn_population.o sn_random.o pop_stats.o
 
 sn-evolution2: CFLAGS += $(POPULATION_CFLAGS)
 sn-evolution2: LDFLAGS += $(POPULATION_LDFLAGS) -lm
