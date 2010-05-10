@@ -1,0 +1,65 @@
+libsortnetwork
+--------------
+<http://octo.cx/sn>
+
+Library for handling comparator networks in general and sort networks in
+particular.
+
+
+Utility applications
+--------------------
+
+The distribution includes a number of utility applications for handling sort
+networks. Most tools operate in the typical UNIX fashion of reading from STDIN
+and writing to STDOUT, so that it is able to chain tools together.
+
+The distribution includes the following utility programs:
+
+  * sn-apply
+    Reads a list of values from STDIN and applies a given comparator network to
+    the list. The resulting list of printed to STDOUT.
+
+  * sn-batcher
+    Creates a batcher bitonic-merge-sort network with a given number of inputs
+    and prints the network to STDOUT. The number of inputs must be a power of
+    two.
+
+  * sn-check-bf
+    Does a brute-force check whether a given comparator network is a sort
+    network. It tries all 2^n 0-1-combinations resulting in exponential running
+    time, so only small networks can be tested within a reasonable time.
+
+  * sn-cut
+    Remove an input by assuming positive or negative infinity to be applied to
+    one input and "winning" or "losing" all comparisons.
+
+  * sn-merge
+    Combine two sort networks using the odd-even-merge network.
+
+  * sn-normalize
+    Reads a sort network and prints a normalized version to STDOUT. A
+    normalized sort network is a network in which all comparators face the same
+    way.
+
+  * sn-oddevenmerge
+    Creates a odd-even-merge-sort network with a given number of inputs and
+    prints the network to STDOUT.
+
+  * sn-shmoo
+    Prints a so-called "shmoo chart" of a comparator network to STDOUT. The
+    running time of this tool is exponential, roughly O(m * 2^n) where m is the
+    number of stages and n is the number of inputs.
+
+  * sn-show
+    Prints an ASCII version of a sort network to STDOUT.
+
+  * sn-tex
+    Prints the TikZ / TeX sources of a graphic representation of a comparator
+    network to STDOUT.
+
+
+Author
+------
+
+libsortnetwork has been written by Florian "octo" Forster.
+You can reach Florian at <ff at octo.it>.
