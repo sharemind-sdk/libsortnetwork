@@ -19,12 +19,7 @@
  *   Florian octo Forster <ff at octo.it>
  **/
 
-#ifndef _ISOC99_SOURCE
-# define _ISOC99_SOURCE
-#endif
-#ifndef _POSIX_C_SOURCE
-# define _POSIX_C_SOURCE 200112L
-#endif
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -53,7 +48,7 @@ static void exit_usage (const char *name)
       "  -i <file>     File holding the network (REQUIRED)\n"
       "\n",
       name);
-  exit (1);
+  exit (EXIT_FAILURE);
 } /* void exit_usage */
 
 int read_options (int argc, char **argv)
@@ -197,8 +192,8 @@ int main (int argc, char **argv)
   }
 
   if (status < 0)
-    return (1);
-  return (0);
+    exit (EXIT_FAILURE);
+  exit (EXIT_SUCCESS);
 } /* int main */
 
 /* vim: set shiftwidth=2 softtabstop=2 : */
