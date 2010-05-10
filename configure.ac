@@ -80,11 +80,15 @@ then
 	AC_CHECK_HEADERS(population.h,
 			 [with_libpopulation="yes"],
 			 [with_libpopulation="no"])
-	echo "with_libpopulation = $with_libpopulation"
 fi
 
 if test "x$with_libpopulation" = "xyes"
 then    
+	if test "x$LIBPOPULATION_LIBS" = "x"
+	then
+		LIBPOPULATION_LIBS="-lpthread"
+	fi
+
 	AC_CHECK_LIB(population, population_create,
 		     [with_libpopulation="yes"],
 		     [with_libpopulation="no"],
