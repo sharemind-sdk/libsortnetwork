@@ -19,45 +19,80 @@
  *   Florian octo Forster <ff at octo.it>
  **/
 
-#ifndef _ISOC99_SOURCE
-# define _ISOC99_SOURCE
-#endif
-#ifndef _POSIX_C_SOURCE
-# define _POSIX_C_SOURCE 200112L
-#endif
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <errno.h>
 
 #include "sn_network.h"
 
-int main (int argc, char **argv)
+static int show_fh (FILE *fh) /* {{{ */
 {
   sn_network_t *n;
-  FILE *fh = NULL;
-
-  if (argc == 1)
-    fh = stdin;
-  else if (argc == 2)
-    fh = fopen (argv[1], "r");
 
   if (fh == NULL)
-  {
-    printf ("fh == NULL!\n");
-    return (1);
-  }
+    return (EINVAL);
 
   n = sn_network_read (fh);
-
   if (n == NULL)
   {
-    printf ("n == NULL!\n");
-    return (1);
+    fprintf (stderr, "Parsing comparator network failed.\n");
+    return (EINVAL);
   }
 
   sn_network_show (n);
 
+  sn_network_destroy (n);
+
   return (0);
+} /* }}} int show_fh */
+
+static int show_file (const char *file) /* {{{ */
+{
+  FILE *fh;
+  int status;
+
+  if (file == NULL)
+    return (EINVAL);
+
+  fh = fopen (file, "r");
+  if (fh == NULL)
+  {
+    fprintf (stderr, "Opening file \"%s\" failed: %s\n",
+        file, strerror (errno));
+    return (errno);
+  }
+
+  status = show_fh (fh);
+
+  fclose (fh);
+  return (status);
+} /* }}} int show_file */
+
+int main (int argc, char **argv)
+{
+  if (argc == 1)
+  {
+    show_fh (stdin);
+  }
+  else
+  {
+    int i;
+    for (i = 1; i < argc; i++)
+    {
+      if (i > 1)
+        puts ("\n");
+
+      if (argc > 2)
+        printf ("=== %s ===\n\n", argv[i]);
+
+      show_file (argv[i]);
+    }
+  }
+
+  exit (EXIT_SUCCESS);
 } /* int main */
 
 /* vim: set shiftwidth=2 softtabstop=2 : */
