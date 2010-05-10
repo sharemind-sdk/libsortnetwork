@@ -41,4 +41,11 @@ sn_show_LDADD = libsortnetwork.la
 sn_tex_SOURCES = sn-tex.c
 sn_tex_LDADD = libsortnetwork.la
 
+if BUILD_WITH_LIBPOPULATION
+bin_PROGRAMS += sn-evolution
 
+sn_evolution_SOURCES = sn-evolution.c
+sn_evolution_CPPFLAGS = $(AM_CPPFLAGS) $(LIBPOPULATION_CPPFLAGS)
+sn_evolution_LDFLAGS = $(AM_LDFLAGS) $(LIBPOPULATION_LDFLAGS)
+sn_evolution_LDADD = libsortnetwork.la $(LIBPOPULATION_LIBS)
+endif
