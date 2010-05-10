@@ -33,6 +33,9 @@ The distribution includes the following utility programs:
     Remove an input by assuming positive or negative infinity to be applied to
     one input and "winning" or "losing" all comparisons.
 
+  * sn-info
+    Display information about a comparator network in human readable form.
+
   * sn-merge
     Combine two sort networks using the odd-even-merge network.
 
