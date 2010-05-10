@@ -19,12 +19,7 @@
  *   Florian octo Forster <ff at octo.it>
  **/
 
-#ifndef _ISOC99_SOURCE
-# define _ISOC99_SOURCE
-#endif
-#ifndef _POSIX_C_SOURCE
-# define _POSIX_C_SOURCE 200112L
-#endif
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -35,7 +30,7 @@
 void exit_usage (const char *name)
 {
   printf ("%s <position> <min|max>\n", name);
-  exit (1);
+  exit (EXIT_FAILURE);
 }
 
 int main (int argc, char **argv)
@@ -64,7 +59,7 @@ int main (int argc, char **argv)
 
   sn_network_write (n, stdout);
 
-  return (0);
+  exit (EXIT_SUCCESS);
 } /* int main */
 
 /* vim: set shiftwidth=2 softtabstop=2 : */
