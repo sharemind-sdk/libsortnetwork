@@ -912,7 +912,7 @@ int sn_network_serialize (sn_network_t *n, char **ret_buffer, /* {{{ */
 
 #define SNPRINTF_OR_FAIL(...) \
   status = snprintf (buffer, buffer_size, __VA_ARGS__); \
-  if ((status < 1) || (status >= buffer_size)) \
+  if ((status < 1) || (((size_t) status) >= buffer_size)) \
     return (-1); \
   buffer += status; \
   buffer_size -= status;
