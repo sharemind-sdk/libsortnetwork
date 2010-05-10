@@ -20,19 +20,27 @@ LT_CONFIG_LTDL_DIR([libltdl])
 LT_INIT
 LTDL_INIT
 
-# Checks for libraries.
-AC_CHECK_LIB([m], [powl])
-# FIXME: Replace `main' with a function in `-lpopulation':
+if test "x$GCC" = "xyes"
+then
+	CFLAGS="$CFLAGS -std=c99"
+fi
+
+AC_DEFINE([_ISOC99_SOURCE], [1], [Define to use C99])
+AC_DEFINE([_POSIX_C_SOURCE], [200809L], [Set to desired POSIX version])
+AC_DEFINE([_XOPEN_SOURCE], [700], [Set to desired X/Open version])
+
+# TODO: Write check for libpopulation
 #AC_CHECK_LIB([population], [main])
 
 # Checks for header files.
-AC_CHECK_HEADERS([fcntl.h inttypes.h limits.h stdint.h stdlib.h string.h strings.h unistd.h])
+AC_HEADER_STDC
+AC_CHECK_HEADERS([fcntl.h inttypes.h limits.h stdint.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
-AC_TYPE_INT64_T
-AC_TYPE_SIZE_T
-AC_TYPE_UINT32_T
-AC_TYPE_UINT64_T
+#AC_TYPE_INT64_T
+#AC_TYPE_SIZE_T
+#AC_TYPE_UINT32_T
+#AC_TYPE_UINT64_T
 
 # Checks for library functions.
 AC_FUNC_MALLOC
