@@ -46,6 +46,10 @@
 #include "sn_network.h"
 #include "sn_random.h"
 
+#if !defined(__GNUC__) || !__GNUC__
+# define __attribute__(x) /**/
+#endif
+
 /* Yes, this is ugly, but the GNU libc doesn't export it with the above flags.
  * */
 char *strdup (const char *s);
@@ -66,7 +70,7 @@ static int evolution_threads_num = 4;
 
 static int do_loop = 0;
 
-static void sigint_handler (int signal)
+static void sigint_handler (int signal __attribute__((unused)))
 {
   do_loop++;
 } /* void sigint_handler */
@@ -259,7 +263,7 @@ static int create_offspring (void)
   return (0);
 } /* int create_offspring */
 
-static void *evolution_thread (void *arg)
+static void *evolution_thread (void *arg __attribute__((unused)))
 {
   while (do_loop == 0)
   {
