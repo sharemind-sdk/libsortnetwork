@@ -1,5 +1,5 @@
 /**
- * collectd - src/sn_random.h
+ * libsortnetwork - src/sn_random.h
  * Copyright (C) 2008-2010  Florian octo Forster
  *
  * This program is free software; you can redistribute it and/or modify it

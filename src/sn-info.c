@@ -1,5 +1,5 @@
 /**
- * collectd - src/sn-info.c
+ * libsortnetwork - src/sn-info.c
  * Copyright (C) 2010  Florian octo Forster
  *
  * This program is free software; you can redistribute it and/or modify it

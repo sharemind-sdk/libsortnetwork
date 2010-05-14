@@ -1,5 +1,5 @@
 /**
- * collectd - src/pop_stats.c
+ * libsortnetwork - src/pop_stats.c
  * Copyright (C) 2009-2010  Florian octo Forster
  *
  * This program is free software; you can redistribute it and/or modify it

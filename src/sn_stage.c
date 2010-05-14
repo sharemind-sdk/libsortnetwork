@@ -1,5 +1,5 @@
 /**
- * collectd - src/sn_stage.c
+ * libsortnetwork - src/sn_stage.c
  * Copyright (C) 2008-2010  Florian octo Forster
  *
  * This program is free software; you can redistribute it and/or modify it
