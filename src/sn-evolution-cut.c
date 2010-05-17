@@ -257,6 +257,26 @@ static void ind_free (void *ind) /* {{{ */
     free (ind);
 } /* }}} void ind_free */
 
+static void ind_print (const individuum_t *ind)
+{
+  int i;
+
+  for (i = 0; i < cuts_num; i++)
+  {
+    int input = ind[i];
+    int dir = 0;
+
+    if (input < 0)
+    {
+      input *= -1;
+      dir = 1;
+    }
+    input--;
+
+    printf ("%s(%3i)\n", (dir == 0) ? "MAX" : "MIN", input);
+  }
+} /* }}} void ind_print */
+
 static individuum_t *recombine (individuum_t *i0, individuum_t *i1) /* {{{ */
 {
   individuum_t *offspring;
@@ -510,6 +530,9 @@ int main (int argc, char **argv) /* {{{ */
 	sn_network_write_file (n, best_output_file);
       sn_network_show (n);
       sn_network_destroy (n);
+
+      ind_print (ind);
+      free (ind);
     }
   }
 
