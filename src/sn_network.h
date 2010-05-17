@@ -89,7 +89,7 @@ sn_network_t *sn_network_create_odd_even_mergesort (int inputs_num);
  *
  * \param n The comparator network to which to add the stage.
  * \param s A pointer to a stage. The memory pointed to by this parameter is
- *   not copied and freed by sn_network_destroy. It is the caller's
+ *   not copied and freed by sn_network_destroy(). It is the caller's
  *   responsibility to call sn_stage_clone() if appropriate.
  * \return Zero on success, non-zero on failure.
  */
@@ -121,7 +121,7 @@ int sn_network_comparator_add (sn_network_t *n, const sn_comparator_t *c);
 /**
  * Returns the number of comparators contained in the comparator network. This
  * will traverse all comparators in all stages, resulting in a running time of
- * O(n).
+ * \f$ \mathcal{O}(n) \f$.
  *
  * \param n Comparator network to work with.
  * \return The number of comparators contained in the network or less than zero
@@ -144,8 +144,8 @@ int sn_network_sort (sn_network_t *n, int *values);
 
 /**
  * Checks whether a given comparator network is a sorting network by testing
- * all 2^n 0-1-patterns. Since this function has exponential running time,
- * using it with comparator networks with many inputs is not advisable.
+ * all \f$ 2^n \f$ 0-1-patterns. Since this function has exponential running
+ * time, using it with comparator networks with many inputs is not advisable.
  *
  * \param n The comparator network to test.
  * \return Zero if the comparator network is a sort network, one if the
@@ -154,15 +154,79 @@ int sn_network_sort (sn_network_t *n, int *values);
 int sn_network_brute_force_check (sn_network_t *n);
 
 int sn_network_show (sn_network_t *n);
+
+/**
+ * Inverts a comparator network by switching the direction of all comparators.
+ *
+ * \param n The network to invert.
+ * \return Zero on success, non-zero on failure.
+ */
 int sn_network_invert (sn_network_t *n);
+
+/**
+ * Shifts a comparator network (permutes the inputs). Each input is shifted
+ * \f$ s \f$ positions, higher inputs are "wrapped around".
+ *
+ * \param n The comparator network to shift.
+ * \param s The number of positions to shift.
+ * \return Zero on success, non-zero on failure.
+ */
 int sn_network_shift (sn_network_t *n, int s);
+
+/**
+ * Compresses a comparator network by moving all comparators to the earliest
+ * possible stage and removing all remaining empty stages.
+ *
+ * \param n The network to compress.
+ * \return Zero on success, non-zero on failure.
+ */
 int sn_network_compress (sn_network_t *n);
+
+/**
+ * Converts a non-standard comparator network to a standard comparator network,
+ * i.e. a network in which all comparators point in the same direction.
+ *
+ * \param n The network to normalize.
+ * \return Zero on success, non-zero on failure.
+ */
 int sn_network_normalize (sn_network_t *n);
 
+/**
+ * Removes an inputs from a comparator network by assuming positive or negative
+ * infinity to be supplied to a given input. The value will take a
+ * deterministic way through the comparator network. After removing the path
+ * and all comparators it touched from the comparator network, a new comparator
+ * network with \f$ n-1 \f$ inputs remains. The remaining outputs behave
+ * identical to the original network with respect to one another.
+ *
+ * \param n The comparator network to modify.
+ * \param input The input to remove.
+ * \param dir The direction in which to cut, i.e. whether to assume positive or
+ *   negative infinity.
+ * \return Zero on success, non-zero on failure.
+ */
 int sn_network_cut_at (sn_network_t *n, int input, enum sn_network_cut_dir_e dir);
 sn_network_t *sn_network_combine (sn_network_t *n0, sn_network_t *n1,
     int is_power_of_two);
 sn_network_t *sn_network_combine_bitonic (sn_network_t *n0, sn_network_t *n1);
+
+/**
+ * Combines two comparator networks using a bitonic merger. The number of
+ * inputs of both comparator networks must be identical and a power of two.
+ *
+ * \param n0 First network.
+ * \param n1 Second network.
+ * \return Newly allocated network with twice the number of inputs or NULL on
+ *   error.
+ */
+
+/**
+ * Combines two comparator networks using the odd-even-merger.
+ *
+ * \param n0 First network.
+ * \param n1 Second network.
+ * \return Newly allocated network or NULL on error.
+ */
 sn_network_t *sn_network_combine_odd_even_merge (sn_network_t *n0, sn_network_t *n1);
 
 sn_network_t *sn_network_read (FILE *fh);
