@@ -1,4 +1,10 @@
 /**
+ * \file sn_network.h
+ * \brief The sn_network_t class and associated methods.
+ *
+ * This is more details about what this file does.
+ *
+ * \verbatim
  * libsortnetwork - src/sn_network.h
  * Copyright (C) 2008-2010  Florian octo Forster
  *
@@ -17,7 +23,9 @@
  *
  * Authors:
  *   Florian octo Forster <ff at octo.it>
+ * \endverbatim
  **/
+
 
 #ifndef SN_NETWORK_H
 #define SN_NETWORK_H 1
@@ -27,11 +35,14 @@
 #include "sn_comparator.h"
 #include "sn_stage.h"
 
+/**
+ * The global struct representing a comparator or sort network.
+ */
 struct sn_network_s
 {
-  int inputs_num;
-  sn_stage_t **stages;
-  int stages_num;
+  int inputs_num;       /**< Number of inputs of the comparator network. */
+  sn_stage_t **stages;  /**< Array of pointers to the stages of a comparator network. */
+  int stages_num;       /**< Number of stages in this comparator network. */
 };
 typedef struct sn_network_s sn_network_t;
 
@@ -39,20 +50,107 @@ typedef struct sn_network_s sn_network_t;
 #define SN_NETWORK_STAGE_GET(n,i) ((n)->stages[i])
 #define SN_NETWORK_INPUT_NUM(n) (n)->inputs_num
 
+/**
+ * Creates an empty comparator network and returns a pointer to it.
+ *
+ * \param inputs_num Number of inputs the comparator network has.
+ * \return Pointer to the comparator network or NULL on error.
+ */
 sn_network_t *sn_network_create (int inputs_num);
+
+/**
+ * Clones an existing comparator network.
+ *
+ * \param n Comparator network to clone.
+ * \return Copied sort network or NULL on error. The returned network must be
+ *   freed using sn_network_destroy().
+ */
 sn_network_t *sn_network_clone (const sn_network_t *n);
+
+/**
+ * Destroys a comparator network allocated with sn_network_create() or one of
+ * the other methods returning a sn_network_t. This frees all allocated space.
+ *
+ * \param n The comparator network to destroy. May be NULL.
+ */
 void sn_network_destroy (sn_network_t *n);
 
+/**
+ * Creates a new sort network using Batcher's Odd-Even-Mergesort algorithm.
+ *
+ * \param inputs_num Number of inputs / outputs of the sorting network.
+ * \return A pointer to the newly allocated sorting network or NULL if an
+ *   invalid number of inputs was given or allocation failed.
+ */
 sn_network_t *sn_network_create_odd_even_mergesort (int inputs_num);
 
+/**
+ * Append a new stage to a comparator network.
+ *
+ * \param n The comparator network to which to add the stage.
+ * \param s A pointer to a stage. The memory pointed to by this parameter is
+ *   not copied and freed by sn_network_destroy. It is the caller's
+ *   responsibility to call sn_stage_clone() if appropriate.
+ * \return Zero on success, non-zero on failure.
+ */
 int sn_network_stage_add (sn_network_t *n, sn_stage_t *s);
+
+/**
+ * Remove a stage from a comparator network.
+ *
+ * \param n A pointer to the comparator network to modify.
+ * \param s_num The depth of the comparator network to remove, with zero being
+ *   meaning the stage closest to the inputs.
+ * \return Zero on success, non-zero on failure.
+ */
 int sn_network_stage_remove (sn_network_t *n, int s_num);
 
+/**
+ * Adds a comparator to a comparator network. The code tries to add the
+ * comparator to the last stage, i.e. the stage closest to the outputs. If this
+ * is not possible, because one line is used by another comparator, a new stage
+ * is created and appended to the sorting network.
+ *
+ * \param n Pointer to the comparator netork.
+ * \param c Pointer to a comparator to add. The given comparator is copied. It
+ *   is the caller's responsibility to free c.
+ * \return Zero on success, non-zero on failure.
+ */
 int sn_network_comparator_add (sn_network_t *n, const sn_comparator_t *c);
 
+/**
+ * Returns the number of comparators contained in the comparator network. This
+ * will traverse all comparators in all stages, resulting in a running time of
+ * O(n).
+ *
+ * \param n Comparator network to work with.
+ * \return The number of comparators contained in the network or less than zero
+ *  on error (n is NULL).
+ */
 int sn_network_get_comparator_num (const sn_network_t *n);
 
+/**
+ * Applies a comparator network to an array of integers. This is implemented by
+ * calling sn_stage_sort() with every stage of the network.
+ *
+ * \param n Pointer to the comparator netork.
+ * \param[in,out] values Pointer to integer values to sort. The number of
+ *   integer values pointed to must be at least the number of inputs of the
+ *   comparator network. Otherwise, segmentation faults or memory corruption
+ *   will occur.
+ * \return Zero on success, non-zero on failure.
+ */
 int sn_network_sort (sn_network_t *n, int *values);
+
+/**
+ * Checks whether a given comparator network is a sorting network by testing
+ * all 2^n 0-1-patterns. Since this function has exponential running time,
+ * using it with comparator networks with many inputs is not advisable.
+ *
+ * \param n The comparator network to test.
+ * \return Zero if the comparator network is a sort network, one if the
+ *   comparator network is \em not a sort network, or something else on error.
+ */
 int sn_network_brute_force_check (sn_network_t *n);
 
 int sn_network_show (sn_network_t *n);
