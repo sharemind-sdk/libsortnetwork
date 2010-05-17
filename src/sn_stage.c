@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <errno.h>
 
 #include "sn_comparator.h"
 #include "sn_stage.h"
@@ -82,10 +83,17 @@ int sn_stage_comparator_add (sn_stage_t *s, const sn_comparator_t *c)
   sn_comparator_t *temp;
   int i;
 
+  if ((s == NULL) || (c == NULL))
+    return (EINVAL);
+
+  i = sn_stage_comparator_check_conflict (s, c);
+  if (i != 0)
+    return (i);
+
   temp = (sn_comparator_t *) realloc (s->comparators,
       (s->comparators_num + 1) * sizeof (sn_comparator_t));
   if (temp == NULL)
-    return (-1);
+    return (ENOMEM);
   s->comparators = temp;
   temp = NULL;
 
@@ -111,6 +119,9 @@ int sn_stage_comparator_remove (sn_stage_t *s, int c_num)
 {
   int nmemb = s->comparators_num - (c_num + 1);
   sn_comparator_t *temp;
+
+  if ((s == NULL) || (s->comparators_num <= c_num))
+    return (EINVAL);
 
   assert (c_num < s->comparators_num);
   assert (c_num >= 0);
@@ -306,6 +317,9 @@ int sn_stage_cut_at (sn_stage_t *s, int input, enum sn_network_cut_dir_e dir)
 {
   int new_position = input;
   int i;
+
+  if ((s == NULL) || (input < 0))
+    return (-EINVAL);
 
   for (i = 0; i < s->comparators_num; i++)
   {
