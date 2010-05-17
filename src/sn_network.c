@@ -38,6 +38,7 @@
 #include <strings.h>
 #include <ctype.h>
 #include <assert.h>
+#include <errno.h>
 
 #include "sn_network.h"
 #include "sn_random.h"
@@ -138,6 +139,9 @@ int sn_network_stage_add (sn_network_t *n, sn_stage_t *s) /* {{{ */
 {
   sn_stage_t **temp;
 
+  if ((n == NULL) || (s == NULL))
+    return (EINVAL);
+
   temp = (sn_stage_t **) realloc (n->stages, (n->stages_num + 1)
       * sizeof (sn_stage_t *));
   if (temp == NULL)
@@ -156,7 +160,8 @@ int sn_network_stage_remove (sn_network_t *n, int s_num) /* {{{ */
   int nmemb = n->stages_num - (s_num + 1);
   sn_stage_t **temp;
 
-  assert (s_num < n->stages_num);
+  if ((n == NULL) || (s_num >= n->stages_num))
+    return (EINVAL);
 
   sn_stage_destroy (n->stages[s_num]);
   n->stages[s_num] = NULL;
@@ -225,7 +230,7 @@ int sn_network_comparator_add (sn_network_t *n, /* {{{ */
   sn_stage_t *s;
 
   if ((n == NULL) || (c == NULL))
-    return (-1);
+    return (EINVAL);
 
   if (n->stages_num > 0)
   {
@@ -274,6 +279,9 @@ int sn_network_invert (sn_network_t *n) /* {{{ */
 {
   int i;
 
+  if (n == NULL)
+    return (EINVAL);
+
   for (i = 0; i < n->stages_num; i++)
     sn_stage_invert (n->stages[i]);
 
@@ -283,6 +291,12 @@ int sn_network_invert (sn_network_t *n) /* {{{ */
 int sn_network_shift (sn_network_t *n, int sw) /* {{{ */
 {
   int i;
+
+  if ((n == NULL) || (sw < 0))
+    return (EINVAL);
+
+  if (sw == 0)
+    return (0);
 
   for (i = 0; i < n->stages_num; i++)
     sn_stage_shift (n->stages[i], sw, SN_NETWORK_INPUT_NUM (n));
@@ -658,11 +672,11 @@ static sn_network_t *sn_network_combine_bitonic_shift (sn_network_t *n0, /* {{{ 
   return (n);
 } /* }}} sn_network_t *sn_network_combine_bitonic_shift */
 
-sn_network_t *sn_network_combine_bitonic (sn_network_t *n0, /* {{{ */
+sn_network_t *sn_network_combine_bitonic_merge (sn_network_t *n0, /* {{{ */
     sn_network_t *n1)
 {
   return (sn_network_combine_bitonic_shift (n0, n1, /* do_shift = */ 0));
-} /* }}} sn_network_t *sn_network_combine_bitonic */
+} /* }}} sn_network_t *sn_network_combine_bitonic_merge */
 
 sn_network_t *sn_network_combine_odd_even_merge (sn_network_t *n0, /* {{{ */
     sn_network_t *n1)
@@ -697,27 +711,12 @@ sn_network_t *sn_network_combine_odd_even_merge (sn_network_t *n0, /* {{{ */
 
   sn_network_compress (n);
   return (n);
-} /* }}} sn_network_t *sn_network_combine */
+} /* }}} sn_network_t *sn_network_combine_odd_even_merge */
 
 sn_network_t *sn_network_combine (sn_network_t *n0, /* {{{ */
-    sn_network_t *n1, int is_power_of_two)
+    sn_network_t *n1)
 {
-  sn_network_t *n;
-
-  if ((is_power_of_two != 0) && (sn_bounded_random (0, 9) == 0))
-  {
-    DPRINTF ("sn_network_combine: Using the bitonic merger.\n");
-    n = sn_network_combine_bitonic_shift (n0, n1, /* do_shift = */ 1);
-  }
-  else
-  {
-    DPRINTF ("sn_network_combine: Using the odd-even merger.\n");
-    n = sn_network_combine_odd_even_merge (n0, n1);
-  }
-
-  sn_network_compress (n);
-
-  return (n);
+  return (sn_network_combine_odd_even_merge (n0, n1));
 } /* }}} sn_network_t *sn_network_combine */
 
 int sn_network_sort (sn_network_t *n, int *values) /* {{{ */

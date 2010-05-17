@@ -206,9 +206,11 @@ int sn_network_normalize (sn_network_t *n);
  * \return Zero on success, non-zero on failure.
  */
 int sn_network_cut_at (sn_network_t *n, int input, enum sn_network_cut_dir_e dir);
-sn_network_t *sn_network_combine (sn_network_t *n0, sn_network_t *n1,
-    int is_power_of_two);
-sn_network_t *sn_network_combine_bitonic (sn_network_t *n0, sn_network_t *n1);
+
+/**
+ * An alias for sn_network_combine_odd_even_merge().
+ */
+sn_network_t *sn_network_combine (sn_network_t *n0, sn_network_t *n1);
 
 /**
  * Combines two comparator networks using a bitonic merger. The number of
@@ -219,6 +221,7 @@ sn_network_t *sn_network_combine_bitonic (sn_network_t *n0, sn_network_t *n1);
  * \return Newly allocated network with twice the number of inputs or NULL on
  *   error.
  */
+sn_network_t *sn_network_combine_bitonic_merge (sn_network_t *n0, sn_network_t *n1);
 
 /**
  * Combines two comparator networks using the odd-even-merger.

@@ -19,23 +19,76 @@
  *   Florian octo Forster <ff at octo.it>
  **/
 
-#ifndef _ISOC99_SOURCE
-# define _ISOC99_SOURCE
-#endif
-#ifndef _POSIX_C_SOURCE
-# define _POSIX_C_SOURCE 200112L
-#endif
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "sn_network.h"
 
-void exit_usage (const char *name)
+static _Bool use_bitonic = 0;
+static const char *file0 = NULL;
+static const char *file1 = NULL;
+
+static void exit_usage (void) /* {{{ */
 {
-  printf ("%s <file0> <file1>\n", name);
-  exit (1);
-} /* void exit_usage */
+  printf ("sn-merge [options] <file0> <file1>\n"
+      "\n"
+      "Options:\n"
+      "  -b        Use the bitonic merger.\n"
+      "  -o        Use the odd-even merger. (default)\n"
+      "  -h        Display this help and exit.\n"
+      "\n");
+  exit (EXIT_FAILURE);
+} /* }}} void exit_usage */
+
+static int read_options (int argc, char **argv) /* {{{ */
+{
+  int option;
+
+  while ((option = getopt (argc, argv, "boh")) != -1)
+  {
+    switch (option)
+    {
+      case 'b':
+	use_bitonic = 1;
+	break;
+
+      case 'o':
+	use_bitonic = 0;
+	break;
+
+      case 'h':
+      default:
+	exit_usage ();
+    }
+  }
+
+  if ((argc - optind) != 2)
+    exit_usage ();
+
+  file0 = argv[optind];
+  file1 = argv[optind + 1];
+
+  if ((file0 == NULL) || (file1 == NULL))
+    exit_usage ();
+
+  return (0);
+} /* }}} int read_options */
+
+static _Bool is_power_of_two (int n)
+{
+  if (n < 1)
+    return (0);
+  else if ((n == 1) || (n == 2))
+    return (1);
+  else if ((n % 2) != 0)
+    return (0);
+  else
+    return (is_power_of_two (n >> 1));
+} /* _Bool is_power_of_two */
 
 int main (int argc, char **argv)
 {
@@ -43,24 +96,54 @@ int main (int argc, char **argv)
   sn_network_t *n1;
   sn_network_t *n;
 
-  if (argc != 3)
-    exit_usage (argv[0]);
+  read_options (argc, argv);
 
-  n0 = sn_network_read_file (argv[1]);
+  if (strcmp ("-", file0) == 0)
+    n0 = sn_network_read (stdin);
+  else
+    n0 = sn_network_read_file (file0);
   if (n0 == NULL)
   {
-    printf ("n0 == NULL\n");
-    return (1);
+    fprintf (stderr, "Unable to read first network.\n");
+    exit (EXIT_FAILURE);
   }
 
-  n1 = sn_network_read_file (argv[2]);
+  if (strcmp ("-", file1) == 0)
+  {
+    if (strcmp ("-", file0) == 0)
+      n1 = sn_network_clone (n0);
+    else
+      n1 = sn_network_read (stdin);
+  }
+  else
+    n1 = sn_network_read_file (file1);
   if (n1 == NULL)
   {
-    printf ("n1 == NULL\n");
-    return (1);
+    fprintf (stderr, "Unable to read second network.\n");
+    exit (EXIT_FAILURE);
   }
 
-  n = sn_network_combine (n0, n1, /* is power of two = */ 0);
+  if (use_bitonic
+      && ((SN_NETWORK_INPUT_NUM (n0) != SN_NETWORK_INPUT_NUM (n1))
+	|| !is_power_of_two (SN_NETWORK_INPUT_NUM (n0))))
+  {
+    fprintf (stderr, "Using the bitonic merge is currently only possible "
+	"if the number of inputs of both networks is identical and a "
+	"power of two\n");
+    exit (EXIT_FAILURE);
+  }
+
+  if (use_bitonic)
+    n = sn_network_combine_bitonic_merge (n0, n1);
+  else
+    n = sn_network_combine_odd_even_merge (n0, n1);
+
+  if (n == NULL)
+  {
+    fprintf (stderr, "Combining the networks faild.\n");
+    exit (EXIT_FAILURE);
+  }
+
   sn_network_destroy (n0);
   sn_network_destroy (n1);
 

@@ -75,11 +75,11 @@ static sn_network_t *create_batcher_sort (size_t inputs_num)
   if (n_small == NULL)
     return (NULL);
 
-  n = sn_network_combine_bitonic (n_small, n_small);
+  n = sn_network_combine_bitonic_merge (n_small, n_small);
   if (n == NULL)
   {
     sn_network_destroy (n_small);
-    fprintf (stderr, "create_batcher_sort: sn_network_combine_bitonic "
+    fprintf (stderr, "create_batcher_sort: sn_network_combine_bitonic_merge "
 	"failed.\n");
     return (NULL);
   }

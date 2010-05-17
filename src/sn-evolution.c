@@ -229,7 +229,7 @@ static int create_offspring (void)
   assert (p1 != NULL);
 
   /* combine the two parents */
-  n = sn_network_combine (p0, p1, inputs_num_is_power_of_two);
+  n = sn_network_combine (p0, p1);
 
   sn_network_destroy (p0);
   sn_network_destroy (p1);
