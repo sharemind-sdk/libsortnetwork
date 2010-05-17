@@ -232,13 +232,70 @@ sn_network_t *sn_network_combine_bitonic_merge (sn_network_t *n0, sn_network_t *
  */
 sn_network_t *sn_network_combine_odd_even_merge (sn_network_t *n0, sn_network_t *n1);
 
+/**
+ * Reads a comparator network from a open file handle.
+ *
+ * \param fh The FILE pointer to read from.
+ * \return A newly allocated comparator network or NULL on error.
+ * \see sn_network_read_file
+ */
 sn_network_t *sn_network_read (FILE *fh);
+
+/**
+ * Reads a comparator network from a file.
+ *
+ * \param file File name to read the network from.
+ * \return A newly allocated comparator network or NULL on error.
+ * \see sn_network_read
+ */
 sn_network_t *sn_network_read_file (const char *file);
+
+/**
+ * Writes a comparator network to a file handle.
+ *
+ * \param n The comparator network to write.
+ * \param fh The file handle to write to. Must be opened in write mode.
+ * \return Zero on success, non-zero on failure.
+ * \see sn_network_write_file
+ */
 int sn_network_write (sn_network_t *n, FILE *fh);
+
+/**
+ * Writes a comparator network to a file.
+ *
+ * \param n The comparator network to write.
+ * \param fh The file name to write the network to.
+ * \return Zero on success, non-zero on failure.
+ * \see sn_network_write
+ */
 int sn_network_write_file (sn_network_t *n, const char *file);
 
+/**
+ * Creates a serialized form of the given comparator network. The serialized
+ * form is byte-order independent and can easily be sent over a computer
+ * network.
+ *
+ * \param n The comparator network to serialize.
+ * \param[out] ret_buffer Pointer to a pointer into which the location of the
+ *   allocated memory will be written. It is the caller's responsibility to
+ *   free this memory.
+ * \param[out] ret_buffer_size Pointer to a size_t into which the size of the
+ *   allocated memory will be written.
+ * \return Zero on success, non-zero on failure.
+ * \see sn_network_unserialize
+ */
 int sn_network_serialize (sn_network_t *n, char **ret_buffer,
     size_t *ret_buffer_size);
+
+/**
+ * Creates a comparator network from its serialized form.
+ *
+ * \param buffer Pointer to a buffer containing the comparator network in
+ *   serialized form.
+ * \param buffer_size Size of the buffer (in bytes).
+ * \return Pointer to the newly allocated comparator network or NULL on error.
+ * \see sn_network_serialize
+ */
 sn_network_t *sn_network_unserialize (char *buffer, size_t buffer_size);
 #endif /* SN_NETWORK_H */
 
