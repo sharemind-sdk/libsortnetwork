@@ -1,4 +1,8 @@
 /**
+ * \file sn_comparator.h
+ * \brief The sn_comparator_t class and associated methods.
+ *
+ * \verbatim
  * libsortnetwork - src/sn_comparator.h
  * Copyright (C) 2008-2010  Florian octo Forster
  *
@@ -17,6 +21,7 @@
  *
  * Authors:
  *   Florian octo Forster <ff at octo.it>
+ * \endverbatim
  **/
 
 #ifndef SN_COMPARATOR_H

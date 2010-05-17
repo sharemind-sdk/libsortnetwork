@@ -1,4 +1,8 @@
 /**
+ * \file sn_stage.h
+ * \brief The sn_stage_t class and associated methods.
+ *
+ * \verbatim
  * libsortnetwork - src/sn_stage.h
  * Copyright (C) 2008-2010  Florian octo Forster
  *
@@ -17,6 +21,7 @@
  *
  * Authors:
  *   Florian octo Forster <ff at octo.it>
+ * \endverbatim
  **/
 
 #ifndef SN_STAGE_H
@@ -45,6 +50,14 @@ enum sn_network_cut_dir_e
 #define SN_STAGE_COMP_GET(s,n) ((s)->comparators + (n))
 
 sn_stage_t *sn_stage_create (int depth);
+
+/**
+ * Clones an existing stage.
+ *
+ * \param s Stage to clone.
+ * \return Copied stage or NULL on error. The returned stage must be freed
+ *   using sn_stage_destroy().
+ */
 sn_stage_t *sn_stage_clone (const sn_stage_t *s);
 void sn_stage_destroy (sn_stage_t *s);
 
