@@ -51,10 +51,11 @@ typedef struct sn_network_s sn_network_t;
 #define SN_NETWORK_INPUT_NUM(n) (n)->inputs_num
 
 /**
- * Creates an empty comparator network and returns a pointer to it.
+ * Creates an empty comparator network and returns a pointer to it. The
+ * comparator network must be freed using sn_network_destroy().
  *
  * \param inputs_num Number of inputs the comparator network has.
- * \return Pointer to the comparator network or NULL on error.
+ * \return Pointer to the comparator network or \c NULL on error.
  */
 sn_network_t *sn_network_create (int inputs_num);
 
@@ -62,16 +63,17 @@ sn_network_t *sn_network_create (int inputs_num);
  * Clones an existing comparator network.
  *
  * \param n Comparator network to clone.
- * \return Copied sort network or NULL on error. The returned network must be
- *   freed using sn_network_destroy().
+ * \return Copied sort network or \c NULL on error. The returned network must
+ *   be freed using sn_network_destroy().
  */
 sn_network_t *sn_network_clone (const sn_network_t *n);
 
 /**
  * Destroys a comparator network allocated with sn_network_create() or one of
- * the other methods returning a sn_network_t. This frees all allocated space.
+ * the other methods returning a \c sn_network_t. This frees all allocated
+ * space.
  *
- * \param n The comparator network to destroy. May be NULL.
+ * \param n The comparator network to destroy. May be \c NULL.
  */
 void sn_network_destroy (sn_network_t *n);
 
@@ -79,7 +81,7 @@ void sn_network_destroy (sn_network_t *n);
  * Creates a new sort network using Batcher's Odd-Even-Mergesort algorithm.
  *
  * \param inputs_num Number of inputs / outputs of the sorting network.
- * \return A pointer to the newly allocated sorting network or NULL if an
+ * \return A pointer to the newly allocated sorting network or \c NULL if an
  *   invalid number of inputs was given or allocation failed.
  */
 sn_network_t *sn_network_create_odd_even_mergesort (int inputs_num);
@@ -139,6 +141,7 @@ int sn_network_get_comparator_num (const sn_network_t *n);
  *   comparator network. Otherwise, segmentation faults or memory corruption
  *   will occur.
  * \return Zero on success, non-zero on failure.
+ * \see sn_stage_sort
  */
 int sn_network_sort (sn_network_t *n, int *values);
 
@@ -153,6 +156,13 @@ int sn_network_sort (sn_network_t *n, int *values);
  */
 int sn_network_brute_force_check (sn_network_t *n);
 
+/**
+ * Prints the comparator network to STDOUT using a human readable
+ * representation.
+ *
+ * \param n The comparator network to display.
+ * \return Zero on success, non-zero on failure.
+ */
 int sn_network_show (sn_network_t *n);
 
 /**
