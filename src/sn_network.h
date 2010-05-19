@@ -127,7 +127,7 @@ int sn_network_comparator_add (sn_network_t *n, const sn_comparator_t *c);
  *
  * \param n Comparator network to work with.
  * \return The number of comparators contained in the network or less than zero
- *  on error (n is NULL).
+ *  on error (\c n is \c NULL).
  */
 int sn_network_get_comparator_num (const sn_network_t *n);
 
@@ -157,7 +157,7 @@ int sn_network_sort (sn_network_t *n, int *values);
 int sn_network_brute_force_check (sn_network_t *n);
 
 /**
- * Prints the comparator network to STDOUT using a human readable
+ * Prints the comparator network to \c STDOUT using a human readable
  * representation.
  *
  * \param n The comparator network to display.
@@ -228,8 +228,8 @@ sn_network_t *sn_network_combine (sn_network_t *n0, sn_network_t *n1);
  *
  * \param n0 First network.
  * \param n1 Second network.
- * \return Newly allocated network with twice the number of inputs or NULL on
- *   error.
+ * \return Newly allocated network with twice the number of inputs or \c NULL
+ *   on error.
  */
 sn_network_t *sn_network_combine_bitonic_merge (sn_network_t *n0, sn_network_t *n1);
 
@@ -238,7 +238,7 @@ sn_network_t *sn_network_combine_bitonic_merge (sn_network_t *n0, sn_network_t *
  *
  * \param n0 First network.
  * \param n1 Second network.
- * \return Newly allocated network or NULL on error.
+ * \return Newly allocated network or \c NULL on error.
  */
 sn_network_t *sn_network_combine_odd_even_merge (sn_network_t *n0, sn_network_t *n1);
 
@@ -246,7 +246,7 @@ sn_network_t *sn_network_combine_odd_even_merge (sn_network_t *n0, sn_network_t 
  * Reads a comparator network from a open file handle.
  *
  * \param fh The FILE pointer to read from.
- * \return A newly allocated comparator network or NULL on error.
+ * \return A newly allocated comparator network or \c NULL on error.
  * \see sn_network_read_file
  */
 sn_network_t *sn_network_read (FILE *fh);
@@ -255,7 +255,7 @@ sn_network_t *sn_network_read (FILE *fh);
  * Reads a comparator network from a file.
  *
  * \param file File name to read the network from.
- * \return A newly allocated comparator network or NULL on error.
+ * \return A newly allocated comparator network or \c NULL on error.
  * \see sn_network_read
  */
 sn_network_t *sn_network_read_file (const char *file);
@@ -303,7 +303,8 @@ int sn_network_serialize (sn_network_t *n, char **ret_buffer,
  * \param buffer Pointer to a buffer containing the comparator network in
  *   serialized form.
  * \param buffer_size Size of the buffer (in bytes).
- * \return Pointer to the newly allocated comparator network or NULL on error.
+ * \return Pointer to the newly allocated comparator network or \c NULL on
+ *   error.
  * \see sn_network_serialize
  */
 sn_network_t *sn_network_unserialize (char *buffer, size_t buffer_size);
