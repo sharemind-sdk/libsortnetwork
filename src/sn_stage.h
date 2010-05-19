@@ -133,9 +133,47 @@ int sn_stage_comparator_remove (sn_stage_t *s, int index);
  */
 int sn_stage_comparator_check_conflict (sn_stage_t *s, const sn_comparator_t *c);
 
+/**
+ * Prints the stage to \c STDOUT using a human readable representation.
+ *
+ * \param s The comparator network to display.
+ * \return Zero on success, non-zero on failure.
+ * \see sn_network_show
+ */
 int sn_stage_show (sn_stage_t *s);
+
+/**
+ * Inverts a stage by switching the direction of all comparators.
+ *
+ * \param s The stage to invert.
+ * \return Zero on success, non-zero on failure.
+ * \see sn_network_invert
+ */
 int sn_stage_invert (sn_stage_t *s);
+
+/**
+ * Shifts a stage (permutes the inputs). Each input is shifted \c sw positions,
+ * higher inputs are "wrapped around".
+ *
+ * \param s The stage to shift.
+ * \param sw The number of positions to shift.
+ * \param inputs_num The number of inputs of the comparator network. This value
+ *   is used to "wrap around" inputs.
+ * \return Zero on success, non-zero on failure.
+ */
 int sn_stage_shift (sn_stage_t *s, int sw, int inputs_num);
+
+/**
+ * Swaps two lines. This is used by the algorithm used in
+ * sn_network_normalize() to transform non-standard sort networks to standard
+ * sort networks.
+ *
+ * \param s The stage on which to operate.
+ * \param con0 Index of the first line.
+ * \param con1 Index of the second line.
+ * \return Zero on success, non-zero on failure.
+ * \see sn_network_normalize(), sn_comparator_swap()
+ */
 int sn_stage_swap (sn_stage_t *s, int con0, int con1);
 
 /**
@@ -153,13 +191,59 @@ int sn_stage_swap (sn_stage_t *s, int con0, int con1);
  */
 int sn_stage_cut_at (sn_stage_t *s, int input, enum sn_network_cut_dir_e dir);
 
+/**
+ * Remove an input from a stage, remove all touching comparators and adapt the
+ * input indexes of all remaining comparators.
+ *
+ * \param s The stage from which to remove the input.
+ * \param input The index of the line which to remove.
+ * \return Zero on success, non-zero on failure.
+ */
 int sn_stage_remove_input (sn_stage_t *s, int input);
 
+/**
+ * Reads a stage from a \c FILE pointer and return the newly allocated stage.
+ *
+ * \param fh The file handle.
+ * \return Pointer to a newly allocated stage or \c NULL on error.
+ * \see sn_stage_write
+ */
 sn_stage_t *sn_stage_read (FILE *fh);
+
+/**
+ * Writes a stage to a \c FILE pointer.
+ *
+ * \param s The stage to write.
+ * \param fh The file handle to write to.
+ * \return Zero on success, non-zero on failure.
+ * \see sn_stage_read
+ */
 int sn_stage_write (sn_stage_t *s, FILE *fh);
 
+/**
+ * Creates a serialized form of the given stage. The serialized form is
+ * byte-order independent and can easily be sent over a computer network.
+ *
+ * \param s The stage to serialize.
+ * \param[out] ret_buffer Pointer to a pointer into which the location of the
+ *   allocated memory will be written. It is the caller's responsibility to
+ *   free this memory.
+ * \param[out] ret_buffer_size Pointer to a size_t into which the size of the
+ *   allocated memory will be written.
+ * \return Zero on success, non-zero on failure.
+ * \see sn_stage_unserialize(), sn_network_serialize()
+ */
 int sn_stage_serialize (sn_stage_t *s,
     char **ret_buffer, size_t *ret_buffer_size);
+
+/**
+ * Creates a stage from its serialized form.
+ *
+ * \param buffer Pointer to a buffer containing the stage in serialized form.
+ * \param buffer_size Size of the buffer (in bytes).
+ * \return Pointer to the newly allocated stage or \c NULL on error.
+ * \see sn_stage_serialize(), sn_network_unserialize()
+ */
 sn_stage_t *sn_stage_unserialize (char **buffer, size_t *buffer_size);
 
 #endif /* SN_STAGE_H */
