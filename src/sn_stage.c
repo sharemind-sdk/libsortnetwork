@@ -287,6 +287,9 @@ int sn_stage_invert (sn_stage_t *s)
 {
   int i;
 
+  if (s == NULL)
+    return (EINVAL);
+
   for (i = 0; i < s->comparators_num; i++)
     sn_comparator_invert (s->comparators + i);
 
@@ -297,6 +300,13 @@ int sn_stage_shift (sn_stage_t *s, int sw, int inputs_num)
 {
   int i;
 
+  if ((s == NULL) || (inputs_num < 2))
+    return (EINVAL);
+
+  sw %= inputs_num;
+  if (sw == 0)
+    return (0);
+
   for (i = 0; i < s->comparators_num; i++)
     sn_comparator_shift (s->comparators + i, sw, inputs_num);
 
@@ -306,6 +316,9 @@ int sn_stage_shift (sn_stage_t *s, int sw, int inputs_num)
 int sn_stage_swap (sn_stage_t *s, int con0, int con1)
 {
   int i;
+
+  if (s == NULL)
+    return (EINVAL);
 
   for (i = 0; i < s->comparators_num; i++)
     sn_comparator_swap (s->comparators + i, con0, con1);
