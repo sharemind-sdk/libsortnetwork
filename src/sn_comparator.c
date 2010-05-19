@@ -88,11 +88,9 @@ void sn_comparator_swap (sn_comparator_t *c, int con0, int con1)
   }
 } /* void sn_comparator_swap */
 
-int sn_comparator_compare (const void *v0, const void *v1)
+int sn_comparator_compare (const sn_comparator_t *c0,
+    const sn_comparator_t *c1)
 {
-  sn_comparator_t *c0 = (sn_comparator_t *) v0;
-  sn_comparator_t *c1 = (sn_comparator_t *) v1;
-
   if (SN_COMP_LEFT (c0) < SN_COMP_LEFT (c1))
     return (-1);
   else if (SN_COMP_LEFT (c0) > SN_COMP_LEFT (c1))
