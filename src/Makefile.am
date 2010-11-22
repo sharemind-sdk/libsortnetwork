@@ -48,7 +48,7 @@ sn_tex_SOURCES = sn-tex.c
 sn_tex_LDADD = libsortnetwork.la
 
 if BUILD_WITH_LIBPOPULATION
-bin_PROGRAMS += sn-evolution sn-evolution2 sn-evolution-cut
+bin_PROGRAMS += sn-evolution sn-evolution2 sn-evolution-cut sn-evolution-merge
 
 sn_evolution_SOURCES = sn-evolution.c
 sn_evolution_CPPFLAGS = $(AM_CPPFLAGS) $(LIBPOPULATION_CPPFLAGS)
@@ -64,4 +64,9 @@ sn_evolution_cut_SOURCES = sn-evolution-cut.c
 sn_evolution_cut_CPPFLAGS = $(AM_CPPFLAGS) $(LIBPOPULATION_CPPFLAGS)
 sn_evolution_cut_LDFLAGS = $(AM_LDFLAGS) $(LIBPOPULATION_LDFLAGS)
 sn_evolution_cut_LDADD = libsortnetwork.la $(LIBPOPULATION_LIBS)
+
+sn_evolution_merge_SOURCES = sn-evolution-merge.c
+sn_evolution_merge_CPPFLAGS = $(AM_CPPFLAGS) $(LIBPOPULATION_CPPFLAGS)
+sn_evolution_merge_LDFLAGS = $(AM_LDFLAGS) $(LIBPOPULATION_LDFLAGS)
+sn_evolution_merge_LDADD = libsortnetwork.la $(LIBPOPULATION_LIBS)
 endif
