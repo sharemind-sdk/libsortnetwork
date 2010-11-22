@@ -23,7 +23,10 @@
 # define _ISOC99_SOURCE
 #endif
 #ifndef _POSIX_C_SOURCE
-# define _POSIX_C_SOURCE 200112L
+# define _POSIX_C_SOURCE 200809L
+#endif
+#ifndef _XOPEN_SOURCE
+# define _XOPEN_SOURCE 700
 #endif
 
 #include <stdlib.h>
@@ -49,10 +52,6 @@
 #if !defined(__GNUC__) || !__GNUC__
 # define __attribute__(x) /**/
 #endif
-
-/* Yes, this is ugly, but the GNU libc doesn't export it with the above flags.
- * */
-char *strdup (const char *s);
 
 static uint64_t iteration_counter = 0;
 static int inputs_num = 16;

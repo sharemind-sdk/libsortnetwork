@@ -23,7 +23,10 @@
 # define _ISOC99_SOURCE
 #endif
 #ifndef _POSIX_C_SOURCE
-# define _POSIX_C_SOURCE 200112L
+# define _POSIX_C_SOURCE 200809L
+#endif
+#ifndef _XOPEN_SOURCE
+# define _XOPEN_SOURCE 700
 #endif
 
 #include <stdlib.h>
@@ -48,12 +51,12 @@
 #include "sn_network.h"
 #include "sn_random.h"
 
+#if !defined(__GNUC__) || !__GNUC__
+# define __attribute__(x) /**/
+#endif
+
 #define SNE_MIN(a,b) ((a) < (b) ? (a) : (b))
 #define SNE_MAX(a,b) ((a) > (b) ? (a) : (b))
-
-/* Yes, this is ugly, but the GNU libc doesn't export it with the above flags.
- * */
-char *strdup (const char *s);
 
 static uint64_t iteration_counter = 0;
 static int inputs_num = -1;
@@ -76,7 +79,7 @@ static int weight_overall = 50;
 static int weight_fails = 2;
 static int weight_stages = 1;
 
-static void sigint_handler (int signal)
+static void sigint_handler (__attribute__((unused)) int signal)
 {
   do_loop++;
 } /* void sigint_handler */
@@ -394,7 +397,7 @@ static int create_offspring (void)
   return (0);
 } /* int create_offspring */
 
-static void *evolution_thread (void *arg)
+static void *evolution_thread (__attribute__((unused)) void *arg)
 {
   while (do_loop == 0)
   {

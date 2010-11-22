@@ -19,6 +19,16 @@
  *   Florian octo Forster <ff at octo.it>
  **/
 
+#ifndef _ISOC99_SOURCE
+# define _ISOC99_SOURCE
+#endif
+#ifndef _POSIX_C_SOURCE
+# define _POSIX_C_SOURCE 200809L
+#endif
+#ifndef _XOPEN_SOURCE
+# define _XOPEN_SOURCE 700
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -28,10 +38,6 @@
 #include <pthread.h>
 
 #include "pop_stats.h"
-
-/* Yes, this is ugly, but the GNU libc doesn't export it with the above flags.
- * */
-char *strdup (const char *s);
 
 struct pop_stats_s /* {{{ */
 {
