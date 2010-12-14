@@ -3,7 +3,8 @@ include_HEADERS = sn_network.h sn_stage.h sn_comparator.h
 lib_LTLIBRARIES = libsortnetwork.la
 
 bin_PROGRAMS = sn-apply sn-batcher sn-bb sn-bb-merge sn-check-bf sn-cut \
-	       sn-info sn-markov sn-merge sn-normalize sn-oddevenmerge  \
+	       sn-info sn-markov sn-merge sn-normalize \
+	       sn-oddevenmerge sn-oddevensort \
 	       sn-shmoo sn-show sn-svg sn-tex
 
 libsortnetwork_la_SOURCES = sn_network.c sn_network.h       \
@@ -45,6 +46,9 @@ sn_normalize_LDADD = libsortnetwork.la
 
 sn_oddevenmerge_SOURCES = sn-oddevenmerge.c
 sn_oddevenmerge_LDADD = libsortnetwork.la
+
+sn_oddevensort_SOURCES = sn-oddevensort.c
+sn_oddevensort_LDADD = libsortnetwork.la
 
 sn_shmoo_SOURCES = sn-shmoo.c
 sn_shmoo_LDADD = libsortnetwork.la
