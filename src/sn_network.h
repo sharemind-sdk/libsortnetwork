@@ -87,6 +87,15 @@ void sn_network_destroy (sn_network_t *n);
 sn_network_t *sn_network_create_odd_even_mergesort (int inputs_num);
 
 /**
+ * Creates a new sorting network using the Pairwise sorting algorithm published
+ * by Ian Parberry.
+ * \param inputs_num Number of inputs / outputs of the sorting network.
+ * \return A pointer to the newly allocated sorting network or \c NULL if an
+ *   invalid number of inputs was given or allocation failed.
+ */
+sn_network_t *sn_network_create_pairwise (int inputs_num);
+
+/**
  * Append a new stage to a comparator network.
  *
  * \param n The comparator network to which to add the stage.

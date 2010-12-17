@@ -45,8 +45,15 @@ The distribution includes the following utility programs:
     way.
 
   * sn-oddevenmerge
-    Creates a odd-even-merge-sort network with a given number of inputs and
+    Create an odd-even merge network with a given number of left and right
+    inputs. The resulting network is printed to STDOUT.
+
+  * sn-oddevensort
+    Creates an odd-even mergesort network with a given number of inputs and
     prints the network to STDOUT.
+
+  * sn-pairwise
+    Create a pairwise sorting network based on the paper by Ian Parberry.
 
   * sn-shmoo
     Prints a so-called "shmoo chart" of a comparator network to STDOUT. The

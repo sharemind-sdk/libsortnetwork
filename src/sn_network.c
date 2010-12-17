@@ -135,6 +135,78 @@ sn_network_t *sn_network_create_odd_even_mergesort (int inputs_num) /* {{{ */
   }
 } /* }}} sn_network_t *sn_network_create_odd_even_mergesort */
 
+static int sn_network_create_pairwise_internal (sn_network_t *n, /* {{{ */
+    int *inputs, int inputs_num)
+{
+  int i;
+  int inputs_copy[inputs_num];
+  int m;
+
+  for (i = 1; i < inputs_num; i += 2)
+  {
+    sn_comparator_t *c = sn_comparator_create (inputs[i-1], inputs[i]);
+    sn_network_comparator_add (n, c);
+    sn_comparator_destroy (c);
+  }
+
+  if (inputs_num <= 2)
+    return (0);
+
+  /* Sort "pairs" recursively. Like with odd-even mergesort, odd and even lines
+   * are handled recursively and later reunited. */
+  for (i = 0; i < inputs_num; i += 2)
+    inputs_copy[(int) (i / 2)] = inputs[i];
+  /* Recursive call #1 with first set of lines */
+  sn_network_create_pairwise_internal (n, inputs_copy,
+      (int) ((inputs_num + 1) / 2));
+
+  for (i = 1; i < inputs_num; i += 2)
+    inputs_copy[(int) (i / 2)] = inputs[i];
+  /* Recursive call #2 with second set of lines */
+  sn_network_create_pairwise_internal (n, inputs_copy,
+      (int) (inputs_num/ 2));
+
+  /* m is the "amplitude" of the sorted pairs. This is a bit tricky to read due
+   * to different indices being used in the paper, unfortunately. */
+  m = inputs_num / 2;
+  while (m > 1)
+  {
+    for (i = 1; (i + (m - 1)) < inputs_num; i += 2)
+    {
+      int left = i;
+      int right = i + (m - 1);
+      sn_comparator_t *c;
+
+      assert (left < right);
+      c = sn_comparator_create (inputs[left], inputs[right]);
+      sn_network_comparator_add (n, c);
+      sn_comparator_destroy (c);
+    }
+
+    m = m / 2;
+  } /* while (m > 1) */
+
+  return (0);
+} /* }}} int sn_network_create_pairwise_internal */
+
+sn_network_t *sn_network_create_pairwise (int inputs_num) /* {{{ */
+{
+  sn_network_t *n = sn_network_create (inputs_num);
+  int inputs[inputs_num];
+  int i;
+
+  if (n == NULL)
+    return (NULL);
+
+  for (i = 0; i < inputs_num; i++)
+    inputs[i] = i;
+  
+  sn_network_create_pairwise_internal (n, inputs, inputs_num);
+  sn_network_compress (n);
+
+  return (n);
+} /* }}} sn_network_t *sn_network_create_pairwise */
+
 int sn_network_stage_add (sn_network_t *n, sn_stage_t *s) /* {{{ */
 {
   sn_stage_t **temp;
