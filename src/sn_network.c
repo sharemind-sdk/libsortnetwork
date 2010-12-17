@@ -464,6 +464,21 @@ int sn_network_normalize (sn_network_t *n) /* {{{ */
   return (0);
 } /* }}} int sn_network_normalize */
 
+int sn_network_remove_input (sn_network_t *n, int input) /* {{{ */
+{
+  int i;
+
+  if ((n == NULL) || (input < 0) || (input >= n->inputs_num))
+    return (EINVAL);
+
+  for (i = 0; i < n->stages_num; i++)
+    sn_stage_remove_input (n->stages[i], input);
+
+  n->inputs_num--;
+
+  return (0);
+} /* }}} int sn_network_remove_input */
+
 int sn_network_cut_at (sn_network_t *n, int input, /* {{{ */
     enum sn_network_cut_dir_e dir)
 {
@@ -492,13 +507,36 @@ int sn_network_cut_at (sn_network_t *n, int input, /* {{{ */
   assert (((dir == DIR_MIN) && (position == 0))
       || ((dir == DIR_MAX) && (position == (n->inputs_num - 1))));
 
-  for (i = 0; i < n->stages_num; i++)
-    sn_stage_remove_input (n->stages[i], position);
-
-  n->inputs_num--;
+  sn_network_remove_input (n, position);
 
   return (0);
 } /* }}} int sn_network_cut_at */
+
+int sn_network_cut (sn_network_t *n, int *mask) /* {{{ */
+{
+  int inputs_num;
+  int i;
+
+  for (i = 0; i < n->stages_num; i++)
+  {
+    sn_stage_t *s = n->stages[i];
+
+    sn_stage_cut (s, mask, n->stages);
+  }
+
+  /* Use a copy of this member since it will be updated by
+   * sn_network_remove_input(). */
+  inputs_num = n->inputs_num;
+  for (i = 0; i < inputs_num; i++)
+  {
+    if (mask[i] < 0)
+      sn_network_remove_input (n, 0);
+    else if (mask[i] > 0)
+      sn_network_remove_input (n, n->inputs_num - 1);
+  }
+
+  return (0);
+} /* }}} int sn_network_cut */
 
 /* sn_network_concatenate
  *

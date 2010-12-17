@@ -191,6 +191,9 @@ int sn_stage_swap (sn_stage_t *s, int con0, int con1);
  */
 int sn_stage_cut_at (sn_stage_t *s, int input, enum sn_network_cut_dir_e dir);
 
+/* FIXME: Documentation */
+int sn_stage_cut (sn_stage_t *s, int *mask, sn_stage_t **prev);
+
 /**
  * Remove an input from a stage, remove all touching comparators and adapt the
  * input indexes of all remaining comparators.

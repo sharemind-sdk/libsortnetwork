@@ -26,7 +26,6 @@
  * \endverbatim
  **/
 
-
 #ifndef SN_NETWORK_H
 #define SN_NETWORK_H 1
 
@@ -211,6 +210,16 @@ int sn_network_compress (sn_network_t *n);
 int sn_network_normalize (sn_network_t *n);
 
 /**
+ * Removes an input and all comparators touching that input from the comparator
+ * network.
+ *
+ * \param n The network to modify.
+ * \param input The zero-based index of the input to remove.
+ * \return Zero on success, non-zero on failure.
+ */
+int sn_network_remove_input (sn_network_t *n, int input);
+
+/**
  * Removes an inputs from a comparator network by assuming positive or negative
  * infinity to be supplied to a given input. The value will take a
  * deterministic way through the comparator network. After removing the path
@@ -225,6 +234,9 @@ int sn_network_normalize (sn_network_t *n);
  * \return Zero on success, non-zero on failure.
  */
 int sn_network_cut_at (sn_network_t *n, int input, enum sn_network_cut_dir_e dir);
+
+/* FIXME: Documentation */
+int sn_network_cut (sn_network_t *n, int *mask);
 
 /**
  * An alias for sn_network_combine_odd_even_merge().

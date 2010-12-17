@@ -361,6 +361,47 @@ int sn_stage_cut_at (sn_stage_t *s, int input, enum sn_network_cut_dir_e dir)
   return (new_position);
 } /* int sn_stage_cut_at */
 
+int sn_stage_cut (sn_stage_t *s, int *mask, /* {{{ */
+    sn_stage_t **prev)
+{
+  int i;
+
+  if ((s == NULL) || (mask == NULL) || (prev == NULL))
+    return (EINVAL);
+
+  for (i = 0; i < s->comparators_num; i++)
+  {
+    sn_comparator_t *c = s->comparators + i;
+    int left = SN_COMP_LEFT (c);
+    int right = SN_COMP_RIGHT (c);
+
+    if ((mask[left] == 0)
+        && (mask[right] == 0))
+      continue;
+
+    /* Check if we need to update the cut position */
+    if ((mask[left] != mask[right])
+        && ((mask[left] > 0) || (mask[right] < 0)))
+    {
+      int tmp;
+      int j;
+
+      tmp = mask[right];
+      mask[right] = mask[left];
+      mask[left] = tmp;
+
+      for (j = s->depth - 1; j >= 0; j--)
+        sn_stage_swap (prev[j],
+            left, right);
+    }
+
+    sn_stage_comparator_remove (s, i);
+    i--;
+  } /* for (i = 0; i < s->comparators_num; i++) */
+
+  return (0);
+} /* }}} int sn_stage_cut */
+
 int sn_stage_remove_input (sn_stage_t *s, int input)
 {
   int i;
