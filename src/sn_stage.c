@@ -152,6 +152,7 @@ int sn_stage_comparator_remove (sn_stage_t *s, int c_num)
 sn_stage_t *sn_stage_clone (const sn_stage_t *s)
 {
   sn_stage_t *s_copy;
+  int i;
 
   s_copy = sn_stage_create (s->depth);
   if (s_copy == NULL)
