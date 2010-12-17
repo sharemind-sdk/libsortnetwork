@@ -56,6 +56,7 @@ static sn_network_t *best_solution = NULL;
 static int best_rating = INT_MAX;
 
 static _Bool do_loop = 1;
+static uint64_t max_iterations = 0;
 
 static void sigint_handler (int signal __attribute__((unused)))
 {
@@ -69,6 +70,7 @@ static void exit_usage (const char *name, int status)
       "Valid options are:\n"
       "  -i <file>     Initial input file (REQUIRED)\n"
       "  -o <file>     Write the current best solution to <file>\n"
+      "  -n <number>   Maximum number of steps (iterations) to perform\n"
       "  -h            Display usage information (this message)\n"
       "\n",
       name);
@@ -79,7 +81,7 @@ int read_options (int argc, char **argv)
 {
   int option;
 
-  while ((option = getopt (argc, argv, "i:o:p:P:s:t:h")) != -1)
+  while ((option = getopt (argc, argv, "i:o:n:h")) != -1)
   {
     switch (option)
     {
@@ -99,6 +101,21 @@ int read_options (int argc, char **argv)
 	break;
       }
 
+      case 'n':
+      {
+	errno = 0;
+	max_iterations = (uint64_t) strtoull (optarg,
+	    /* endptr = */ NULL,
+	    /* base   = */ 0);
+	if (errno != 0)
+	{
+	  fprintf (stderr, "Parsing integer argument failed: %s\n",
+	      strerror (errno));
+	  exit_usage (argv[0], EXIT_FAILURE);
+	}
+	break;
+      }
+
       case 'h':
       default:
 	exit_usage (argv[0], EXIT_SUCCESS);
@@ -111,14 +128,9 @@ int read_options (int argc, char **argv)
 static int rate_network (const sn_network_t *n)
 {
   int rate;
-  int i;
 
   rate = SN_NETWORK_STAGE_NUM (n) * SN_NETWORK_INPUT_NUM (n);
-  for (i = 0; i < SN_NETWORK_STAGE_NUM (n); i++)
-  {
-    sn_stage_t *s = SN_NETWORK_STAGE_GET (n, i);
-    rate += SN_STAGE_COMP_NUM (s);
-  }
+  rate += sn_network_get_comparator_num (n);
 
   return (rate);
 } /* int rate_network */
@@ -194,6 +206,9 @@ static void random_walk (sn_network_t *n)
     sn_network_destroy (n);
     n = next;
     iteration_counter++;
+
+    if ((max_iterations > 0) && (iteration_counter >= max_iterations))
+      break;
   } /* while (do_loop) */
 
   sn_network_destroy (n);
