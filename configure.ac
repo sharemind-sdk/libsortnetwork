@@ -1,4 +1,4 @@
-AC_PREREQ([2.65])
+AC_PREREQ([2.61])
 AC_INIT([libsortnetwork], [1.0.0], [ff@octo.it])
 AC_CONFIG_SRCDIR([src/sn_network.c])
 AC_CONFIG_HEADERS([src/config.h])
@@ -16,9 +16,7 @@ AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
 
 # Libtool stuff
-LT_CONFIG_LTDL_DIR([libltdl])
 LT_INIT
-LTDL_INIT
 
 if test "x$GCC" = "xyes"
 then
