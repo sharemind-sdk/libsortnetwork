@@ -23,6 +23,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "sn_network.h"
 
@@ -34,9 +35,58 @@
 #define Y_SPACING 40
 
 static double x_offset = OUTER_SPACING;
-static int next_vertex_number = 0;
 
-static int tex_show_stage (sn_stage_t *s)
+static double determine_stage_width (sn_stage_t *s)
+{
+  int lines[s->comparators_num];
+  int right[s->comparators_num];
+  int lines_used = 0;
+  int i;
+
+  if (SN_STAGE_COMP_NUM (s) == 0)
+    return (0.0);
+
+  for (i = 0; i < SN_STAGE_COMP_NUM (s); i++)
+  {
+    lines[i] = -1;
+    right[i] = -1;
+  }
+
+  for (i = 0; i < SN_STAGE_COMP_NUM (s); i++)
+  {
+    int j;
+    sn_comparator_t *c = SN_STAGE_COMP_GET (s, i);
+
+    for (j = 0; j < lines_used; j++)
+      if (SN_COMP_LEFT (c) > right[j])
+	break;
+
+    lines[i] = j;
+    right[j] = SN_COMP_RIGHT (c);
+    if (j >= lines_used)
+      lines_used = j + 1;
+  }
+  assert (lines_used >= 1);
+
+  return (((double) (lines_used - 1)) * INNER_SPACING);
+}
+
+static double determine_network_width (sn_network_t *n) /* {{{ */
+{
+  double width;
+  int i;
+
+  /* Spacing between stages and at the beginning and end of the network */
+  width = (SN_NETWORK_STAGE_NUM (n) + 1) * OUTER_SPACING;
+
+  /* Spacing required within a stage */
+  for (i = 0; i < SN_NETWORK_STAGE_NUM (n); i++)
+    width += determine_stage_width (SN_NETWORK_STAGE_GET (n, i));
+
+  return (width);
+} /* }}} double determine_network_width */
+
+static int sn_svg_show_stage (sn_stage_t *s)
 {
   int lines[s->comparators_num];
   int right[s->comparators_num];
@@ -55,15 +105,6 @@ static int tex_show_stage (sn_stage_t *s)
   {
     int j;
     sn_comparator_t *c = SN_STAGE_COMP_GET (s, i);
-
-    int min_num;
-    int max_num;
-
-    min_num = next_vertex_number;
-    next_vertex_number++;
-
-    max_num = next_vertex_number;
-    next_vertex_number++;
 
     for (j = 0; j < lines_used; j++)
       if (SN_COMP_LEFT (c) > right[j])
@@ -96,12 +137,16 @@ static int tex_show_stage (sn_stage_t *s)
   printf ("\n");
 
   return (0);
-} /* int tex_show_stage */
+} /* int sn_svg_show_stage */
 
 int main (int argc, char **argv)
 {
   sn_network_t *n;
   FILE *fh = NULL;
+
+  double svg_height;
+  double svg_width;
+
   int i;
 
   if (argc == 1)
@@ -123,15 +168,20 @@ int main (int argc, char **argv)
     return (1);
   }
 
+  svg_height = (2 * Y_OFFSET) + ((SN_NETWORK_INPUT_NUM (n) - 1) * Y_SPACING);
+  svg_width = determine_network_width (n);
+
   printf ("<?xml version=\"1.0\" standalone=\"no\"?>\n"
       "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" "
       "\"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n"
-      "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n");
+      "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" "
+      "width=\"%gpt\" height=\"%gpt\" viewBox=\"0 0 %g %g\">\n",
+      svg_width, svg_height, svg_width, svg_height);
 
   printf ("<!-- Output generated with sn-svg from %s -->\n", PACKAGE_STRING);
 
   for (i = 0; i < SN_NETWORK_STAGE_NUM (n); i++)
-     tex_show_stage (SN_NETWORK_STAGE_GET (n, i));
+     sn_svg_show_stage (SN_NETWORK_STAGE_GET (n, i));
 
   printf ("  <!-- horizontal lines -->\n");
   for (i = 0; i < SN_NETWORK_INPUT_NUM (n); i++)
