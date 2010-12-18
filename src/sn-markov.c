@@ -39,6 +39,7 @@
 #include <signal.h>
 #include <assert.h>
 #include <limits.h>
+#include <errno.h>
 
 #include "sn_network.h"
 #include "sn_random.h"
