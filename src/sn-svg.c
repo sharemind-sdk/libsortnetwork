@@ -23,6 +23,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #include "sn_network.h"
 
@@ -36,7 +37,41 @@
 static double x_offset = OUTER_SPACING;
 static int next_vertex_number = 0;
 
-static int tex_show_stage (sn_stage_t *s)
+static _Bool embedded = 0;
+
+static void exit_usage (void) /* {{{ */
+{
+  printf ("Usage: sn-svg [options] [file]\n"
+      "\n"
+      "Valid options are:\n"
+      "  -e    Create output suitable for embedding into other XML files.\n" 
+      "\n");
+  exit (EXIT_FAILURE);
+} /* }}} void exit_usage */
+
+static int read_options (int argc, char **argv) /* {{{ */
+{
+  int option;
+
+  while ((option = getopt (argc, argv, "eh?")) != -1)
+  {
+    switch (option)
+    {
+      case 'e':
+	embedded = 1;
+	break;
+
+      case 'h':
+      case '?':
+      default:
+	exit_usage ();
+    }
+  }
+
+  return (0);
+} /* }}} int read_options */
+
+static int tex_show_stage (sn_stage_t *s) /* {{{ */
 {
   int lines[s->comparators_num];
   int right[s->comparators_num];
@@ -81,10 +116,10 @@ static int tex_show_stage (sn_stage_t *s)
       int y1 = Y_OFFSET + (SN_COMP_MIN (c) * Y_SPACING);
       int y2 = Y_OFFSET + (SN_COMP_MAX (c) * Y_SPACING);
 
-      printf ("  <line x1=\"%g\" y1=\"%i\" x2=\"%g\" y2=\"%i\" "
+      printf ("  <svg:line x1=\"%g\" y1=\"%i\" x2=\"%g\" y2=\"%i\" "
 	  "stroke=\"black\" stroke-width=\"1\" />\n"
-	  "  <circle cx=\"%g\" cy=\"%i\" r=\"%g\" fill=\"black\" />\n"
-	  "  <circle cx=\"%g\" cy=\"%i\" r=\"%g\" fill=\"black\" />\n",
+	  "  <svg:circle cx=\"%g\" cy=\"%i\" r=\"%g\" fill=\"black\" />\n"
+	  "  <svg:circle cx=\"%g\" cy=\"%i\" r=\"%g\" fill=\"black\" />\n",
 	  x1, y1, x2, y2,
 	  x1, y1, RADIUS,
 	  x2, y2, RADIUS);
@@ -96,24 +131,23 @@ static int tex_show_stage (sn_stage_t *s)
   printf ("\n");
 
   return (0);
-} /* int tex_show_stage */
+} /* }}} int tex_show_stage */
 
-int main (int argc, char **argv)
+int main (int argc, char **argv) /* {{{ */
 {
   sn_network_t *n;
   FILE *fh = NULL;
   int i;
 
-  if (argc == 1)
+  read_options (argc, argv);
+
+  if ((argc - optind) == 0)
     fh = stdin;
-  else if (argc == 2)
-    fh = fopen (argv[1], "r");
+  else if ((argc - optind) == 1)
+    fh = fopen (argv[optind], "r");
 
   if (fh == NULL)
-  {
-    printf ("fh == NULL!\n");
-    return (1);
-  }
+    exit_usage ();
 
   n = sn_network_read (fh);
 
@@ -123,10 +157,13 @@ int main (int argc, char **argv)
     return (1);
   }
 
-  printf ("<?xml version=\"1.0\" standalone=\"no\"?>\n"
-      "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" "
-      "\"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n"
-      "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n");
+  if (embedded)
+    printf ("<svg:svg version=\"1.1\">\n");
+  else
+    printf ("<?xml version=\"1.0\" standalone=\"no\"?>\n"
+	"<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" "
+	"\"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n"
+	"<svg:svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n");
 
   printf ("<!-- Output generated with sn-svg from %s -->\n", PACKAGE_STRING);
 
@@ -135,14 +172,14 @@ int main (int argc, char **argv)
 
   printf ("  <!-- horizontal lines -->\n");
   for (i = 0; i < SN_NETWORK_INPUT_NUM (n); i++)
-    printf ("  <line x1=\"%g\" y1=\"%i\" x2=\"%g\" y2=\"%i\" "
+    printf ("  <svg:line x1=\"%g\" y1=\"%i\" x2=\"%g\" y2=\"%i\" "
 	"stroke=\"black\" stroke-width=\"1\" />\n",
 	0.0, Y_OFFSET + (i * Y_SPACING),
 	x_offset, Y_OFFSET + (i * Y_SPACING));
 
-  printf ("</svg>\n");
+  printf ("</svg:svg>\n");
 
   return (0);
-} /* int main */
+} /* }}} int main */
 
-/* vim: set shiftwidth=2 softtabstop=2 : */
+/* vim: set shiftwidth=2 softtabstop=2 fdm=marker : */
