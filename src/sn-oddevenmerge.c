@@ -33,30 +33,36 @@
 
 int main (int argc, char **argv)
 {
-  sn_network_t *n;
-  size_t inputs_num;
+  sn_network_t *sn_left;
+  sn_network_t *sn_right;
+  sn_network_t *oem;
+  int inputs_left;
+  int inputs_right;
 
-  if (argc != 2)
+  if (argc != 3)
   {
-    printf ("Usage: %s <num inputs>\n", argv[0]);
+    printf ("Usage: %s <inputs left> <inputs right>\n", argv[0]);
     return (0);
   }
 
-  inputs_num = (size_t) atoi (argv[1]);
-  if (inputs_num < 2)
+  inputs_left =  atoi (argv[1]);
+  inputs_right = atoi (argv[2]);
+  if ((inputs_left < 1) || (inputs_right < 1))
   {
-    fprintf (stderr, "Invalid number of inputs: %zu\n", inputs_num);
+    fprintf (stderr, "Invalid number of inputs: %i/%i\n",
+	inputs_left, inputs_right);
     return (1);
   }
 
-  n = sn_network_create_odd_even_mergesort (inputs_num);
-  if (n == NULL)
-  {
-    printf ("n == NULL!\n");
-    return (1);
-  }
+  sn_left = sn_network_create (inputs_left);
+  sn_right = sn_network_create (inputs_right);
+  oem = sn_network_combine_odd_even_merge (sn_left, sn_right);
 
-  sn_network_write (n, stdout);
+  sn_network_write (oem, stdout);
+
+  sn_network_destroy (sn_left);
+  sn_network_destroy (sn_right);
+  sn_network_destroy (oem);
 
   return (0);
 } /* int main */
