@@ -168,40 +168,16 @@ int read_options (int argc, char **argv) /* {{{ */
   return (0);
 } /* }}} int read_options */
 
-static int apply_cut (sn_network_t *n, int input) /* {{{ */
-{
-  enum sn_network_cut_dir_e dir = DIR_MAX;
-
-  if (input < 0)
-  {
-    dir = DIR_MIN;
-    input *= (-1);
-  }
-  input--;
-
-  return (sn_network_cut_at (n, input, dir));
-} /* }}} int apply_cut */
-
-static int apply (sn_network_t *n, const individuum_t *ind) /* {{{ */
-{
-  int i;
-
-  for (i = 0; i < cuts_num; i++)
-    apply_cut (n, ind[i]);
-
-  return (0);
-} /* }}} int apply */
-
 static int rate_network (const sn_network_t *n) /* {{{ */
 {
   int rate;
   int i;
 
-  rate = SN_NETWORK_STAGE_NUM (n) * SN_NETWORK_INPUT_NUM (n);
+  rate = SN_NETWORK_STAGE_NUM (n);
   for (i = 0; i < SN_NETWORK_STAGE_NUM (n); i++)
   {
     sn_stage_t *s = SN_NETWORK_STAGE_GET (n, i);
-    rate += SN_STAGE_COMP_NUM (s);
+    rate += 2 * SN_STAGE_COMP_NUM (s);
   }
 
   return (rate);
@@ -210,12 +186,15 @@ static int rate_network (const sn_network_t *n) /* {{{ */
 static sn_network_t *individuum_to_network (const individuum_t *ind) /* {{{ */
 {
   sn_network_t *n;
+  int mask[SN_NETWORK_INPUT_NUM (initial_network)];
+
+  memcpy (mask, ind, sizeof (mask));
 
   n = sn_network_clone (initial_network);
   if (n == NULL)
     return (NULL);
 
-  apply (n, ind);
+  sn_network_cut (n, mask);
 
   sn_network_normalize (n);
   sn_network_compress (n);
@@ -240,7 +219,7 @@ static int ind_rate (const void *arg) /* {{{ */
 
 static void *ind_copy (const void *in) /* {{{ */
 {
-  size_t s = sizeof (individuum_t) * cuts_num;
+  size_t s = sizeof (individuum_t) * inputs_num;
   void *out;
 
   out = malloc (s);
@@ -257,76 +236,89 @@ static void ind_free (void *ind) /* {{{ */
     free (ind);
 } /* }}} void ind_free */
 
-static void ind_print (const individuum_t *ind)
+static void ind_print (const individuum_t *ind) /* {{{ */
 {
   int i;
 
-  for (i = 0; i < cuts_num; i++)
+  for (i = 0; i < inputs_num; i++)
   {
-    int input = ind[i];
-    int dir = 0;
-
-    if (input < 0)
-    {
-      input *= -1;
-      dir = 1;
-    }
-    input--;
-
-    printf ("%s(%3i)\n", (dir == 0) ? "MAX" : "MIN", input);
+    printf ("%3i: %s\n", i, (ind[i] == 0) ? "-" :
+        (ind[i] < 0) ? "MIN" : "MAX");
   }
+
+  printf ("# sn-cut");
+  for (i = 0; i < inputs_num; i++)
+  {
+    if (ind[i] == 0)
+      continue;
+    printf (" %i:%s", i, (ind[i] < 0) ? "MIN" : "MAX");
+  }
+  printf ("\n");
 } /* }}} void ind_print */
+
+/* Simply makes sure the right amount of cutting positions exist. */
+static void mutate (individuum_t *ind, int this_cuts_num) /* {{{ */
+{
+  int i;
+
+  if (this_cuts_num < 0)
+  {
+    this_cuts_num = 0;
+    for (i = 0; i < inputs_num; i++)
+      if (ind[i] != 0)
+        this_cuts_num++;
+  }
+
+  while (this_cuts_num != cuts_num)
+  {
+    i = sn_bounded_random (0, inputs_num - 1);
+
+    if ((this_cuts_num < cuts_num)
+        && (ind[i] == 0))
+    {
+      ind[i] = (sn_bounded_random (0, 1) * 2) - 1;
+      assert (ind[i] != 0);
+      this_cuts_num++;
+    }
+    else if ((this_cuts_num > cuts_num)
+        && (ind[i] != 0))
+    {
+      ind[i] = 0;
+      this_cuts_num--;
+    }
+  }
+} /* }}} void mutate */
 
 static individuum_t *recombine (individuum_t *i0, individuum_t *i1) /* {{{ */
 {
   individuum_t *offspring;
-  int cut_at;
+  int this_cuts_num;
   int i;
 
   if ((i0 == NULL) || (i1 == NULL))
     return (NULL);
 
-  offspring = malloc (sizeof (*offspring) * cuts_num);
+  offspring = malloc (sizeof (*offspring) * inputs_num);
   if (offspring == NULL)
     return (NULL);
-  memset (offspring, 0, sizeof (*offspring) * cuts_num);
+  memset (offspring, 0, sizeof (*offspring) * inputs_num);
 
-  cut_at = sn_bounded_random (0, cuts_num);
-  for (i = 0; i < cuts_num; i++)
+  this_cuts_num = 0;
+  for (i = 0; i < this_cuts_num; i++)
   {
-    if (i < cut_at)
+    if (sn_bounded_random (0, 1) == 0)
       offspring[i] = i0[i];
     else
       offspring[i] = i1[i];
+
+    if (offspring[i] != 0)
+      this_cuts_num++;
   }
+
+  mutate (offspring, this_cuts_num);
 
   return (offspring);
 } /* }}} individuum_t *recombine */
-
-static void random_cut (individuum_t *ind, int index) /* {{{ */
-{
-  int max_input = inputs_num - index;
-
-  ind[index] = 0;
-  while (ind[index] == 0)
-    ind[index] = sn_bounded_random ((-1) * max_input, max_input);
-} /* }}} void random_cut */
-
-static void mutate (individuum_t *ind) /* {{{ */
-{
-  int reset_input;
-  int i;
-
-  reset_input = sn_bounded_random (0, 3 * cuts_num);
-  for (i = 0; i < cuts_num; i++)
-  {
-    if (reset_input == i)
-      random_cut (ind, i);
-
-    if (sn_bounded_random (0, 100))
-      ind[i] *= (-1);
-  }
-} /* }}} void mutate */
 
 static int create_offspring (void) /* {{{ */
 {
@@ -338,7 +330,6 @@ static int create_offspring (void) /* {{{ */
   i1 = population_get_random (population);
 
   i2 = recombine (i0, i1);
-  mutate (i2);
 
   population_insert (population, i2);
 
@@ -489,17 +480,14 @@ int main (int argc, char **argv) /* {{{ */
   for (i = 0; i < max_population_size; i++)
   { /* create a random initial individuum */
     individuum_t *ind;
-    int i;
 
-    ind = malloc (sizeof (*ind) * cuts_num);
+    ind = calloc (inputs_num, sizeof (*ind));
     if (ind == NULL)
     {
-      fprintf (stderr, "malloc failed.\n");
+      fprintf (stderr, "calloc failed.\n");
       exit (EXIT_FAILURE);
     }
-
-    for (i = 0; i < cuts_num; i++)
-      random_cut (ind, i);
+    mutate (ind, /* num cuts = */ 0);
 
     population_insert (population, ind);
     ind_free (ind);
