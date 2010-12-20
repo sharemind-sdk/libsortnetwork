@@ -21,6 +21,13 @@
 
 #include "config.h"
 
+#ifndef _ISOC99_SOURCE
+# define _ISOC99_SOURCE
+#endif
+#ifndef _POSIX_C_SOURCE
+# define _POSIX_C_SOURCE 200112L
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -70,7 +77,7 @@ static int read_options (int argc, char **argv) /* {{{ */
   return (0);
 } /* }}} int read_options */
 
-static double determine_stage_width (sn_stage_t *s)
+static double determine_stage_width (sn_stage_t *s) /* {{{ */
 {
   int lines[s->comparators_num];
   int right[s->comparators_num];
@@ -103,7 +110,7 @@ static double determine_stage_width (sn_stage_t *s)
   assert (lines_used >= 1);
 
   return (((double) (lines_used - 1)) * INNER_SPACING);
-}
+} /* }}} double determine_stage_width */
 
 static double determine_network_width (sn_network_t *n) /* {{{ */
 {
