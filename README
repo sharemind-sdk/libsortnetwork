@@ -68,6 +68,18 @@ The distribution includes the following utility programs:
     network to STDOUT.
 
 
+License
+-------
+
+The libsortnetwork library is licensed under the GNU Lesser General Public
+License, version 2.1 or later (LGPLv2.1+).
+
+Other utility programs included in this distribution, for example
+"sn-normalize", are licensed under the GNU General Public License, version 2
+(GPLv2). The exact terms of this license can be found in the file "COPYING" in
+the top source directory.
+
+
 Author
 ------
 
