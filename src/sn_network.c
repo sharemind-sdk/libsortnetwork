@@ -207,6 +207,33 @@ sn_network_t *sn_network_create_pairwise (int inputs_num) /* {{{ */
   return (n);
 } /* }}} sn_network_t *sn_network_create_pairwise */
 
+int sn_network_network_add (sn_network_t *n, sn_network_t *other) /* {{{ */
+{
+  int stages_num;
+  sn_stage_t **tmp;
+
+  if ((n == NULL) || (other == NULL))
+    return (EINVAL);
+
+  stages_num = n->stages_num + other->stages_num;
+  if (stages_num <= n->stages_num)
+    return (EINVAL);
+
+  tmp = realloc (n->stages, sizeof (*n->stages) * stages_num);
+  if (tmp == NULL)
+    return (ENOMEM);
+  n->stages = tmp;
+
+  memcpy (n->stages + n->stages_num, other->stages,
+      sizeof (*other->stages) * other->stages_num);
+  n->stages_num = stages_num;
+
+  free (other->stages);
+  free (other);
+
+  return (0);
+} /* }}} int sn_network_network_add */
+
 int sn_network_stage_add (sn_network_t *n, sn_stage_t *s) /* {{{ */
 {
   sn_stage_t **temp;

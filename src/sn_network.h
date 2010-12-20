@@ -95,6 +95,18 @@ sn_network_t *sn_network_create_odd_even_mergesort (int inputs_num);
 sn_network_t *sn_network_create_pairwise (int inputs_num);
 
 /**
+ * Append another network to a given network.
+ *
+ * \param n The comparator network to which the other network is added. This
+ *   network is modified.
+ * \param other The network to be added to the first network. This network is
+ *   consumed by this function and the memory pointed to is freed. You cannot
+ *   use that network after this call, so use sn_network_clone() if required.
+ * \return Zero on success, non-zero on failure.
+ */
+int sn_network_network_add (sn_network_t *n, sn_network_t *other);
+
+/**
  * Append a new stage to a comparator network.
  *
  * \param n The comparator network to which to add the stage.
