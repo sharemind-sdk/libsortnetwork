@@ -33,7 +33,7 @@
 
 #include "sn_network.h"
 
-/* 21cm (DIN-A4) - 2x3cm Rand = 15cm
+/* 21cm (DIN-A4) - 2x3cm Rand = 15cm */
 static double output_width = 15.0;
 static double scale = 1.0;
 static double inner_spacing = 0.3;
