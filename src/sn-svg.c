@@ -211,8 +211,8 @@ int main (int argc, char **argv) /* {{{ */
     printf ("<?xml version=\"1.0\" standalone=\"no\"?>\n"
 	"<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" "
 	"\"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n"
-	"<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" "
-	"width=\"%gpt\" height=\"%gpt\" viewBox=\"0 0 %g %g\">\n",
+	"<svg:svg xmlns:svg=\"http://www.w3.org/2000/svg\" version=\"1.1\" "
+	"width=\"%g\" height=\"%g\" viewBox=\"0 0 %g %g\">\n",
 	svg_width, svg_height, svg_width, svg_height);
 
   printf ("<!-- Output generated with sn-svg from %s -->\n", PACKAGE_STRING);
