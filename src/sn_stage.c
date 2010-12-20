@@ -166,8 +166,13 @@ sn_stage_t *sn_stage_clone (const sn_stage_t *s)
     return (NULL);
   }
 
-  memcpy (s_copy->comparators, s->comparators,
-      s->comparators_num * sizeof (sn_comparator_t));
+  for (i = 0; i < s->comparators_num; i++)
+  {
+    SN_COMP_MIN (s_copy->comparators + i) = SN_COMP_MIN (s->comparators + i);
+    SN_COMP_MAX (s_copy->comparators + i) = SN_COMP_MAX (s->comparators + i);
+    SN_COMP_USER_DATA (s_copy->comparators + i) = NULL;
+    SN_COMP_FREE_FUNC (s_copy->comparators + i) = NULL;
+  }
   s_copy->comparators_num = s->comparators_num;
 
   return (s_copy);

@@ -42,12 +42,17 @@ sn_comparator_t *sn_comparator_create (int min, int max)
 
   c->min = min;
   c->max = max;
+  c->user_data = NULL;
+  c->free_func = NULL;
 
   return (c);
 } /* sn_comparator_t *sn_comparator_create */
 
 void sn_comparator_destroy (sn_comparator_t *c)
 {
+  if (c->free_func != NULL)
+    c->free_func (c->user_data);
+
   if (c != NULL)
     free (c);
 } /* void sn_comparator_destroy */

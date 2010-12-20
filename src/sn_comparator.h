@@ -35,6 +35,8 @@ struct sn_comparator_s
 {
   int min; /**< Index of the line onto which the smaller element will be put. */
   int max; /**< Index of the line onto which the larger element will be put. */
+  void *user_data; /**< Pointer to user data. */
+  void (*free_func) (void *); /**< Pointer to a function used to free the user data pointer. */
 };
 typedef struct sn_comparator_s sn_comparator_t;
 
@@ -46,6 +48,11 @@ typedef struct sn_comparator_s sn_comparator_t;
 #define SN_COMP_MIN(c) (c)->min
 /** Returns the index of the line onto which the larger element will be put. */
 #define SN_COMP_MAX(c) (c)->max
+
+/** Expands to the user data pointer. */
+#define SN_COMP_USER_DATA(c) (c)->user_data
+/** Expands to the free-function pointer. */
+#define SN_COMP_FREE_FUNC(c) (c)->free_func
 
 /**
  * Allocates, initializes and returns a new comparator object. The returned
