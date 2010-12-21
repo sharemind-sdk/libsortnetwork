@@ -2,7 +2,7 @@ include_HEADERS = sn_network.h sn_stage.h sn_comparator.h
 
 lib_LTLIBRARIES = libsortnetwork.la
 
-bin_PROGRAMS = sn-apply sn-batcher sn-bb sn-bb-merge sn-check-bf sn-cut \
+bin_PROGRAMS = sn-apply sn-bitonicsort sn-bb sn-bb-merge sn-check-bf sn-cut \
 	       sn-info sn-markov sn-merge sn-normalize \
 	       sn-oddevenmerge sn-oddevensort sn-pairwise \
 	       sn-shmoo sn-show sn-svg sn-tex
@@ -16,15 +16,15 @@ libsortnetwork_la_LDFLAGS = -version-info 0:0:0
 sn_apply_SOURCES = sn-apply.c
 sn_apply_LDADD = libsortnetwork.la
 
-sn_batcher_SOURCES = sn-batcher.c
-sn_batcher_LDADD = libsortnetwork.la
-
 sn_bb_SOURCES = sn-bb.c
 sn_bb_LDADD = libsortnetwork.la -lm
 
 sn_bb_merge_SOURCES = sn-bb.c
 sn_bb_merge_CPPFLAGS = $(AM_CPPFLAGS) -DBUILD_MERGE=1
 sn_bb_merge_LDADD = libsortnetwork.la -lm
+
+sn_bitonicsort_SOURCES = sn-bitonicsort.c
+sn_bitonicsort_LDADD = libsortnetwork.la
 
 sn_check_bf_SOURCES = sn-check-bf.c
 sn_check_bf_LDADD = libsortnetwork.la

@@ -19,10 +19,9 @@ The distribution includes the following utility programs:
     Reads a list of values from STDIN and applies a given comparator network to
     the list. The resulting list of printed to STDOUT.
 
-  * sn-batcher
-    Creates a batcher bitonic-merge-sort network with a given number of inputs
-    and prints the network to STDOUT. The number of inputs must be a power of
-    two.
+  * sn-bitonicsort
+    Creates a bitonic mergesort network with a given number of inputs and
+    prints the network to STDOUT. The number of inputs must be a power of two.
 
   * sn-check-bf
     Does a brute-force check whether a given comparator network is a sort
