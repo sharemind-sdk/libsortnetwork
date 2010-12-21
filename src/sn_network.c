@@ -82,24 +82,22 @@ sn_network_t *sn_network_create_odd_even_mergesort (int inputs_num) /* {{{ */
 {
   sn_network_t *n;
 
-  n = sn_network_create (inputs_num);
-
   assert (inputs_num > 0);
   if (inputs_num == 1)
   {
-    return (n);
+    return (sn_network_create (inputs_num));
   }
   if (inputs_num == 2)
   {
-    sn_stage_t *s;
     sn_comparator_t c;
 
+    n = sn_network_create (inputs_num);
+
+    memset (&c, 0, sizeof (c));
     c.min = 0;
     c.max = 1;
 
-    s = sn_stage_create (/* depth = */ 0);
-    sn_stage_comparator_add (s, &c);
-    sn_network_stage_add (n, s);
+    sn_network_comparator_add (n, &c);
 
     return (n);
   }
