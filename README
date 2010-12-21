@@ -51,7 +51,7 @@ The distribution includes the following utility programs:
     Creates an odd-even mergesort network with a given number of inputs and
     prints the network to STDOUT.
 
-  * sn-pairwise
+  * sn-pairwisesort
     Create a pairwise sorting network based on the paper by Ian Parberry.
 
   * sn-shmoo
