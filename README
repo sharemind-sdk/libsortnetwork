@@ -20,12 +20,12 @@ The distribution includes the following utility programs:
     the list. The resulting list of printed to STDOUT.
 
   * sn-bitonicmerge
-    Create a bitonic merge network with a given number of left and right
+    Creates a bitonic merge network with a given number of left and right
     inputs. The resulting network is printed to STDOUT.
 
   * sn-bitonicsort
     Creates a bitonic mergesort network with a given number of inputs and
-    prints the network to STDOUT. The number of inputs must be a power of two.
+    prints the network to STDOUT.
 
   * sn-check-bf
     Does a brute-force check whether a given comparator network is a sort
@@ -33,14 +33,14 @@ The distribution includes the following utility programs:
     time, so only small networks can be tested within a reasonable time.
 
   * sn-cut
-    Remove an input by assuming positive or negative infinity to be applied to
-    one input and "winning" or "losing" all comparisons.
+    Removes one or more inputs by assuming positive or negative infinity to be
+    applied to the inputs to remove.
 
   * sn-info
-    Display information about a comparator network in human readable form.
+    Displays information about a comparator network in human readable form.
 
   * sn-merge
-    Combine two sort networks using the odd-even-merge network.
+    Combines two sort networks using the odd-even or bitonic merge network.
 
   * sn-normalize
     Reads a sort network and prints a normalized version to STDOUT. A
@@ -48,7 +48,7 @@ The distribution includes the following utility programs:
     way.
 
   * sn-oddevenmerge
-    Create an odd-even merge network with a given number of left and right
+    Creates an odd-even merge network with a given number of left and right
     inputs. The resulting network is printed to STDOUT.
 
   * sn-oddevensort
@@ -56,7 +56,8 @@ The distribution includes the following utility programs:
     prints the network to STDOUT.
 
   * sn-pairwisesort
-    Create a pairwise sorting network based on the paper by Ian Parberry.
+    Creates a pairwise sorting network based on the paper by Ian Parberry.
+    The number of inputs must be a power of two.
 
   * sn-shmoo
     Prints a so-called "shmoo chart" of a comparator network to STDOUT. The
@@ -65,6 +66,10 @@ The distribution includes the following utility programs:
 
   * sn-show
     Prints an ASCII version of a sort network to STDOUT.
+
+  * sn-svg
+    Prints the Scalable Vector Graphics (SVG) sources of a graphic
+    representation of a comparator network to STDOUT.
 
   * sn-tex
     Prints the TikZ / TeX sources of a graphic representation of a comparator
