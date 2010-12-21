@@ -19,6 +19,10 @@ The distribution includes the following utility programs:
     Reads a list of values from STDIN and applies a given comparator network to
     the list. The resulting list of printed to STDOUT.
 
+  * sn-bitonicmerge
+    Create a bitonic merge network with a given number of left and right
+    inputs. The resulting network is printed to STDOUT.
+
   * sn-bitonicsort
     Creates a bitonic mergesort network with a given number of inputs and
     prints the network to STDOUT. The number of inputs must be a power of two.

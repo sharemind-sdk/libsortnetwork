@@ -1,5 +1,5 @@
 /**
- * libsortnetwork - src/sn-bitonicsort.c
+ * libsortnetwork - src/sn-bitonicmerge.c
  * Copyright (C) 2008-2010  Florian octo Forster
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -33,31 +33,36 @@
 
 int main (int argc, char **argv)
 {
-  sn_network_t *n;
-  int inputs_num;
+  sn_network_t *sn_left;
+  sn_network_t *sn_right;
+  sn_network_t *bm;
+  int inputs_left;
+  int inputs_right;
 
-  if (argc != 2)
+  if (argc != 3)
   {
-    printf ("Usage: sn-bitonicsort <num inputs>\n");
-    exit (EXIT_SUCCESS);
+    printf ("Usage: %s <inputs left> <inputs right>\n", argv[0]);
+    return (0);
   }
 
-  inputs_num = atoi (argv[1]);
-  if (inputs_num < 2)
+  inputs_left =  atoi (argv[1]);
+  inputs_right = atoi (argv[2]);
+  if ((inputs_left < 1) || (inputs_right < 1))
   {
-    fprintf (stderr, "Invalid number of inputs: %i\n", inputs_num);
-    exit (EXIT_FAILURE);
+    fprintf (stderr, "Invalid number of inputs: %i/%i\n",
+	inputs_left, inputs_right);
+    return (1);
   }
 
-  n = sn_network_create_bitonic_mergesort (inputs_num);
-  if (n == NULL)
-  {
-    fprintf (stderr, "Creating bitonic mergesort network with %i inputs failed.\n",
-	inputs_num);
-    exit (EXIT_FAILURE);
-  }
+  sn_left = sn_network_create (inputs_left);
+  sn_right = sn_network_create (inputs_right);
+  bm = sn_network_combine_bitonic_merge (sn_left, sn_right);
 
-  sn_network_write (n, stdout);
+  sn_network_write (bm, stdout);
+
+  sn_network_destroy (sn_left);
+  sn_network_destroy (sn_right);
+  sn_network_destroy (bm);
 
   return (0);
 } /* int main */

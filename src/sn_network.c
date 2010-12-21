@@ -136,6 +136,66 @@ sn_network_t *sn_network_create_odd_even_mergesort (int inputs_num) /* {{{ */
   }
 } /* }}} sn_network_t *sn_network_create_odd_even_mergesort */
 
+sn_network_t *sn_network_create_bitonic_mergesort (int inputs_num) /* {{{ */
+{
+  sn_network_t *n;
+
+  assert (inputs_num > 0);
+  if (inputs_num == 1)
+  {
+    return (sn_network_create (inputs_num));
+  }
+  if (inputs_num == 2)
+  {
+    sn_comparator_t c;
+
+    n = sn_network_create (inputs_num);
+
+    memset (&c, 0, sizeof (c));
+    c.min = 0;
+    c.max = 1;
+
+    sn_network_comparator_add (n, &c);
+
+    return (n);
+  }
+  else
+  {
+    sn_network_t *n_left;
+    sn_network_t *n_right;
+    int inputs_left;
+    int inputs_right;
+
+    inputs_left = inputs_num / 2;
+    inputs_right = inputs_num - inputs_left;
+
+    n_left = sn_network_create_bitonic_mergesort (inputs_left);
+    if (n_left == NULL)
+      return (NULL);
+
+    if (inputs_left != inputs_right)
+      n_right = sn_network_create_bitonic_mergesort (inputs_right);
+    else
+      n_right = n_left;
+    if (n_right == NULL)
+    {
+      sn_network_destroy (n_left);
+      return (NULL);
+    }
+
+    n = sn_network_combine_bitonic_merge (n_left, n_right);
+
+    if (n_left != n_right)
+      sn_network_destroy (n_right);
+    sn_network_destroy (n_left);
+
+    if (n != NULL)
+      sn_network_compress (n);
+
+    return (n);
+  }
+} /* }}} sn_network_t *sn_network_create_bitonic_mergesort */
+
 static int sn_network_create_pairwise_internal (sn_network_t *n, /* {{{ */
     int *inputs, int inputs_num)
 {
@@ -616,70 +676,43 @@ static sn_network_t *sn_network_concatenate (sn_network_t *n0, /* {{{ */
   return (n);
 } /* }}} sn_network_t *sn_network_concatenate */
 
-static int sn_network_add_bitonic_merger_recursive (sn_network_t *n, /* {{{ */
-    int low, int num)
+static int sn_network_add_bitonic_merger (sn_network_t *n, /* {{{ */
+    int *indizes, int indizes_num)
 {
-  sn_stage_t *s;
-  int m;
   int i;
 
-  if (num == 1)
+  if (indizes_num <= 1)
     return (0);
 
-  s = sn_stage_create (n->stages_num);
-  if (s == NULL)
-    return (-1);
+  if (indizes_num > 2)
+  {
+    int even_indizes[indizes_num];
+    int even_indizes_num;
+    int odd_indizes[indizes_num];
+    int odd_indizes_num;
 
-  m = num / 2;
+    even_indizes_num = (indizes_num + 1) / 2;
+    odd_indizes_num = indizes_num / 2;
 
-  for (i = low; i < (low + m); i++)
+    for (i = 0; i < even_indizes_num; i++)
+      even_indizes[i] = indizes[2 * i];
+    for (i = 0; i < odd_indizes_num; i++)
+      odd_indizes[i] = indizes[(2 * i) + 1];
+
+    sn_network_add_bitonic_merger (n, even_indizes, even_indizes_num);
+    sn_network_add_bitonic_merger (n, odd_indizes, odd_indizes_num);
+  }
+
+  for (i = 1; i < indizes_num; i += 2)
   {
     sn_comparator_t c;
 
-    c.min = i;
-    c.max = i + m;
+    memset (&c, 0, sizeof (c));
+    c.min = indizes[i - 1];
+    c.max = indizes[i];
 
-    sn_stage_comparator_add (s, &c);
+    sn_network_comparator_add (n, &c);
   }
-
-  sn_network_stage_add (n, s);
-
-  sn_network_add_bitonic_merger_recursive (n, low, m);
-  sn_network_add_bitonic_merger_recursive (n, low + m, m);
-
-  return (0);
-} /* }}} int sn_network_add_bitonic_merger_recursive */
-
-static int sn_network_add_bitonic_merger (sn_network_t *n) /* {{{ */
-{
-#if 0
-  sn_stage_t *s;
-  int m;
-  int i;
-
-  s = sn_stage_create (n->stages_num);
-  if (s == NULL)
-    return (-1);
-
-  m = n->inputs_num / 2;
-
-  for (i = 0; i < m; i++)
-  {
-    sn_comparator_t c;
-
-    c.min = i;
-    c.max = n->inputs_num - (i + 1);
-
-    sn_stage_comparator_add (s, &c);
-  }
-
-  sn_network_stage_add (n, s);
-
-  sn_network_add_bitonic_merger_recursive (n, 0, m);
-  sn_network_add_bitonic_merger_recursive (n, m, m);
-#else
-  sn_network_add_bitonic_merger_recursive (n, 0, SN_NETWORK_INPUT_NUM (n));
-#endif
 
   return (0);
 } /* }}} int sn_network_add_bitonic_merger */
@@ -775,45 +808,37 @@ static int sn_network_add_odd_even_merger (sn_network_t *n, /* {{{ */
   return (0);
 } /* }}} int sn_network_add_odd_even_merger */
 
-static sn_network_t *sn_network_combine_bitonic_shift (sn_network_t *n0, /* {{{ */
-    sn_network_t *n1, int do_shift)
-{
-  sn_network_t *n;
-  sn_network_t *n1_clone;
-  int shift;
-
-  n1_clone = sn_network_clone (n1);
-  if (n1_clone == NULL)
-    return (NULL);
-
-  sn_network_invert (n1_clone);
-
-  n = sn_network_concatenate (n0, n1_clone);
-  if (n == NULL)
-    return (NULL);
-
-  sn_network_destroy (n1_clone);
-
-  if (do_shift)
-    shift = sn_bounded_random (0, SN_NETWORK_INPUT_NUM (n) - 1);
-  else
-    shift = 0;
-
-  if (shift > 0)
-  {
-    DPRINTF ("sn_network_combine_bitonic_shift: Shifting by %i.\n", shift);
-    sn_network_shift (n, shift);
-  }
-
-  sn_network_add_bitonic_merger (n);
-
-  return (n);
-} /* }}} sn_network_t *sn_network_combine_bitonic_shift */
-
 sn_network_t *sn_network_combine_bitonic_merge (sn_network_t *n0, /* {{{ */
     sn_network_t *n1)
 {
-  return (sn_network_combine_bitonic_shift (n0, n1, /* do_shift = */ 0));
+  sn_network_t *n0_clone;
+  sn_network_t *n;
+  int indizes_num = SN_NETWORK_INPUT_NUM (n0) + SN_NETWORK_INPUT_NUM (n1);
+  int indizes[indizes_num];
+  int i;
+
+  /* We need to invert n0, because the sequence must be
+   * z_1 >= z_2 >= ... >= z_k <= z_{k+1} <= ... <= z_p
+   * and NOT the other way around! Otherwise the comparators added in
+   * sn_network_add_bitonic_merger() from comparing (z_0,z_1), (z_2,z_3), ...
+   * to comparing ...,  (z_{n-4},z_{n-3}), (z_{n-2},z_{n-1}), i.e. bound to the
+   * end of the list, possibly leaving z_0 uncompared. */
+  n0_clone = sn_network_clone (n0);
+  if (n0_clone == NULL)
+    return (NULL);
+  sn_network_invert (n0_clone);
+
+  n = sn_network_concatenate (n0_clone, n1);
+  if (n == NULL)
+    return (NULL);
+  sn_network_destroy (n0_clone);
+
+  for (i = 0; i < indizes_num; i++)
+    indizes[i] = i;
+
+  sn_network_add_bitonic_merger (n, indizes, indizes_num);
+
+  return (n);
 } /* }}} sn_network_t *sn_network_combine_bitonic_merge */
 
 sn_network_t *sn_network_combine_odd_even_merge (sn_network_t *n0, /* {{{ */
