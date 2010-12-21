@@ -123,16 +123,6 @@ int main (int argc, char **argv)
     exit (EXIT_FAILURE);
   }
 
-  if (use_bitonic
-      && ((SN_NETWORK_INPUT_NUM (n0) != SN_NETWORK_INPUT_NUM (n1))
-	|| !is_power_of_two (SN_NETWORK_INPUT_NUM (n0))))
-  {
-    fprintf (stderr, "Using the bitonic merge is currently only possible "
-	"if the number of inputs of both networks is identical and a "
-	"power of two\n");
-    exit (EXIT_FAILURE);
-  }
-
   if (use_bitonic)
     n = sn_network_combine_bitonic_merge (n0, n1);
   else
