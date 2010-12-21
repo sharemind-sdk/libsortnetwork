@@ -67,6 +67,16 @@ The distribution includes the following utility programs:
     Prints the TikZ / TeX sources of a graphic representation of a comparator
     network to STDOUT.
 
+Experimental / research applications:
+
+  * sn-bb
+  * sn-bb-merge
+  * sn-markov
+  * sn-evolution
+  * sn-evolution2
+  * sn-evolution-cut
+  * sn-evolution-merge
+
 
 License
 -------
