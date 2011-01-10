@@ -75,6 +75,10 @@ The distribution includes the following utility programs:
     Prints the TikZ / TeX sources of a graphic representation of a comparator
     network to STDOUT.
 
+  * sn-tex-cut
+    Prints the TikZ / TeX sources of a graphic representation of a cut sequence
+    to STDOUT.
+
 Experimental / research applications:
 
   * sn-bb
