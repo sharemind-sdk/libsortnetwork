@@ -12,7 +12,8 @@ bin_PROGRAMS = sn-apply \
 libsortnetwork_la_SOURCES = sn_network.c sn_network.h       \
 			    sn_stage.c sn_stage.h           \
 			    sn_comparator.c sn_comparator.h \
-			    sn_random.c sn_random.h
+			    sn_random.c sn_random.h \
+			    sn_hashtable.c sn_hashtable.h
 libsortnetwork_la_LDFLAGS = -version-info 0:0:0
 
 sn_apply_SOURCES = sn-apply.c
