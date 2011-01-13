@@ -1171,4 +1171,20 @@ sn_network_t *sn_network_unserialize (char *buffer, /* {{{ */
   return (n);
 } /* }}} sn_network_t *sn_network_unserialize */
 
+uint32_t sn_network_get_hashval (const sn_network_t *n) /* {{{ */
+{
+  uint32_t hash;
+  int i;
+
+  if (n == NULL)
+    return (0);
+
+  hash = (uint32_t) n->inputs_num;
+
+  for (i = 0; i < n->stages_num; i++)
+    hash = (hash * 104207) + sn_stage_get_hashval (n->stages[i]);
+
+  return (hash);
+} /* }}} uint32_t sn_network_get_hashval */
+
 /* vim: set sw=2 sts=2 et fdm=marker : */

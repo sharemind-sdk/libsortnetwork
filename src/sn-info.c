@@ -112,11 +112,13 @@ int main (int argc, char **argv)
       "  Normalized:  %4s\n"
       "  Sorts:    %7s\n"
       "  Rating:      %4i\n"
+      "  Hash:  0x%08"PRIx32"\n"
       "\n",
       comparators_num,
       (normalized ? "yes" : "no"),
       ((inputs_num > 16) ? "unknown" : (sorts ? "yes" : "no")),
-      (stages_num_compressed * inputs_num) + comparators_num);
+      (stages_num_compressed * inputs_num) + comparators_num,
+      sn_network_get_hashval (n));
 
   exit (EXIT_SUCCESS);
 } /* int main */

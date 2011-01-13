@@ -608,4 +608,20 @@ sn_stage_t *sn_stage_unserialize (char **ret_buffer, size_t *ret_buffer_size)
   return (s);
 } /* sn_stage_t *sn_stage_unserialize */
 
-/* vim: set shiftwidth=2 softtabstop=2 expandtab : */
+uint32_t sn_stage_get_hashval (const sn_stage_t *s) /* {{{ */
+{
+  uint32_t hash;
+  int i;
+
+  if (s == NULL)
+    return (0);
+
+  hash = (uint32_t) s->depth;
+
+  for (i = 0; i < s->comparators_num; i++)
+    hash = (hash * 99991) + sn_comparator_get_hashval (s->comparators + i);
+
+  return (hash);
+} /* }}} uint32_t sn_stage_get_hashval */
+
+/* vim: set shiftwidth=2 softtabstop=2 expandtab fdm=marker : */

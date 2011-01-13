@@ -29,6 +29,8 @@
 #define SN_STAGE_H 1
 
 #include <stdio.h>
+#include <stdint.h>
+#include <inttypes.h>
 
 #include "sn_comparator.h"
 
@@ -249,6 +251,8 @@ int sn_stage_serialize (sn_stage_t *s,
  * \see sn_stage_serialize(), sn_network_unserialize()
  */
 sn_stage_t *sn_stage_unserialize (char **buffer, size_t *buffer_size);
+
+uint32_t sn_stage_get_hashval (const sn_stage_t *s);
 
 #endif /* SN_STAGE_H */
 

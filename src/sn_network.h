@@ -31,6 +31,8 @@
 #define SN_NETWORK_H 1
 
 #include <stdio.h>
+#include <stdint.h>
+#include <inttypes.h>
 
 #include "sn_comparator.h"
 #include "sn_stage.h"
@@ -351,6 +353,9 @@ int sn_network_serialize (sn_network_t *n, char **ret_buffer,
  * \see sn_network_serialize
  */
 sn_network_t *sn_network_unserialize (char *buffer, size_t buffer_size);
+
+uint32_t sn_network_get_hashval (const sn_network_t *n);
+
 #endif /* SN_NETWORK_H */
 
 /* vim: set shiftwidth=2 softtabstop=2 : */
