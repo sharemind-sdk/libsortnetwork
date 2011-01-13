@@ -233,6 +233,8 @@ int sn_network_compress (sn_network_t *n);
  */
 int sn_network_normalize (sn_network_t *n);
 
+int sn_network_unify (sn_network_t *n);
+
 /**
  * Removes an input and all comparators touching that input from the comparator
  * network.

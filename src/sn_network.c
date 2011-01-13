@@ -550,6 +550,22 @@ int sn_network_normalize (sn_network_t *n) /* {{{ */
   return (0);
 } /* }}} int sn_network_normalize */
 
+int sn_network_unify (sn_network_t *n) /* {{{ */
+{
+  int i;
+
+  if (n == NULL)
+    return (EINVAL);
+
+  sn_network_normalize (n);
+  sn_network_compress (n);
+
+  for (i = 0; i < n->stages_num; i++)
+    sn_stage_unify (n->stages[i]);
+
+  return (0);
+} /* }}} int sn_network_unify */
+
 int sn_network_remove_input (sn_network_t *n, int input) /* {{{ */
 {
   int i;

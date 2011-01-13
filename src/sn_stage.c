@@ -320,6 +320,24 @@ int sn_stage_shift (sn_stage_t *s, int sw, int inputs_num)
   return (0);
 } /* int sn_stage_shift */
 
+static int sn_stage_unify__qsort_callback (const void *p0, const void *p1) /* {{{ */
+{
+  return (sn_comparator_compare (p0, p1));
+} /* }}} int sn_stage_unify__qsort_callback */
+
+int sn_stage_unify (sn_stage_t *s) /* {{{ */
+{
+  if (s == NULL)
+    return (EINVAL);
+
+  qsort (s->comparators,
+      (size_t) s->comparators_num,
+      sizeof (*s->comparators),
+      sn_stage_unify__qsort_callback);
+
+  return (0);
+} /* }}} int sn_stage_unify */
+
 int sn_stage_swap (sn_stage_t *s, int con0, int con1)
 {
   int i;

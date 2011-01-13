@@ -166,6 +166,8 @@ int sn_stage_invert (sn_stage_t *s);
  */
 int sn_stage_shift (sn_stage_t *s, int sw, int inputs_num);
 
+int sn_stage_unify (sn_stage_t *s);
+
 /**
  * Swaps two lines. This is used by the algorithm used in
  * sn_network_normalize() to transform non-standard sort networks to standard
