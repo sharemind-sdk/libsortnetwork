@@ -109,14 +109,14 @@ int sn_comparator_compare (const sn_comparator_t *c0,
     return (0);
 } /* int sn_comparator_compare */
 
-uint32_t sn_comparator_get_hashval (const sn_comparator_t *c) /* {{{ */
+uint64_t sn_comparator_get_hashval (const sn_comparator_t *c) /* {{{ */
 {
   if (c == NULL)
     return (0);
 
   /* 100937 and 103319 are some random prime numbers */
-  return ((((uint32_t) c->min) * 100937)
-      + (((uint32_t) c->max) * 103319));
+  return ((((uint64_t) c->min) * 100937)
+      + (((uint64_t) c->max) * 103319));
 } /* }}} uint32_t sn_comparator_get_hashval */
 
 /* vim: set shiftwidth=2 softtabstop=2 : */

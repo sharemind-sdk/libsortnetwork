@@ -112,7 +112,7 @@ int main (int argc, char **argv)
       "  Normalized:  %4s\n"
       "  Sorts:    %7s\n"
       "  Rating:      %4i\n"
-      "  Hash:  0x%08"PRIx32"\n"
+      "  Hash: 0x%"PRIx64"\n"
       "\n",
       comparators_num,
       (normalized ? "yes" : "no"),

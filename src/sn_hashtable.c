@@ -109,7 +109,7 @@ int sn_hashtable_account (sn_hashtable_t *ht, const sn_network_t *n) /* {{{ */
   if ((ht == NULL) || (n == NULL))
     return (EINVAL);
 
-  hash = sn_network_get_hashval (n);
+  hash = (uint32_t) sn_network_get_hashval (n);
 
   h0 = (uint8_t) (hash >> 24);
   h1 = (uint8_t) (hash >> 16);

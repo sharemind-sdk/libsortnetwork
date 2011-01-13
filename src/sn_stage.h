@@ -254,7 +254,7 @@ int sn_stage_serialize (sn_stage_t *s,
  */
 sn_stage_t *sn_stage_unserialize (char **buffer, size_t *buffer_size);
 
-uint32_t sn_stage_get_hashval (const sn_stage_t *s);
+uint64_t sn_stage_get_hashval (const sn_stage_t *s);
 
 #endif /* SN_STAGE_H */
 
