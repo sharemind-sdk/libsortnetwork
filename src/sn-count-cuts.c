@@ -37,6 +37,8 @@ static int cuts_num = 0;
 static uint64_t iterations_num = 1000000;
 static char *input_file = NULL;
 
+static _Bool exit_after_collision = 0;
+
 static sn_hashtable_t *hashtable;
 
 static double possible_cuts (int inputs_num) /* {{{ */
@@ -63,6 +65,7 @@ static void exit_usage (void) /* {{{ */
   printf ("sn-count-cuts [options] <file0> <file1>\n"
       "\n"
       "Options:\n"
+      "  -1        Exit after the first collision has been detected.\n"
       "  -c        Number of cuts to perform.\n"
       "  -n        Maximum number of cuts to perform.\n"
       "  -h        Display this help and exit.\n"
@@ -74,10 +77,14 @@ static int read_options (int argc, char **argv) /* {{{ */
 {
   int option;
 
-  while ((option = getopt (argc, argv, "c:n:h")) != -1)
+  while ((option = getopt (argc, argv, "1c:n:h")) != -1)
   {
     switch (option)
     {
+      case '1':
+	exit_after_collision = 1;
+	break;
+
       case 'c':
       {
 	int tmp = atoi (optarg);
@@ -199,6 +206,10 @@ int main (int argc, char **argv) /* {{{ */
   for (i = 0; i < iterations_num; i++)
   {
     create_random_cut (n);
+
+    if (exit_after_collision)
+      if (sn_hashtable_get_collisions (hashtable) > 0)
+	break;
 
     if ((i < 100)
 	|| ((i < 1000) && (((i + 1) % 10) == 0))
