@@ -4,7 +4,8 @@ lib_LTLIBRARIES = libsortnetwork.la
 
 bin_PROGRAMS = sn-apply \
 	       sn-bitonicmerge sn-bitonicsort \
-	       sn-bb sn-bb-merge sn-check-bf sn-cut \
+	       sn-bb sn-bb-merge sn-check-bf \
+	       sn-count-cuts sn-cut \
 	       sn-info sn-markov sn-merge sn-normalize \
 	       sn-oddevenmerge sn-oddevensort sn-pairwisesort \
 	       sn-shmoo sn-show sn-svg sn-tex sn-tex-cut
@@ -34,6 +35,9 @@ sn_bitonicsort_LDADD = libsortnetwork.la
 
 sn_check_bf_SOURCES = sn-check-bf.c
 sn_check_bf_LDADD = libsortnetwork.la
+
+sn_count_cuts_SOURCES = sn-count-cuts.c
+sn_count_cuts_LDADD = libsortnetwork.la -lm
 
 sn_cut_SOURCES = sn-cut.c
 sn_cut_LDADD = libsortnetwork.la
