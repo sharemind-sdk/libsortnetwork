@@ -69,7 +69,7 @@ void sn_hashtable_destroy (sn_hashtable_t *ht) /* {{{ */
   {
     int i;
 
-    for (i = 0; i < 256; i++)
+    for (i = 0; i < 65536; i++)
     {
       int j;
 
@@ -100,8 +100,8 @@ void sn_hashtable_destroy (sn_hashtable_t *ht) /* {{{ */
 
 int sn_hashtable_account (sn_hashtable_t *ht, const sn_network_t *n) /* {{{ */
 {
-  uint32_t hash;
-  uint8_t h0;
+  uint64_t hash;
+  uint16_t h0;
   uint8_t h1;
   uint8_t h2;
   uint8_t h3;
@@ -109,15 +109,15 @@ int sn_hashtable_account (sn_hashtable_t *ht, const sn_network_t *n) /* {{{ */
   if ((ht == NULL) || (n == NULL))
     return (EINVAL);
 
-  hash = (uint32_t) sn_network_get_hashval (n);
+  hash = sn_network_get_hashval (n);
 
-  h0 = (uint8_t) (hash >> 24);
-  h1 = (uint8_t) (hash >> 16);
-  h2 = (uint8_t) (hash >>  8);
-  h3 = (uint8_t)  hash;
+  h0 = (uint16_t) (hash >> 24);
+  h1 = (uint8_t)  (hash >> 16);
+  h2 = (uint8_t)  (hash >>  8);
+  h3 = (uint8_t)   hash;
 
   if (ht->data == NULL)
-    ht->data = calloc (256, sizeof (ht->data[0]));
+    ht->data = calloc (65536, sizeof (ht->data[0]));
 
   if (ht->data[h0] == NULL)
     ht->data[h0] = calloc (256, sizeof (ht->data[h0][0]));
