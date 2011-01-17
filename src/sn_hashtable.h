@@ -42,6 +42,7 @@ sn_hashtable_t *sn_hashtable_create (void);
 void sn_hashtable_destroy (sn_hashtable_t *ht);
 
 int sn_hashtable_account (sn_hashtable_t *ht, const sn_network_t *n);
+_Bool sn_hashtable_check_collision (sn_hashtable_t *ht, const sn_network_t *n);
 
 uint64_t sn_hashtable_get_collisions (sn_hashtable_t *ht);
 double   sn_hashtable_get_collisions_pct (sn_hashtable_t *ht);

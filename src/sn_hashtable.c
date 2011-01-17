@@ -141,6 +141,44 @@ int sn_hashtable_account (sn_hashtable_t *ht, const sn_network_t *n) /* {{{ */
   return (0);
 } /* }}} int sn_hashtable_account */
 
+_Bool sn_hashtable_check_collision (sn_hashtable_t *ht, const sn_network_t *n) /* {{{ */
+{
+  uint64_t hash;
+  uint16_t h0;
+  uint8_t h1;
+  uint8_t h2;
+  uint8_t h3;
+
+  if ((ht == NULL) || (n == NULL))
+    return (0);
+
+  hash = sn_network_get_hashval (n);
+
+  h0 = (uint16_t) (hash >> 24);
+  h1 = (uint8_t)  (hash >> 16);
+  h2 = (uint8_t)  (hash >>  8);
+  h3 = (uint8_t)   hash;
+
+  if (ht->data == NULL)
+    return (0);
+
+  if (ht->data[h0] == NULL)
+    return (0);
+
+  if (ht->data[h0][h1] == NULL)
+    return (0);
+
+  if (ht->data[h0][h1][h2] == NULL)
+    return (0);
+
+  assert (sizeof (ht->data[h0][h1][h2][0]) == sizeof (uint8_t));
+
+  if (ht->data[h0][h1][h2][h3] == 0)
+    return (0);
+  else
+    return (1);
+} /* }}} _Bool sn_hashtable_check_collision */
+
 uint64_t sn_hashtable_get_collisions (sn_hashtable_t *ht) /* {{{ */
 {
   if (ht == NULL)
