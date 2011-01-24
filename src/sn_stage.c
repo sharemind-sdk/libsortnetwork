@@ -626,6 +626,33 @@ sn_stage_t *sn_stage_unserialize (char **ret_buffer, size_t *ret_buffer_size)
   return (s);
 } /* sn_stage_t *sn_stage_unserialize */
 
+int sn_stage_compare (const sn_stage_t *s0, const sn_stage_t *s1) /* {{{ */
+{
+  int status;
+  int i;
+
+  if (s0 == s1)
+    return (0);
+  else if (s0 == NULL)
+    return (-1);
+  else if (s1 == NULL)
+    return (1);
+
+  if (s0->comparators_num < s1->comparators_num)
+    return (-1);
+  else if (s0->comparators_num > s1->comparators_num)
+    return (1);
+
+  for (i = 0; i < s0->comparators_num; i++)
+  {
+    status = sn_comparator_compare (s0->comparators + i, s1->comparators + i);
+    if (status != 0)
+      return (status);
+  }
+
+  return (0);
+} /* }}} int sn_stage_compare */
+
 uint64_t sn_stage_get_hashval (const sn_stage_t *s) /* {{{ */
 {
   uint64_t hash;

@@ -356,6 +356,20 @@ int sn_network_serialize (sn_network_t *n, char **ret_buffer,
  */
 sn_network_t *sn_network_unserialize (char *buffer, size_t buffer_size);
 
+/**
+ * Compares two networks and returns zero if they are equal. If they are not
+ * equal, a number greater than zero or less than zero is returned in a
+ * consistent matter, so this function can be used to sort networks and detect
+ * duplicates. It is strongly recommended that you call sn_network_unify()
+ * before comparing two networks, because they internal structure does matter
+ * for this function.
+ *
+ * \return Zero if the two networks are equal, non-zero otherwise. Return
+ *   values are consistent so this function can be used to sort networks.
+ * \see sn_network_unify
+ */
+int sn_network_compare (const sn_network_t *n0, const sn_network_t *n1);
+
 uint64_t sn_network_get_hashval (const sn_network_t *n);
 
 #endif /* SN_NETWORK_H */

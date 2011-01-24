@@ -1187,6 +1187,38 @@ sn_network_t *sn_network_unserialize (char *buffer, /* {{{ */
   return (n);
 } /* }}} sn_network_t *sn_network_unserialize */
 
+int sn_network_compare (const sn_network_t *n0, const sn_network_t *n1) /* {{{ */
+{
+  int status;
+  int i;
+
+  if (n0 == n1)
+    return (0);
+  else if (n0 == NULL)
+    return (-1);
+  else if (n1 == NULL)
+    return (1);
+
+  if (n0->inputs_num < n1->inputs_num)
+    return (-1);
+  else if (n0->inputs_num > n1->inputs_num)
+    return (1);
+
+  if (n0->stages_num < n1->stages_num)
+    return (-1);
+  else if (n0->stages_num > n1->stages_num)
+    return (1);
+
+  for (i = 0; i < n0->stages_num; i++)
+  {
+    status = sn_stage_compare (n0->stages[i], n1->stages[i]);
+    if (status != 0)
+      return (status);
+  }
+
+  return (0);
+} /* }}} int sn_network_compare */
+
 uint64_t sn_network_get_hashval (const sn_network_t *n) /* {{{ */
 {
   uint64_t hash;
