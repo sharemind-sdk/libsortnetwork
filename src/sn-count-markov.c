@@ -58,12 +58,35 @@ static GTree *all_networks = NULL;
 static uint64_t cycles_num = 0;
 
 static _Bool do_loop = 1;
+static _Bool do_output_network = 0;
 static uint64_t max_iterations = 0;
 
-static void sigint_handler (int signal __attribute__((unused)))
+static void sigint_handler (__attribute__((unused)) int signal) /* {{{ */
 {
   do_loop = 0;
-} /* void sigint_handler */
+} /* }}} void sigint_handler */
+
+static void sighup_handler (__attribute__((unused)) int signal) /* {{{ */
+{
+  do_output_network = 1;
+} /* }}} void sighup_handler */
+
+static int output_network (sn_network_t *n) /* {{{ */
+{
+  FILE *fh;
+
+  if (n == NULL)
+    return (EINVAL);
+
+  fh = fopen ("/dev/tty", "w");
+  if (fh == NULL)
+    return (errno);
+
+  sn_network_show_fh (n, fh);
+
+  fclose (fh);
+  return (0);
+} /* }}} int output_network */
 
 static gint compare_hashval (gconstpointer p0, gconstpointer p1) /* {{{ */
 {
@@ -233,6 +256,12 @@ static void random_walk (sn_network_t *n)
 
     account_network (next, iteration_counter);
 
+    if (do_output_network)
+    {
+      output_network (next);
+      do_output_network = 0;
+    }
+
     sn_network_destroy (n);
     n = next;
     iteration_counter++;
@@ -252,18 +281,23 @@ int main (int argc, char **argv)
 
   struct sigaction sigint_action;
   struct sigaction sigterm_action;
+  struct sigaction sighup_action;
 
   read_options (argc, argv);
   if (initial_input_file == NULL)
     exit_usage (argv[0], EXIT_FAILURE);
 
-  memset (&sigint_action, '\0', sizeof (sigint_action));
+  memset (&sigint_action, 0, sizeof (sigint_action));
   sigint_action.sa_handler = sigint_handler;
   sigaction (SIGINT, &sigint_action, NULL);
 
   memset (&sigterm_action, '\0', sizeof (sigterm_action));
   sigterm_action.sa_handler = sigint_handler;
   sigaction (SIGTERM, &sigterm_action, NULL);
+
+  memset (&sighup_action, 0, sizeof (sighup_action));
+  sighup_action.sa_handler = sighup_handler;
+  sigaction (SIGHUP, &sighup_action, NULL);
 
   all_networks = g_tree_new (compare_hashval);
   if (all_networks == NULL)
