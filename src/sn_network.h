@@ -196,6 +196,7 @@ int sn_network_brute_force_check (sn_network_t *n);
  * \return Zero on success, non-zero on failure.
  */
 int sn_network_show (sn_network_t *n);
+int sn_network_show_fh (sn_network_t *n, FILE *fh);
 
 /**
  * Inverts a comparator network by switching the direction of all comparators.

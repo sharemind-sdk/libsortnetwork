@@ -202,7 +202,7 @@ int sn_stage_comparator_check_conflict (sn_stage_t *s, const sn_comparator_t *c0
   return (0);
 } /* int sn_stage_comparator_check_conflict */
 
-int sn_stage_show (sn_stage_t *s)
+int sn_stage_show_fh (sn_stage_t *s, FILE *fh) /* {{{ */
 {
   int lines[s->comparators_num];
   int right[s->comparators_num];
@@ -234,7 +234,7 @@ int sn_stage_show (sn_stage_t *s)
 
   for (i = 0; i < lines_used; i++)
   {
-    printf ("%3i: ", s->depth);
+    fprintf (fh, "%3i: ", s->depth);
 
     for (j = 0; j <= right[i]; j++)
     {
@@ -264,31 +264,36 @@ int sn_stage_show (sn_stage_t *s)
       if (on_elem == 0)
       {
 	if (line_after == 0)
-	  printf ("     ");
+	  fprintf (fh, "     ");
 	else
-	  printf ("-----");
+	  fprintf (fh, "-----");
       }
       else if (on_elem == -1)
       {
 	if (line_after == 0)
-	  printf ("-!   ");
+	  fprintf (fh, "-!   ");
 	else
-	  printf (" !---");
+	  fprintf (fh, " !---");
       }
       else
       {
 	if (line_after == 0)
-	  printf ("->   ");
+	  fprintf (fh, "->   ");
 	else
-	  printf (" <---");
+	  fprintf (fh, " <---");
       }
     } /* for (columns) */
 
-    printf ("\n");
+    fprintf (fh, "\n");
   } /* for (lines) */
 
   return (0);
-} /* int sn_stage_show */
+} /* }}} int sn_stage_show_fh */
+
+int sn_stage_show (sn_stage_t *s) /* {{{ */
+{
+  return (sn_stage_show_fh (s, stdout));
+} /* }}} int sn_stage_show */
 
 int sn_stage_invert (sn_stage_t *s)
 {

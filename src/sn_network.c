@@ -423,14 +423,19 @@ int sn_network_get_comparator_num (const sn_network_t *n) /* {{{ */
   return (num);
 } /* }}} int sn_network_get_comparator_num */
 
-int sn_network_show (sn_network_t *n) /* {{{ */
+int sn_network_show_fh (sn_network_t *n, FILE *fh) /* {{{ */
 {
   int i;
 
   for (i = 0; i < n->stages_num; i++)
-    sn_stage_show (n->stages[i]);
+    sn_stage_show_fh (n->stages[i], fh);
 
   return (0);
+} /* }}} int sn_network_show_fh */
+
+int sn_network_show (sn_network_t *n) /* {{{ */
+{
+  return (sn_network_show_fh (n, stdout));
 } /* }}} int sn_network_show */
 
 int sn_network_invert (sn_network_t *n) /* {{{ */
