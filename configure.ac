@@ -14,6 +14,7 @@ AC_PROG_INSTALL
 AM_PROG_CC_C_O
 AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
+PKG_PROG_PKG_CONFIG
 
 # Libtool stuff
 LT_INIT
@@ -107,6 +108,10 @@ AC_SUBST(LIBPOPULATION_LDFLAGS)
 AC_SUBST(LIBPOPULATION_LIBS)
 AM_CONDITIONAL(BUILD_WITH_LIBPOPULATION, test "x$with_libpopulation" = "xyes")
 # }}} --with-libpopulation
+
+PKG_CHECK_MODULES([glib], [glib-2.0],
+		  [have_libglib="yes"],
+		  [have_libglib="no"])
 
 AC_CONFIG_FILES([Makefile src/Makefile])
 AC_OUTPUT

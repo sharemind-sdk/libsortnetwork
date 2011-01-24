@@ -83,6 +83,8 @@ Experimental / research applications:
 
   * sn-bb
   * sn-bb-merge
+  * sn-count-cuts
+  * sn-count-markov
   * sn-markov
   * sn-evolution
   * sn-evolution2
