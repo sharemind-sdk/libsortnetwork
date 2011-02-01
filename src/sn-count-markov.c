@@ -111,7 +111,10 @@ static int account_network (const sn_network_t *n, uint64_t iteration) /* {{{ */
     return (EINVAL);
 
   if (iteration == 0)
-    printf ("# iteration cyclelength\n");
+  {
+    printf ("# prev_iter this_iter cyclelength hashval\n");
+    fflush (stdout);
+  }
 
   key = sn_network_get_hashval (n);
   key_ptr = &key;
@@ -120,10 +123,15 @@ static int account_network (const sn_network_t *n, uint64_t iteration) /* {{{ */
   if (value_ptr != NULL)
   {
     uint64_t cycle_length = iteration - (*value_ptr);
-    printf ("%"PRIu64" %"PRIu64"\n", iteration, cycle_length);
+    printf ("%"PRIu64" %"PRIu64" %"PRIu64" 0x%016"PRIx64"\n",
+	(*value_ptr), iteration, cycle_length, key);
+    fflush (stdout);
 
     cycles_num++;
     *value_ptr = iteration;
+
+    sn_random_init ();
+
     return (0);
   }
 
