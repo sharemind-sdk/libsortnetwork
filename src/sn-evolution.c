@@ -177,6 +177,7 @@ static int rate_network (const sn_network_t *n)
   return (rate);
 } /* int rate_network */
 
+#if 0
 static int mutate_network (sn_network_t *n)
 {
   sn_network_t *n_copy;
@@ -214,6 +215,7 @@ static int mutate_network (sn_network_t *n)
 
   return (0);
 } /* int mutate_network */
+#endif
 
 static int create_offspring (void)
 {
@@ -252,8 +254,10 @@ static int create_offspring (void)
 
   assert (SN_NETWORK_INPUT_NUM (n) == inputs_num);
 
+#if 0
   if ((SN_NETWORK_INPUT_NUM (n) <= 16) && (sn_bounded_random (0, 100) <= 1))
     mutate_network (n);
+#endif
 
   population_insert (population, n);
 
