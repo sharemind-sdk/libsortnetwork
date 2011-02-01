@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <strings.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -65,6 +66,13 @@ static int stats_interval = 0;
 static int max_population_size = 128;
 static population_t *population;
 
+static enum 
+{
+  MERGER_ODDEVEN,
+  MERGER_BITONIC,
+  MERGER_RANDOM
+} selected_merger = MERGER_ODDEVEN;
+
 static int evolution_threads_num = 4;
 
 static int do_loop = 0;
@@ -84,6 +92,8 @@ static void exit_usage (const char *name)
       "  -p <num>      Size of the population (default: 128)\n"
       "  -P <peer>     Send individuals to <peer> (may be repeated)\n"
       "  -t <num>      Number of threads (default: 4)\n"
+      "  -m <merger>   Specify the merging network to use.\n"
+      "                Available: \"oddeven\", \"bitonic\", \"random\"\n"
       "\n",
       name);
   exit (1);
@@ -93,7 +103,7 @@ int read_options (int argc, char **argv)
 {
   int option;
 
-  while ((option = getopt (argc, argv, "i:o:p:P:s:t:h")) != -1)
+  while ((option = getopt (argc, argv, "i:o:p:P:s:t:m:h")) != -1)
   {
     switch (option)
     {
@@ -150,6 +160,19 @@ int read_options (int argc, char **argv)
 	int tmp = atoi (optarg);
 	if (tmp >= 1)
 	  evolution_threads_num = tmp;
+	break;
+      }
+
+      case 'm':
+      {
+	if (strcasecmp ("oddeven", optarg) == 0)
+	  selected_merger = MERGER_ODDEVEN;
+	else if (strcasecmp ("bitonic", optarg) == 0)
+	  selected_merger = MERGER_BITONIC;
+	else if (strcasecmp ("random", optarg) == 0)
+	  selected_merger = MERGER_RANDOM;
+	else
+	  fprintf (stderr, "Not a valid merging strategy: \"%s\"\n", optarg);
 	break;
       }
 
@@ -230,7 +253,12 @@ static int create_offspring (void)
   assert (p1 != NULL);
 
   /* combine the two parents */
-  n = sn_network_combine (p0, p1);
+  if ((selected_merger == MERGER_ODDEVEN)
+      || ((selected_merger == MERGER_RANDOM)
+	&& (sn_bounded_random (0, 1) == 0)))
+    n = sn_network_combine_odd_even_merge (p0, p1);
+  else
+    n = sn_network_combine_bitonic_merge (p0, p1);
 
   sn_network_destroy (p0);
   sn_network_destroy (p1);
