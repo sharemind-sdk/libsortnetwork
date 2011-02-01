@@ -34,6 +34,7 @@
 #include <signal.h>
 #include <assert.h>
 #include <limits.h>
+#include <errno.h>
 
 #include <pthread.h>
 
@@ -65,6 +66,9 @@ static int evolution_threads_num = 4;
 
 static int do_loop = 0;
 static uint64_t iteration_counter = 0;
+static uint64_t max_iterations = 0;
+
+static int target_rating = 0;
 
 static void sigint_handler (int signal __attribute__((unused)))
 {
@@ -82,6 +86,9 @@ static void exit_usage (const char *name)
       "  -p <num>      Size of the population (default: 128)\n"
       "  -P <peer>     Send individuals to <peer> (may be repeated)\n"
       "  -t <num>      Number of threads (default: 4)\n"
+      "  -n <num>      Maximum number of steps (iterations) to perform\n"
+      "  -r <num>      Target rating: Stop loop when rating is less then or equal\n"
+      "                to this number.\n"
       "\n",
       name);
   exit (1);
@@ -91,7 +98,7 @@ int read_options (int argc, char **argv) /* {{{ */
 {
   int option;
 
-  while ((option = getopt (argc, argv, "i:o:O:p:P:s:t:h")) != -1)
+  while ((option = getopt (argc, argv, "i:o:O:p:P:s:t:n:r:h")) != -1)
   {
     switch (option)
     {
@@ -159,6 +166,29 @@ int read_options (int argc, char **argv) /* {{{ */
 	break;
       }
 
+      case 'n':
+      {
+	errno = 0;
+	max_iterations = (uint64_t) strtoull (optarg,
+	    /* endptr = */ NULL,
+	    /* base   = */ 0);
+	if (errno != 0)
+	{
+	  fprintf (stderr, "Parsing integer argument failed: %s\n",
+	      strerror (errno));
+	  exit_usage (argv[0]);
+	}
+	break;
+      }
+
+      case 'r':
+      {
+	int tmp = atoi (optarg);
+	if (tmp > 0)
+          target_rating = tmp;
+	break;
+      }
+
       case 'h':
       default:
 	exit_usage (argv[0]);
@@ -171,14 +201,9 @@ int read_options (int argc, char **argv) /* {{{ */
 static int rate_network (const sn_network_t *n) /* {{{ */
 {
   int rate;
-  int i;
 
-  rate = SN_NETWORK_STAGE_NUM (n);
-  for (i = 0; i < SN_NETWORK_STAGE_NUM (n); i++)
-  {
-    sn_stage_t *s = SN_NETWORK_STAGE_GET (n, i);
-    rate += 2 * SN_STAGE_COMP_NUM (s);
-  }
+  rate = SN_NETWORK_STAGE_NUM (n) * SN_NETWORK_INPUT_NUM (n)
+    + sn_network_get_comparator_num (n);
 
   return (rate);
 } /* }}} int rate_network */
@@ -409,7 +434,13 @@ static int evolution_start (int threads_num) /* {{{ */
       printf ("Best after approximately %i iterations: "
 	  "%i comparators in %i stages. Rating: %i.\n",
 	  iter, comparators_num, stages_num, rating);
+
+      if ((target_rating > 0) && (rating <= target_rating))
+        do_loop++;
     }
+
+    if ((max_iterations > 0) && (iteration_counter >= max_iterations))
+      do_loop++;
   }
 
   for (i = 0; i < threads_num; i++)
