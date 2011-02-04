@@ -43,6 +43,7 @@
 
 #include "sn_network.h"
 #include "sn_random.h"
+#include "histogram.h"
 
 #if !defined(__GNUC__) || !__GNUC__
 # define __attribute__(x) /**/
@@ -58,6 +59,8 @@ static int best_rating = INT_MAX;
 
 static _Bool do_loop = 1;
 static uint64_t max_iterations = 0;
+
+static histogram_t *histogram;
 
 static void sigint_handler (int signal __attribute__((unused)))
 {
@@ -204,6 +207,8 @@ static void random_walk (sn_network_t *n)
       best_solution = sn_network_clone (next);
     }
 
+    hist_account (histogram, sn_network_get_comparator_num (next));
+
     sn_network_destroy (n);
     n = next;
     iteration_counter++;
@@ -223,6 +228,8 @@ int main (int argc, char **argv)
 
   struct sigaction sigint_action;
   struct sigaction sigterm_action;
+
+  histogram = hist_create ();
 
   read_options (argc, argv);
   if (initial_input_file == NULL)
@@ -253,6 +260,10 @@ int main (int argc, char **argv)
 
   random_walk (start_network);
   start_network = NULL;
+
+  hist_print (histogram);
+  hist_destroy (histogram);
+  histogram = NULL;
 
   if (best_solution != NULL)
   {

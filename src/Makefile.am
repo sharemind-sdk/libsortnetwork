@@ -49,7 +49,8 @@ sn_cut_LDADD = libsortnetwork.la
 sn_info_SOURCES = sn-info.c
 sn_info_LDADD = libsortnetwork.la
 
-sn_markov_SOURCES = sn-markov.c
+sn_markov_SOURCES = sn-markov.c \
+		    histogram.c histogram.h
 sn_markov_LDADD = libsortnetwork.la
 
 sn_merge_SOURCES = sn-merge.c
