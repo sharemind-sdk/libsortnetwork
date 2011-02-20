@@ -50,6 +50,7 @@
 #endif
 
 static int inputs_num = 16;
+static _Bool use_bitonic = 0;
 
 static char *initial_input_file = NULL;
 static char *best_output_file = NULL;
@@ -75,6 +76,7 @@ static void exit_usage (const char *name, int status)
       "  -i <file>     Initial input file (REQUIRED)\n"
       "  -o <file>     Write the current best solution to <file>\n"
       "  -n <number>   Maximum number of steps (iterations) to perform\n"
+      "  -b            Use the bitonic merger instead of the odd-even merger\n"
       "  -h            Display usage information (this message)\n"
       "\n",
       name);
@@ -85,7 +87,7 @@ int read_options (int argc, char **argv)
 {
   int option;
 
-  while ((option = getopt (argc, argv, "i:o:n:h")) != -1)
+  while ((option = getopt (argc, argv, "i:o:n:bh")) != -1)
   {
     switch (option)
     {
@@ -119,6 +121,10 @@ int read_options (int argc, char **argv)
 	}
 	break;
       }
+
+      case 'b':
+      use_bitonic = 1;
+      break;
 
       case 'h':
       default:
@@ -155,7 +161,10 @@ static sn_network_t *get_next (sn_network_t *n)
   assert (nright != NULL);
 
   /* combine the two parents */
-  nret = sn_network_combine (nleft, nright);
+  if (use_bitonic)
+    nret = sn_network_combine_bitonic_merge (nleft, nright);
+  else
+    nret = sn_network_combine_odd_even_merge (nleft, nright);
 
   sn_network_destroy (nleft);
   sn_network_destroy (nright);
