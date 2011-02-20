@@ -270,6 +270,7 @@ int sn_network_network_add (sn_network_t *n, sn_network_t *other) /* {{{ */
 {
   int stages_num;
   sn_stage_t **tmp;
+  int i;
 
   if ((n == NULL) || (other == NULL))
     return (EINVAL);
@@ -285,6 +286,9 @@ int sn_network_network_add (sn_network_t *n, sn_network_t *other) /* {{{ */
 
   memcpy (n->stages + n->stages_num, other->stages,
       sizeof (*other->stages) * other->stages_num);
+  for (i = n->stages_num; i < stages_num; i++)
+    SN_STAGE_DEPTH(n->stages[i]) = i;
+
   n->stages_num = stages_num;
 
   free (other->stages);
