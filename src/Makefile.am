@@ -8,7 +8,7 @@ bin_PROGRAMS = sn-apply \
 	       sn-count-cuts sn-count-markov sn-cut \
 	       sn-info sn-markov sn-merge sn-normalize \
 	       sn-oddevenmerge sn-oddevensort sn-pairwisesort \
-	       sn-shmoo sn-show sn-svg sn-tex sn-tex-cut
+	       sn-shmoo sn-show sn-svg sn-tex sn-tex-cut sn-transpositionsort
 
 libsortnetwork_la_SOURCES = sn_network.c sn_network.h       \
 			    sn_stage.c sn_stage.h           \
@@ -82,6 +82,9 @@ sn_tex_LDADD = libsortnetwork.la
 
 sn_tex_cut_SOURCES = sn-tex-cut.c
 sn_tex_cut_LDADD = libsortnetwork.la
+
+sn_transpositionsort_SOURCES = sn-transpositionsort.c
+sn_transpositionsort_LDADD = libsortnetwork.la
 
 if BUILD_WITH_LIBPOPULATION
 bin_PROGRAMS += sn-evolution sn-evolution2 sn-evolution-cut sn-evolution-merge

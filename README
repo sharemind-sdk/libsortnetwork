@@ -79,6 +79,10 @@ The distribution includes the following utility programs:
     Prints the TikZ / TeX sources of a graphic representation of a cut sequence
     to STDOUT.
 
+  * sn-transpositionsort
+    Creates an odd-even transpositionsort network with the given number of
+    inputs and prints the network to STDOUT.
+
 Experimental / research applications:
 
   * sn-bb
