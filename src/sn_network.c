@@ -223,17 +223,25 @@ static int sn_network_create_pairwise_internal (sn_network_t *n, /* {{{ */
     inputs_copy[(int) (i / 2)] = inputs[i];
   /* Recursive call #2 with second set of lines */
   sn_network_create_pairwise_internal (n, inputs_copy,
-      (int) (inputs_num/ 2));
+      (int) (inputs_num / 2));
 
   /* m is the "amplitude" of the sorted pairs. This is a bit tricky to read due
    * to different indices being used in the paper, unfortunately. */
-  m = inputs_num / 2;
+  m = (inputs_num + 1) / 2;
   while (m > 1)
   {
-    for (i = 1; (i + (m - 1)) < inputs_num; i += 2)
+    int len;
+
+    /* len = ((int) ((m + 1) / 2)) * 2 - 1; */
+    if ((m % 2) == 0)
+      len = m - 1;
+    else
+      len = m;
+
+    for (i = 1; (i + len) < inputs_num; i += 2)
     {
       int left = i;
-      int right = i + (m - 1);
+      int right = i + len;
       sn_comparator_t *c;
 
       assert (left < right);
@@ -242,7 +250,7 @@ static int sn_network_create_pairwise_internal (sn_network_t *n, /* {{{ */
       sn_comparator_destroy (c);
     }
 
-    m = m / 2;
+    m = (m + 1) / 2;
   } /* while (m > 1) */
 
   return (0);
