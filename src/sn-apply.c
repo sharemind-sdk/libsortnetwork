@@ -35,7 +35,6 @@
 #include <limits.h>
 
 #include "sn_network.h"
-#include "sn_population.h"
 #include "sn_random.h"
 
 static sn_network_t *network = NULL;

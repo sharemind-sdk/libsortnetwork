@@ -113,6 +113,11 @@ PKG_CHECK_MODULES([glib], [glib-2.0],
 		  [have_libglib="yes"],
 		  [have_libglib="no"])
 
+if test "x$have_libglib" != "xyes"
+then
+	AC_MSG_ERROR([The GLib library could not be found. It is required when building libsortnetwork!])
+fi
+
 AC_CONFIG_FILES([Makefile src/Makefile])
 AC_OUTPUT
 
