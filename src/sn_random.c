@@ -40,7 +40,8 @@
 #include "sn_random.h"
 
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-static unsigned int seed;
+static unsigned int seed0;
+static unsigned int seed1;
 static int have_init = 0;
 
 static int read_dev_random (void *buffer, size_t buffer_size)
@@ -51,7 +52,7 @@ static int read_dev_random (void *buffer, size_t buffer_size)
   char *buffer_position;
   size_t yet_to_read;
 
-  fd = open ("/dev/random", O_RDONLY);
+  fd = open ("/dev/urandom", O_RDONLY);
   if (fd < 0)
   {
     perror ("open");
@@ -86,27 +87,37 @@ static int read_dev_random (void *buffer, size_t buffer_size)
 
 static void do_init (void)
 {
-  int status;
+  if (have_init)
+    return;
 
-  status = read_dev_random (&seed, sizeof (seed));
-  if (status == 0)
-    have_init = 1;
+  read_dev_random (&seed0, sizeof (seed0));
+  read_dev_random (&seed1, sizeof (seed1));
+  have_init = 1;
 } /* void do_init */
+
+int sn_random_init (void)
+{
+  have_init = 0;
+  do_init ();
+
+  return (0);
+}
 
 int sn_random (void)
 {
-  int ret;
+  int r0;
+  int r1;
 
   pthread_mutex_lock (&lock);
 
-  if (have_init == 0)
-    do_init ();
+  do_init ();
 
-  ret = rand_r (&seed);
+  r0 = rand_r (&seed0);
+  r1 = rand_r (&seed1);
 
   pthread_mutex_unlock (&lock);
 
-  return (ret);
+  return (r0 ^ r1);
 } /* int sn_random */
 
 int sn_true_random (void)

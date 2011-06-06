@@ -23,6 +23,8 @@
 #ifndef SN_RANDOM_H
 #define SN_RANDOM_H 1
 
+int sn_random_init (void);
+
 int sn_random (void);
 int sn_true_random (void);
 
