@@ -78,18 +78,6 @@ static int read_options (int argc, char **argv) /* {{{ */
   return (0);
 } /* }}} int read_options */
 
-static _Bool is_power_of_two (int n)
-{
-  if (n < 1)
-    return (0);
-  else if ((n == 1) || (n == 2))
-    return (1);
-  else if ((n % 2) != 0)
-    return (0);
-  else
-    return (is_power_of_two (n >> 1));
-} /* _Bool is_power_of_two */
-
 int main (int argc, char **argv)
 {
   sn_network_t *n0;
