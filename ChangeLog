@@ -1,2 +1,24 @@
+2011-06-06, Version 1.1.0
+	* libsortnetwork, sn-pairwisesort: Creation of the Pairwise Sorting
+	  network has been fixed for arbitrary n.
+	* libsortnetwork: Make sure stages are correctly numbered in
+	  sn_network_network_add().
+	* libsortnetwork: New functions:
+	  + sn_{network,stage}_compare()
+	  + sn_{network,stage,comparator}_get_hashval()
+	  + sn_{network,stage}_show_fh()
+	* sn-count-markov: New tool to determine the circle length of random
+	  walks.
+	* sn-count-cuts: New tool to count the number of networks reachable
+	  through cuts.
+	* sn-evolution: The "-m" (chose merger) option has been added.
+	  Mutation has been disabled.
+	* sn-evolution-cut: The "-n" (number of iterations) and "-r" (target
+	  rating) options have been added.
+	* sn-markov: The "-b" (Bitonic Sort) option has been added.
+	* sn-tex-cut: New tool to visualize cut sequences.
+	* sn-transpositionsort: New tool to generate Odd-even
+	  Transpositionsort networks.
+
 2010-12-21, Version 1.0.0
 	* Initial release.

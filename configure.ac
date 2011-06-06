@@ -1,5 +1,5 @@
 AC_PREREQ([2.61])
-AC_INIT([libsortnetwork], [1.0.0], [ff@octo.it])
+AC_INIT([libsortnetwork], [1.1.0], [ff@octo.it])
 AC_CONFIG_SRCDIR([src/sn_network.c])
 AC_CONFIG_HEADERS([src/config.h])
 AM_INIT_AUTOMAKE(dist-bzip2)
