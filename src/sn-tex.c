@@ -52,7 +52,7 @@ static void exit_usage (void) /* {{{ */
       "\n"
       "Valid options are:\n"
       "  -w <width>   Specify the width of the graph (in TikZ default units).\n" 
-	  "  -f           Flip the sorting network (min wire at the top, max wire at the bottom).\n"
+      "  -f           Flip the sorting network (min wire at the top, max wire at the bottom).\n"
       "\n");
   exit (EXIT_FAILURE);
 } /* }}} void exit_usage */
@@ -67,23 +67,24 @@ static int read_options (int argc, char **argv) /* {{{ */
     {
       case 'w':
       {
-	double width = atof (optarg);
-	if (width <= 0.0)
-	{
-	  fprintf (stderr, "Invalid width argument: %s\n", optarg);
-	  exit (EXIT_FAILURE);
-	}
-	output_width = width;
-	break;
+        double width = atof (optarg);
+        if (width <= 0.0)
+        {
+          fprintf (stderr, "Invalid width argument: %s\n", optarg);
+          exit (EXIT_FAILURE);
+        }
+        output_width = width;
+        break;
       }
-	  case 'f':
-		flip = 1;
-		break;
+
+      case 'f':
+        flip = 1;
+        break;
 
       case 'h':
       case '?':
       default:
-	exit_usage ();
+        exit_usage ();
     }
   }
 
@@ -113,7 +114,7 @@ static double determine_stage_width (sn_stage_t *s) /* {{{ */
 
     for (j = 0; j < lines_used; j++)
       if (SN_COMP_LEFT (c) > right[j])
-	break;
+        break;
 
     lines[i] = j;
     right[j] = SN_COMP_RIGHT (c);
@@ -169,7 +170,7 @@ static int tex_show_stage (sn_stage_t *s) /* {{{ */
 
     for (j = 0; j < lines_used; j++)
       if (SN_COMP_LEFT (c) > right[j])
-	break;
+        break;
 
     lines[i] = j;
     right[j] = SN_COMP_RIGHT (c);
@@ -177,12 +178,12 @@ static int tex_show_stage (sn_stage_t *s) /* {{{ */
       lines_used = j + 1;
 
     printf ("\\node[vertex] (v%i) at (%.2f,%.2f) {};\n"
-	"\\node[vertex] (v%i) at (%.2f,%.2f) {};\n"
-	"\\path[comp] (v%i) -- (v%i);\n"
-	"\n",
-	min_num, x_offset + (j * inner_spacing), INPUT_TO_Y (c->min),
-	max_num, x_offset + (j * inner_spacing), INPUT_TO_Y (c->max),
-	min_num, max_num);
+        "\\node[vertex] (v%i) at (%.2f,%.2f) {};\n"
+        "\\path[comp] (v%i) -- (v%i);\n"
+        "\n",
+        min_num, x_offset + (j * inner_spacing), INPUT_TO_Y (c->min),
+        max_num, x_offset + (j * inner_spacing), INPUT_TO_Y (c->max),
+        min_num, max_num);
   }
 
   x_offset = x_offset + ((lines_used - 1) * inner_spacing) + outer_spacing;
@@ -218,7 +219,7 @@ int main (int argc, char **argv) /* {{{ */
   if (orig_width <= 0.0)
   {
     fprintf (stderr, "determine_network_width returned invalid value %g.\n",
-	orig_width);
+        orig_width);
     exit (EXIT_FAILURE);
   }
 
@@ -230,16 +231,16 @@ int main (int argc, char **argv) /* {{{ */
   x_offset = outer_spacing;
 
   if (flip)
-	printf ("\\begin{tikzpicture}[auto,yscale=-1]\n");
+    printf ("\\begin{tikzpicture}[auto,yscale=-1]\n");
   else
-	printf ("\\begin{tikzpicture}[auto]\n");
+    printf ("\\begin{tikzpicture}[auto]\n");
 
   for (i = 0; i < SN_NETWORK_STAGE_NUM (n); i++)
      tex_show_stage (SN_NETWORK_STAGE_GET (n, i));
 
   for (i = 0; i < SN_NETWORK_INPUT_NUM (n); i++)
     printf ("\\path[edge] (0,%.2f) -- (%.2f,%.2f);\n",
-	INPUT_TO_Y (i), x_offset, INPUT_TO_Y (i));
+        INPUT_TO_Y (i), x_offset, INPUT_TO_Y (i));
 
   printf ("\\end{tikzpicture}\n");
 
