@@ -42,6 +42,7 @@ static double vertical_spacing = 0.8;
 
 static double x_offset;
 static int next_vertex_number = 0;
+static int flip = 0;
 
 #define INPUT_TO_Y(i) (((double) (i)) * vertical_spacing)
 
@@ -51,6 +52,7 @@ static void exit_usage (void) /* {{{ */
       "\n"
       "Valid options are:\n"
       "  -w <width>   Specify the width of the graph (in TikZ default units).\n" 
+	  "  -f           Flip the sorting network (min wire at the top, max wire at the bottom).\n"
       "\n");
   exit (EXIT_FAILURE);
 } /* }}} void exit_usage */
@@ -59,7 +61,7 @@ static int read_options (int argc, char **argv) /* {{{ */
 {
   int option;
 
-  while ((option = getopt (argc, argv, "w:h?")) != -1)
+  while ((option = getopt (argc, argv, "w:fh?")) != -1)
   {
     switch (option)
     {
@@ -74,6 +76,9 @@ static int read_options (int argc, char **argv) /* {{{ */
 	output_width = width;
 	break;
       }
+	  case 'f':
+		flip = 1;
+		break;
 
       case 'h':
       case '?':
@@ -224,7 +229,10 @@ int main (int argc, char **argv) /* {{{ */
 
   x_offset = outer_spacing;
 
-  printf ("\\begin{tikzpicture}[auto]\n");
+  if (flip)
+	printf ("\\begin{tikzpicture}[auto,yscale=-1]\n");
+  else
+	printf ("\\begin{tikzpicture}[auto]\n");
 
   for (i = 0; i < SN_NETWORK_STAGE_NUM (n); i++)
      tex_show_stage (SN_NETWORK_STAGE_GET (n, i));
