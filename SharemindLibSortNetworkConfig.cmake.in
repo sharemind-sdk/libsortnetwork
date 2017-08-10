@@ -1,0 +1,9 @@
+# This file defines the following variables:
+#   LibSortNetwork_INCLUDE_DIRS - include directories
+#   LibSortNetwork_LIBRARIES    - libraries to link against
+#   LibSortNetwork_DEFINITIONS  - required compiler definitions
+
+
+SET(LibSortNetwork_INCLUDE_DIRS @LIBSORTNETWORK_INSTALL_INCLUDE_DIRS@)
+SET(LibSortNetwork_LIBRARIES @LIBSORTNETWORK_INSTALL_LINK_LIBRARIES@)
+SET(LibSortNetwork_DEFINITIONS @LIBSORTNETWORK_INSTALL_DEFINITIONS@)

@@ -1,10 +1,10 @@
 /**
- * libsortnetwork - src/sn_network.c
+ * libsortnetwork - src/network.c
  * Copyright (C) 2008-2010  Florian octo Forster
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation; either version 2.1 of the License, or (at
+ * the Free Software Foundation; either version 3 of the License, or (at
  * your option) any later version.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
@@ -41,8 +41,8 @@
 #include <assert.h>
 #include <errno.h>
 
-#include "sn_network.h"
-#include "sn_random.h"
+#include "network.h"
+#include "random.h"
 
 sn_network_t *sn_network_create (int inputs_num) /* {{{ */
 {

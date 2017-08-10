@@ -4,7 +4,7 @@
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation; either version 2.1 of the License, or (at
+ * the Free Software Foundation; either version 3 of the License, or (at
  * your option) any later version.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
@@ -32,8 +32,8 @@
 #include <assert.h>
 #include <errno.h>
 
-#include "sn_comparator.h"
-#include "sn_stage.h"
+#include "comparator.h"
+#include "stage.h"
 
 sn_stage_t *sn_stage_create (int depth)
 {
