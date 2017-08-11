@@ -34,6 +34,11 @@
 
 #include "comparator.h"
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Struct representing a stage of the comparator network. Don't modify this
  * struct yourself, use the sn_stage_* methods instead.
@@ -258,6 +263,10 @@ sn_stage_t *sn_stage_unserialize (char **buffer, size_t *buffer_size);
 int sn_stage_compare (const sn_stage_t *s0, const sn_stage_t *s1);
 
 uint64_t sn_stage_get_hashval (const sn_stage_t *s);
+
+#ifdef __cplusplus
+} /* extern "C" { */
+#endif
 
 #endif /* SN_STAGE_H */
 

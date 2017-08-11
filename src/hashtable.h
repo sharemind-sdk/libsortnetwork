@@ -35,6 +35,11 @@
 
 #include "network.h"
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct sn_hashtable_s;
 typedef struct sn_hashtable_s sn_hashtable_t;
 
@@ -49,6 +54,10 @@ double   sn_hashtable_get_collisions_pct (sn_hashtable_t *ht);
 uint64_t sn_hashtable_get_networks (sn_hashtable_t *ht);
 double   sn_hashtable_get_networks_pct (sn_hashtable_t *ht);
 uint64_t sn_hashtable_get_total (sn_hashtable_t *ht);
+
+#ifdef __cplusplus
+} /* extern "C" { */
+#endif
 
 #endif /* SN_HASHTABLE_H */
 /* vim: set sw=2 sts=2 et fdm=marker : */

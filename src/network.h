@@ -37,6 +37,11 @@
 #include "comparator.h"
 #include "stage.h"
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * The global struct representing a comparator or sort network.
  */
@@ -372,6 +377,10 @@ sn_network_t *sn_network_unserialize (char *buffer, size_t buffer_size);
 int sn_network_compare (const sn_network_t *n0, const sn_network_t *n1);
 
 uint64_t sn_network_get_hashval (const sn_network_t *n);
+
+#ifdef __cplusplus
+} /* extern "C" { */
+#endif
 
 #endif /* SN_NETWORK_H */
 

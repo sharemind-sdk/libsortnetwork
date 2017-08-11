@@ -23,6 +23,10 @@
 #ifndef SN_RANDOM_H
 #define SN_RANDOM_H 1
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int sn_random_init (void);
 
 int sn_random (void);
@@ -30,5 +34,9 @@ int sn_true_random (void);
 
 int sn_bounded_random (int min, int max);
 double sn_double_random (void);
+
+#ifdef __cplusplus
+} /* extern "C" { */
+#endif
 
 #endif /* SN_RANDOM_H */

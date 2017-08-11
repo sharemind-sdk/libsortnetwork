@@ -31,6 +31,11 @@
 #include <stdint.h>
 #include <inttypes.h>
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Struct representing a comparator. Don't access the members of this struct
  * directly, use the macros below instead.
@@ -118,6 +123,10 @@ int sn_comparator_compare (const sn_comparator_t *c0,
     const sn_comparator_t *c1);
 
 uint64_t sn_comparator_get_hashval (const sn_comparator_t *c);
+
+#ifdef __cplusplus
+} /* extern "C" { */
+#endif
 
 #endif /* SN_COMPARATOR_H */
 
