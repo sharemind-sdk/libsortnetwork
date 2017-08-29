@@ -47,7 +47,7 @@ static int have_init = 0;
 static int read_dev_random (void *buffer, size_t buffer_size)
 {
   int fd;
-  int status = 0;
+  ssize_t status = 0;
 
   char *buffer_position;
   size_t yet_to_read;

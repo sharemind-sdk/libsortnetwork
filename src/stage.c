@@ -207,17 +207,14 @@ int sn_stage_show_fh (sn_stage_t *s, FILE *fh) /* {{{ */
   int lines[s->comparators_num];
   int right[s->comparators_num];
   int lines_used = 0;
-  int i;
-  int j;
-  int k;
 
-  for (i = 0; i < s->comparators_num; i++)
+  for (int i = 0; i < s->comparators_num; i++)
   {
     lines[i] = -1;
     right[i] = -1;
   }
 
-  for (i = 0; i < s->comparators_num; i++)
+  for (int i = 0; i < s->comparators_num; i++)
   {
     int j;
     sn_comparator_t *c = s->comparators + i;
@@ -232,16 +229,16 @@ int sn_stage_show_fh (sn_stage_t *s, FILE *fh) /* {{{ */
       lines_used = j + 1;
   }
 
-  for (i = 0; i < lines_used; i++)
+  for (int i = 0; i < lines_used; i++)
   {
     fprintf (fh, "%3i: ", s->depth);
 
-    for (j = 0; j <= right[i]; j++)
+    for (int j = 0; j <= right[i]; j++)
     {
       int on_elem = 0;
       int line_after = 0;
 
-      for (k = 0; k < s->comparators_num; k++)
+      for (int k = 0; k < s->comparators_num; k++)
       {
 	sn_comparator_t *c = s->comparators + k;
 
@@ -327,7 +324,8 @@ int sn_stage_shift (sn_stage_t *s, int sw, int inputs_num)
 
 static int sn_stage_unify__qsort_callback (const void *p0, const void *p1) /* {{{ */
 {
-  return (sn_comparator_compare (p0, p1));
+    return sn_comparator_compare((sn_comparator_t const *) p0,
+                                 (sn_comparator_t const *) p1);
 } /* }}} int sn_stage_unify__qsort_callback */
 
 int sn_stage_unify (sn_stage_t *s) /* {{{ */
@@ -518,7 +516,7 @@ int sn_stage_serialize (sn_stage_t *s,
 {
   char *buffer;
   size_t buffer_size;
-  int status;
+  ssize_t status;
   int i;
 
   if (s->comparators_num <= 0)
@@ -532,7 +530,7 @@ int sn_stage_serialize (sn_stage_t *s,
   if ((status < 1) || (((size_t) status) >= buffer_size)) \
     return (-1); \
   buffer += status; \
-  buffer_size -= status;
+  buffer_size -= (size_t) status;
 
   for (i = 0; i < s->comparators_num; i++)
   {

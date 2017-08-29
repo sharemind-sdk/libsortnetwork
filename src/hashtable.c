@@ -48,9 +48,7 @@ struct sn_hashtable_s
 
 sn_hashtable_t *sn_hashtable_create (void) /* {{{ */
 {
-  sn_hashtable_t *ht;
-
-  ht = malloc (sizeof (*ht));
+  sn_hashtable_t * const ht = (sn_hashtable_t *) malloc(sizeof(*ht));
   if (ht == NULL)
     return (NULL);
   memset (ht, 0, sizeof (*ht));
@@ -117,16 +115,17 @@ int sn_hashtable_account (sn_hashtable_t *ht, const sn_network_t *n) /* {{{ */
   h3 = (uint8_t)   hash;
 
   if (ht->data == NULL)
-    ht->data = calloc (65536, sizeof (ht->data[0]));
+    ht->data = (uint8_t ****) calloc(65536, sizeof(ht->data[0]));
 
   if (ht->data[h0] == NULL)
-    ht->data[h0] = calloc (256, sizeof (ht->data[h0][0]));
+    ht->data[h0] = (uint8_t ***) calloc(256, sizeof(ht->data[h0][0]));
 
   if (ht->data[h0][h1] == NULL)
-    ht->data[h0][h1] = calloc (256, sizeof (ht->data[h0][h1][0]));
+    ht->data[h0][h1] = (uint8_t **) calloc(256, sizeof(ht->data[h0][h1][0]));
 
   if (ht->data[h0][h1][h2] == NULL)
-    ht->data[h0][h1][h2] = calloc (256, sizeof (ht->data[h0][h1][h2][0]));
+    ht->data[h0][h1][h2] =
+            (uint8_t *) calloc(256, sizeof(ht->data[h0][h1][h2][0]));
 
   assert (sizeof (ht->data[h0][h1][h2][0]) == sizeof (uint8_t));
 

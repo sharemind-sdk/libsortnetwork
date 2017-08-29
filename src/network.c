@@ -27,12 +27,7 @@
 # define _POSIX_C_SOURCE 200112L
 #endif
 
-#if 0
-# define DPRINTF(...) fprintf (stderr, "sn_network: " __VA_ARGS__)
-#else
-# define DPRINTF(...) /**/
-#endif
-
+#include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -277,7 +272,6 @@ sn_network_t *sn_network_create_pairwise (int inputs_num) /* {{{ */
 int sn_network_network_add (sn_network_t *n, sn_network_t *other) /* {{{ */
 {
   int stages_num;
-  sn_stage_t **tmp;
   int i;
 
   if ((n == NULL) || (other == NULL))
@@ -287,7 +281,8 @@ int sn_network_network_add (sn_network_t *n, sn_network_t *other) /* {{{ */
   if (stages_num <= n->stages_num)
     return (EINVAL);
 
-  tmp = realloc (n->stages, sizeof (*n->stages) * stages_num);
+  sn_stage_t ** const tmp =
+          (sn_stage_t **) realloc(n->stages, sizeof(*n->stages) * stages_num);
   if (tmp == NULL)
     return (ENOMEM);
   n->stages = tmp;
@@ -757,7 +752,6 @@ static int sn_network_add_odd_even_merger (sn_network_t *n, /* {{{ */
   int tmp_right[indizes_left_num];
   int tmp_right_num;
   int max_index;
-  sn_stage_t *s;
   int i;
 
   if ((indizes_left_num == 0) || (indizes_right_num == 0))
@@ -809,7 +803,7 @@ static int sn_network_add_odd_even_merger (sn_network_t *n, /* {{{ */
       tmp_right, tmp_right_num);
 
   /* Apply ``comparison-interchange'' operations. */
-  s = sn_stage_create (n->stages_num);
+  sn_stage_t * const s = sn_stage_create(n->stages_num);
 
   max_index = indizes_left_num + indizes_right_num;
   if ((max_index % 2) == 0)
@@ -994,12 +988,12 @@ sn_network_t *sn_network_read (FILE *fh) /* {{{ */
   {
     char *str_key = buffer;
     char *str_value = NULL;
-    int   buffer_len = strlen (buffer);
+    size_t buffer_len = strlen(buffer);
 
-    while ((buffer_len > 0) && ((buffer[buffer_len - 1] == '\n')
-          || (buffer[buffer_len - 1] == '\r')))
+    while ((buffer_len > 0u) && ((buffer[buffer_len - 1u] == '\n')
+          || (buffer[buffer_len - 1u] == '\r')))
     {
-      buffer_len--;
+      --buffer_len;
       buffer[buffer_len] = '\0';
     }
     if (buffer_len == 0)
@@ -1108,7 +1102,7 @@ int sn_network_serialize (sn_network_t *n, char **ret_buffer, /* {{{ */
   if ((status < 1) || (((size_t) status) >= buffer_size)) \
     return (-1); \
   buffer += status; \
-  buffer_size -= status;
+  buffer_size -= (size_t) status;
 
   SNPRINTF_OR_FAIL ("Inputs: %i\r\n\r\n", n->inputs_num);
 
@@ -1140,7 +1134,6 @@ sn_network_t *sn_network_unserialize (char *buffer, /* {{{ */
     char *str_key;
     char *str_value;
     char *line;
-    int   line_len;
 
     line = buffer;
     endptr = strchr (buffer, '\n');
@@ -1150,15 +1143,15 @@ sn_network_t *sn_network_unserialize (char *buffer, /* {{{ */
     *endptr = 0;
     endptr++;
     buffer = endptr;
-    line_len = strlen (line);
+    size_t line_len = strlen(line);
 
-    if ((line_len > 0) && (line[line_len - 1] == '\r'))
+    if ((line_len > 0u) && (line[line_len - 1u] == '\r'))
     {
-      line[line_len - 1] = 0;
-      line_len--;
+      --line_len;
+      line[line_len] = 0;
     }
 
-    if (line_len == 0)
+    if (line_len == 0u)
       break;
 
     str_key = line;
