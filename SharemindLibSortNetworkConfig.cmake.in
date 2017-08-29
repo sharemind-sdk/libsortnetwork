@@ -4,6 +4,6 @@
 #   SharemindLibSortNetwork_DEFINITIONS  - required compiler definitions
 
 
-SET(SharemindLibSortNetwork_INCLUDE_DIRS @LIBSORTNETWORK_INSTALL_INCLUDE_DIRS@)
-SET(SharemindLibSortNetwork_LIBRARIES @LIBSORTNETWORK_INSTALL_LINK_LIBRARIES@)
-SET(SharemindLibSortNetwork_DEFINITIONS @LIBSORTNETWORK_INSTALL_DEFINITIONS@)
+SET(SharemindLibSortNetwork_INCLUDE_DIRS @SharemindLibSortNetwork_INSTALL_INCLUDE_DIRS@)
+SET(SharemindLibSortNetwork_LIBRARIES @SharemindLibSortNetwork_INSTALL_LINK_LIBRARIES@)
+SET(SharemindLibSortNetwork_DEFINITIONS @SharemindLibSortNetwork_INSTALL_DEFINITIONS@)

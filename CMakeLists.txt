@@ -1,99 +1,79 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
-PROJECT(Sharemind_LibSortNetwork C)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+PROJECT(SharemindLibSortNetwork VERSION 0.1.0 LANGUAGES C)
 
-# Version information:
-SET(CPACK_PACKAGE_VERSION_MAJOR "1")
-SET(CPACK_PACKAGE_VERSION_MINOR "1")
-SET(CPACK_PACKAGE_VERSION_PATCH "0")
-SET(LIBSORTNETWORK_VERSION
-    "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
-SET(LIBSORTNETWORK_COMPAT_VERSION "${LIBSORTNETWORK_VERSION}")
-
-
-# Handle user configuration:
 INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/config.local" OPTIONAL)
 INCLUDE("${CMAKE_CURRENT_BINARY_DIR}/config.local" OPTIONAL)
 
+FIND_PACKAGE(SharemindCMakeHelpers REQUIRED)
 
-# Shared library:
-ADD_COMPILE_OPTIONS(
-  "-std=c99" "-Wall" "-Wextra" "-O2" "-pthread"
-  "$<$<NOT:$<STREQUAL:$<CONFIGURATION>,Release>>:-ggdb>"
-  "$<$<NOT:$<STREQUAL:$<CONFIGURATION>,Release>>:-fno-omit-frame-pointer>"
-  "$<$<STREQUAL:$<CONFIGURATION>,Release>:-DNDEBUG>"
-  "$<$<STREQUAL:$<CONFIGURATION>,Release>:-fomit-frame-pointer>"
-)
-ADD_DEFINITIONS(
-    "-D_ISOC99_SOURCE=1"
-    "-D_POSIX_C_SOURCE=200809L"
-    "-D_XOPEN_SOURCE=700"
-)
-FILE(GLOB_RECURSE LIBSORTNETWORK_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
-ADD_LIBRARY(libsortnetwork SHARED ${LIBSORTNETWORK_SOURCES})
-STRING(REGEX REPLACE "(([^\\.]+\\.[^\\.]+)\\.).*" "\\2" LIBSORTNETWORK_SOVERSION
-                     "${LIBSORTNETWORK_VERSION}")
-SET_TARGET_PROPERTIES(libsortnetwork PROPERTIES
-                      OUTPUT_NAME "sharemind_sortnetwork"
-                      VERSION "${LIBSORTNETWORK_VERSION}"
-                      SOVERSION "${LIBSORTNETWORK_SOVERSION}")
-INSTALL(TARGETS libsortnetwork LIBRARY DESTINATION "lib" COMPONENT "lib")
+SharemindSetProjectVersion()
+SET(SharemindLibSortNetwork_COMPAT_VERSION "${SharemindLibSortNetwork_VERSION}")
 
 
-# Header files:
-FILE(GLOB_RECURSE LIBSORTNETWORK_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
-ADD_CUSTOM_TARGET("include_LIBSORTNETWORK_HEADERS_in_IDE" SOURCES ${LIBSORTNETWORK_HEADERS})
-SET(LIBSORTNETWORK_INSTALL_HEADERS
+# Headers:
+FILE(GLOB_RECURSE SharemindLibSortNetwork_HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
+ADD_CUSTOM_TARGET("include_LIBSORTNETWORK_HEADERS_in_IDE"
+    SOURCES ${SharemindLibSortNetwork_HEADERS})
+SET(SharemindLibSortNetwork_INSTALL_HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/comparator.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/network.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/stage.h"
 )
-INSTALL(FILES ${LIBSORTNETWORK_INSTALL_HEADERS}
+INSTALL(FILES ${SharemindLibSortNetwork_INSTALL_HEADERS}
         DESTINATION "include/sharemind/libsortnetwork"
         COMPONENT "dev")
 
 
-# .in files:
-FILE(GLOB_RECURSE LIBSORTNETWORK_INFILES "${CMAKE_CURRENT_SOURCE_DIR}/*.in")
-ADD_CUSTOM_TARGET("include_LIBSORTNETWORK_INFILES_in_IDE" SOURCES ${LIBSORTNETWORK_INFILES})
-SET(LIBSORTNETWORK_INSTALL_LINK_LIBRARIES
+# The library:
+SharemindSetC99CompileOptions()
+FILE(GLOB_RECURSE SharemindLibSortNetwork_SOURCES
+     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
+SharemindAddSharedLibrary(libsortnetwork
+    OUTPUT_NAME "sharemind_sortnetwork"
+    SOURCES
+        ${SharemindLibSortNetwork_SOURCES}
+    COMPILE_DEFINITIONS
+        "_ISOC99_SOURCE=1"
+        "_POSIX_C_SOURCE=200809L"
+        "_XOPEN_SOURCE=700"
+)
+
+
+# Install CMake files:
+SharemindNewUniqueList(SharemindLibSortNetwork_INSTALL_LINK_LIBRARIES
     "-L${CMAKE_INSTALL_PREFIX}/lib"
     "-lsharemind_sortnetwork"
 )
-SET(LIBSORTNETWORK_INSTALL_INCLUDE_DIRS
+SharemindNewUniqueList(SharemindLibSortNetwork_INSTALL_INCLUDE_DIRS
     "${CMAKE_INSTALL_PREFIX}/include"
 )
-SET(LIBSORTNETWORK_INSTALL_DEFINITIONS
-    "" # TODO?
-)
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/SharemindLibSortNetworkConfig.cmake.in"
-               "${CMAKE_CURRENT_BINARY_DIR}/SharemindLibSortNetworkConfig.cmake" @ONLY)
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/SharemindLibSortNetworkConfigVersion.cmake.in"
-               "${CMAKE_CURRENT_BINARY_DIR}/SharemindLibSortNetworkConfigVersion.cmake"
-               @ONLY)
-INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/SharemindLibSortNetworkConfig.cmake"
-        DESTINATION "lib/SharemindLibSortNetwork"
-        COMPONENT "dev")
-INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/SharemindLibSortNetworkConfigVersion.cmake"
-        DESTINATION "lib/SharemindLibSortNetwork"
-        COMPONENT "dev")
+SharemindNewList(SharemindLibSortNetwork_INSTALL_DEFINITIONS)
+SharemindUseCMakeFindFiles()
 
 
 # Packaging:
-SET(CPACK_PACKAGE_VENDOR "Cybernetica AS")
-SET(CPACK_PACKAGE_CONTACT "Sharemind packaging <sharemind-packaging@cyber.ee>")
-SET(CPACK_GENERATOR "DEB")
-SET(CPACK_DEBIAN_PACKAGE_NAME "libsharemind-sortnetwork")
-SET(CPACK_DEBIAN_PACKAGE_RELEASE "cyber1")
-SET(CPACK_DEBIAN_COMPRESSION_TYPE "xz")
-SET(CPACK_DEB_COMPONENT_INSTALL "ON")
-SET(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
-
-SET(CPACK_DEBIAN_LIB_PACKAGE_NAME "libsharemind-sortnetwork")
-SET(CPACK_COMPONENT_DEV_DESCRIPTION "Sharemind SortNetwork library development headers")
-SET(CPACK_COMPONENT_LIB_DESCRIPTION "Sharemind SortNetwork library")
-SET(CPACK_DEBIAN_DEV_PACKAGE_DEPENDS
-    "libsharemind-sortnetwork (= ${LIBSORTNETWORK_VERSION}), libc6-dev (>= 2.19)")
-SET(CPACK_DEBIAN_LIB_PACKAGE_DEPENDS "libc6 (>= 2.19)")
-SET(CPACK_DEBIAN_DEV_PACKAGE_SECTION "libdevel")
-SET(CPACK_DEBIAN_LIB_PACKAGE_SECTION "libs")
-INCLUDE(CPack)
+SharemindSetupPackaging()
+SharemindAddComponentPackage("lib"
+    NAME "libsharemind-sortnetwork"
+    DESCRIPTION "Sharemind SortNetwork library"
+    DEB_SECTION "libs"
+    DEB_DEPENDS
+        "libc6 (>= 2.19)"
+)
+SharemindAddComponentPackage("dev"
+    NAME "libsharemind-sortnetwork-dev"
+    DESCRIPTION "Sharemind SortNetwork library development headers"
+    DEB_SECTION "libdevel"
+    DEB_DEPENDS
+        "libsharemind-sortnetwork (= ${SharemindLibSortNetwork_VERSION})"
+        "libc6-dev (>= 2.19)"
+)
+SharemindAddComponentPackage("debug"
+    NAME "libsharemind-sortnetwork-dbg"
+    DESCRIPTION "Sharemind SortNetwork library debug symbols"
+    DEB_SECTION "debug"
+    DEB_DEPENDS
+        "libsharemind-sortnetwork (= ${SharemindLibSortNetwork_VERSION})"
+)
+SharemindPackagingFinalize()
