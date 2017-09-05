@@ -7,7 +7,6 @@ INCLUDE("${CMAKE_CURRENT_BINARY_DIR}/config.local" OPTIONAL)
 FIND_PACKAGE(SharemindCMakeHelpers REQUIRED)
 
 SharemindSetProjectVersion()
-SET(SharemindLibSortNetwork_COMPAT_VERSION "${SharemindLibSortNetwork_VERSION}")
 
 
 # Headers:
