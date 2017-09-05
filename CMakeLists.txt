@@ -41,15 +41,13 @@ SharemindAddSharedLibrary(libsortnetwork
 
 
 # Install CMake files:
-SharemindNewUniqueList(SharemindLibSortNetwork_INSTALL_LINK_LIBRARIES
-    "-L${CMAKE_INSTALL_PREFIX}/lib"
-    "-lsharemind_sortnetwork"
+SharemindCreateCMakeFindFiles(
+    INCLUDE_DIRS
+        "${CMAKE_INSTALL_PREFIX}/include"
+    LIBRARIES
+        "-L${CMAKE_INSTALL_PREFIX}/lib"
+        "-lsharemind_sortnetwork"
 )
-SharemindNewUniqueList(SharemindLibSortNetwork_INSTALL_INCLUDE_DIRS
-    "${CMAKE_INSTALL_PREFIX}/include"
-)
-SharemindNewList(SharemindLibSortNetwork_INSTALL_DEFINITIONS)
-SharemindUseCMakeFindFiles()
 
 
 # Packaging:
