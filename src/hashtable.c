@@ -7,6 +7,7 @@
  * \verbatim
  * libsortnetwork - src/sn_hashtable.c
  * Copyright (C) 2011  Florian octo Forster
+ * Copyright (C) 2017  Cybernetica AS
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -24,6 +25,7 @@
  *
  * Authors:
  *   Florian octo Forster <ff at octo.it>
+ * Modified by Cybernetica AS <sharemind-support at cyber.ee>
  * \endverbatim
  **/
 
