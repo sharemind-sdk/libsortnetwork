@@ -63,7 +63,7 @@ SharemindAddComponentPackage("dev"
     DESCRIPTION "Sharemind SortNetwork library development headers"
     DEB_SECTION "libdevel"
     DEB_DEPENDS
-        "libsharemind-sortnetwork (= ${SharemindLibSortNetwork_VERSION})"
+        "libsharemind-sortnetwork (= ${SharemindLibSortNetwork_DEB_lib_PACKAGE_VERSION})"
         "libc6-dev (>= 2.19)"
 )
 SharemindAddComponentPackage("debug"
@@ -71,6 +71,6 @@ SharemindAddComponentPackage("debug"
     DESCRIPTION "Sharemind SortNetwork library debug symbols"
     DEB_SECTION "debug"
     DEB_DEPENDS
-        "libsharemind-sortnetwork (= ${SharemindLibSortNetwork_VERSION})"
+        "libsharemind-sortnetwork (= ${SharemindLibSortNetwork_DEB_lib_PACKAGE_VERSION})"
 )
 SharemindPackagingFinalize()
