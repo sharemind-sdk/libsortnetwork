@@ -892,19 +892,16 @@ sn_network_t *sn_network_combine (sn_network_t *n0, /* {{{ */
   return (sn_network_combine_odd_even_merge (n0, n1));
 } /* }}} sn_network_t *sn_network_combine */
 
-int sn_network_sort (sn_network_t *n, int *values) /* {{{ */
+void sn_network_sort(sn_network_t *n, int *values) /* {{{ */
 {
   for (int i = 0; i < n->m_stages_num; i++)
     sn_stage_sort (n->m_stages[i], values);
-
-  return 0;
 } /* }}} int sn_network_sort */
 
 int sn_network_brute_force_check (sn_network_t *n) /* {{{ */
 {
   int test_pattern[n->m_inputs_num];
   int values[n->m_inputs_num];
-  int status;
   int i;
 
   for (i = 0; i < n->m_inputs_num; ++i)
@@ -916,9 +913,7 @@ int sn_network_brute_force_check (sn_network_t *n) /* {{{ */
 
     /* Copy the current pattern and let the network sort it */
     memcpy (values, test_pattern, sizeof (values));
-    status = sn_network_sort (n, values);
-    if (status != 0)
-      return (status);
+    sn_network_sort(n, values);
 
     /* Check if the array is now sorted. */
     previous = values[0];

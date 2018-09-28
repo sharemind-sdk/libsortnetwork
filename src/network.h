@@ -167,10 +167,9 @@ int sn_network_get_comparator_num (const sn_network_t *n);
  *   integer values pointed to must be at least the number of inputs of the
  *   comparator network. Otherwise, segmentation faults or memory corruption
  *   will occur.
- * \return Zero on success, non-zero on failure.
  * \see sn_stage_sort
  */
-int sn_network_sort (sn_network_t *n, int *values);
+void sn_network_sort(sn_network_t *n, int *values);
 
 /**
  * Checks whether a given comparator network is a sorting network by testing
