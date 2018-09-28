@@ -39,7 +39,6 @@
 #include <errno.h>
 
 #include "network.h"
-#include "random.h"
 
 sn_network_t *sn_network_create (int inputs_num) /* {{{ */
 {
