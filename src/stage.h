@@ -137,16 +137,6 @@ int sn_stage_comparator_remove (sn_stage_t *s, int index);
 int sn_stage_comparator_check_conflict (sn_stage_t *s, const sn_comparator_t *c);
 
 /**
- * Prints the stage to \c STDOUT using a human readable representation.
- *
- * \param s The comparator network to display.
- * \return Zero on success, non-zero on failure.
- * \see sn_network_show
- */
-int sn_stage_show (sn_stage_t *s);
-int sn_stage_show_fh (sn_stage_t *s, FILE *fh);
-
-/**
  * Inverts a stage by switching the direction of all comparators.
  *
  * \param s The stage to invert.

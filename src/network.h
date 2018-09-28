@@ -187,16 +187,6 @@ int sn_network_sort (sn_network_t *n, int *values);
 int sn_network_brute_force_check (sn_network_t *n);
 
 /**
- * Prints the comparator network to \c STDOUT using a human readable
- * representation.
- *
- * \param n The comparator network to display.
- * \return Zero on success, non-zero on failure.
- */
-int sn_network_show (sn_network_t *n);
-int sn_network_show_fh (sn_network_t *n, FILE *fh);
-
-/**
  * Inverts a comparator network by switching the direction of all comparators.
  *
  * \param n The network to invert.
