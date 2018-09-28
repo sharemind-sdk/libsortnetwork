@@ -419,7 +419,7 @@ int sn_network_get_comparator_num (const sn_network_t *n) /* {{{ */
 
   num = 0;
   for (i = 0; i < n->stages_num; i++)
-    num += n->stages[i]->comparators_num;
+    num += SN_STAGE_COMP_NUM(n->stages[i]);
 
   return (num);
 } /* }}} int sn_network_get_comparator_num */
