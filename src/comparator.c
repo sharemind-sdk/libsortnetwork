@@ -53,8 +53,7 @@ void sn_comparator_destroy (sn_comparator_t *c)
   if (c->m_free_func != NULL)
     c->m_free_func (c->m_user_data);
 
-  if (c != NULL)
-    free (c);
+  free(c);
 } /* void sn_comparator_destroy */
 
 void sn_comparator_invert (sn_comparator_t *c)
