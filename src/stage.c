@@ -169,8 +169,6 @@ sn_stage_t *sn_stage_clone (const sn_stage_t *s)
   {
     SN_COMP_MIN (s_copy->m_comparators + i) = SN_COMP_MIN (s->m_comparators + i);
     SN_COMP_MAX (s_copy->m_comparators + i) = SN_COMP_MAX (s->m_comparators + i);
-    SN_COMP_USER_DATA (s_copy->m_comparators + i) = NULL;
-    SN_COMP_FREE_FUNC (s_copy->m_comparators + i) = NULL;
   }
   s_copy->m_comparators_num = s->m_comparators_num;
 

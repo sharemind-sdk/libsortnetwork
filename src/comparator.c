@@ -32,8 +32,6 @@ void sn_comparator_init(sn_comparator_t * c, int min, int max) {
   assert(c);
   c->m_min = min;
   c->m_max = max;
-  c->m_user_data = NULL;
-  c->m_free_func = NULL;
 }
 
 sn_comparator_t *sn_comparator_create (int min, int max)
@@ -50,9 +48,6 @@ sn_comparator_t *sn_comparator_create (int min, int max)
 void sn_comparator_destroy (sn_comparator_t *c)
 {
   assert(c);
-  if (c->m_free_func != NULL)
-    c->m_free_func (c->m_user_data);
-
   free(c);
 } /* void sn_comparator_destroy */
 
