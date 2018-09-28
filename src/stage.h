@@ -210,51 +210,6 @@ int sn_stage_cut (sn_stage_t *s, int *mask, sn_stage_t **prev);
  */
 int sn_stage_remove_input (sn_stage_t *s, int input);
 
-/**
- * Reads a stage from a \c FILE pointer and return the newly allocated stage.
- *
- * \param fh The file handle.
- * \return Pointer to a newly allocated stage or \c NULL on error.
- * \see sn_stage_write
- */
-sn_stage_t *sn_stage_read (FILE *fh);
-
-/**
- * Writes a stage to a \c FILE pointer.
- *
- * \param s The stage to write.
- * \param fh The file handle to write to.
- * \return Zero on success, non-zero on failure.
- * \see sn_stage_read
- */
-int sn_stage_write (sn_stage_t *s, FILE *fh);
-
-/**
- * Creates a serialized form of the given stage. The serialized form is
- * byte-order independent and can easily be sent over a computer network.
- *
- * \param s The stage to serialize.
- * \param[out] ret_buffer Pointer to a pointer into which the location of the
- *   allocated memory will be written. It is the caller's responsibility to
- *   free this memory.
- * \param[out] ret_buffer_size Pointer to a size_t into which the size of the
- *   allocated memory will be written.
- * \return Zero on success, non-zero on failure.
- * \see sn_stage_unserialize(), sn_network_serialize()
- */
-int sn_stage_serialize (sn_stage_t *s,
-    char **ret_buffer, size_t *ret_buffer_size);
-
-/**
- * Creates a stage from its serialized form.
- *
- * \param buffer Pointer to a buffer containing the stage in serialized form.
- * \param buffer_size Size of the buffer (in bytes).
- * \return Pointer to the newly allocated stage or \c NULL on error.
- * \see sn_stage_serialize(), sn_network_unserialize()
- */
-sn_stage_t *sn_stage_unserialize (char **buffer, size_t *buffer_size);
-
 int sn_stage_compare (const sn_stage_t *s0, const sn_stage_t *s1);
 
 #ifdef __cplusplus
