@@ -31,7 +31,6 @@
 #define SN_COMPARATOR_H 1
 
 #include <stdint.h>
-#include <inttypes.h>
 
 
 #ifdef __cplusplus

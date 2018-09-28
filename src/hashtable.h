@@ -33,7 +33,6 @@
 #define SN_HASHTABLE_H 1
 
 #include <stdint.h>
-#include <inttypes.h>
 
 #include "network.h"
 

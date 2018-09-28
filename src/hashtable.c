@@ -32,7 +32,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
-#include <inttypes.h>
 #include <string.h>
 #include <math.h>
 #include <errno.h>
