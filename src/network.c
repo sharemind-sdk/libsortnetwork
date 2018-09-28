@@ -692,28 +692,47 @@ static sn_network_t *sn_network_concatenate (sn_network_t *n0, /* {{{ */
 static int sn_network_add_bitonic_merger (sn_network_t *n, /* {{{ */
     int *indizes, int indizes_num)
 {
-  int i;
-
+  assert(indizes_num >= 0);
   if (indizes_num <= 1)
     return (0);
 
   if (indizes_num > 2)
   {
     int const even_indizes_num = (indizes_num + 1) / 2;
-    int even_indizes[even_indizes_num];
     int const odd_indizes_num = indizes_num / 2;
-    int odd_indizes[odd_indizes_num];
 
-    for (i = 0; i < even_indizes_num; i++)
-      even_indizes[i] = indizes[2 * i];
-    for (i = 0; i < odd_indizes_num; i++)
-      odd_indizes[i] = indizes[(2 * i) + 1];
+    assert(SIZE_MAX / sizeof(int) >= (size_t) even_indizes_num);
+    assert(SIZE_MAX / sizeof(int) >= (size_t) odd_indizes_num);
 
-    sn_network_add_bitonic_merger (n, even_indizes, even_indizes_num);
-    sn_network_add_bitonic_merger (n, odd_indizes, odd_indizes_num);
+    {
+      int * const even_indizes = (int *) malloc((size_t) even_indizes_num);
+      if (!even_indizes)
+        return (ENOMEM);
+      for (int i = 0; i < even_indizes_num; i++)
+        even_indizes[i] = indizes[2 * i];
+      int const r = sn_network_add_bitonic_merger(n,
+                                                  even_indizes,
+                                                  even_indizes_num);
+      free(even_indizes);
+      if (r)
+          return r;
+    }
+    {
+      int * const odd_indizes = (int *) malloc((size_t) odd_indizes_num);
+      if (!odd_indizes)
+          return (ENOMEM);
+      for (int i = 0; i < odd_indizes_num; i++)
+        odd_indizes[i] = indizes[(2 * i) + 1];
+      int const r = sn_network_add_bitonic_merger(n,
+                                                  odd_indizes,
+                                                  odd_indizes_num);
+      free(odd_indizes);
+      if (r)
+          return r;
+    }
   }
 
-  for (i = 1; i < indizes_num; i += 2)
+  for (int i = 1; i < indizes_num; i += 2)
   {
     sn_comparator_t c;
     sn_comparator_init(&c, indizes[i - 1], indizes[i]);
@@ -838,9 +857,11 @@ sn_network_t *sn_network_combine_bitonic_merge (sn_network_t *n0, /* {{{ */
   for (i = 0; i < indizes_num; i++)
     indizes[i] = i;
 
-  sn_network_add_bitonic_merger (n, indizes, indizes_num);
+  if (!sn_network_add_bitonic_merger (n, indizes, indizes_num))
+      return (n);
 
-  return (n);
+  sn_network_destroy(n);
+  return (NULL);
 } /* }}} sn_network_t *sn_network_combine_bitonic_merge */
 
 sn_network_t *sn_network_combine_odd_even_merge (sn_network_t *n0, /* {{{ */
