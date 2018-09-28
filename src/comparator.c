@@ -23,11 +23,13 @@
 
 #include "comparator.h"
 
+#include <assert.h>
 #include <stdlib.h>
 
 
 
 void sn_comparator_init(sn_comparator_t * c, int min, int max) {
+  assert(c);
   c->m_min = min;
   c->m_max = max;
   c->m_user_data = NULL;
@@ -47,6 +49,7 @@ sn_comparator_t *sn_comparator_create (int min, int max)
 
 void sn_comparator_destroy (sn_comparator_t *c)
 {
+  assert(c);
   if (c->m_free_func != NULL)
     c->m_free_func (c->m_user_data);
 
@@ -56,6 +59,7 @@ void sn_comparator_destroy (sn_comparator_t *c)
 
 void sn_comparator_invert (sn_comparator_t *c)
 {
+  assert(c);
   int max = c->m_min;
   int min = c->m_max;
 
@@ -65,12 +69,14 @@ void sn_comparator_invert (sn_comparator_t *c)
 
 void sn_comparator_shift (sn_comparator_t *c, int sw, int inputs_num)
 {
+  assert(c);
   c->m_min = (c->m_min + sw) % inputs_num;
   c->m_max = (c->m_max + sw) % inputs_num;
 } /* void sn_comparator_shift */
 
 void sn_comparator_swap (sn_comparator_t *c, int con0, int con1)
 {
+  assert(c);
   if (c->m_min == con0)
   {
     c->m_min = con1;
@@ -93,6 +99,8 @@ void sn_comparator_swap (sn_comparator_t *c, int con0, int con1)
 int sn_comparator_compare (const sn_comparator_t *c0,
     const sn_comparator_t *c1)
 {
+  assert(c0);
+  assert(c1);
   if (SN_COMP_LEFT (c0) < SN_COMP_LEFT (c1))
     return (-1);
   else if (SN_COMP_LEFT (c0) > SN_COMP_LEFT (c1))
