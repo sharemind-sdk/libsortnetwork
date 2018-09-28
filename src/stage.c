@@ -54,7 +54,7 @@ void sn_stage_destroy (sn_stage_t *s)
   free (s);
 } /* void sn_stage_destroy */
 
-int sn_stage_sort (sn_stage_t *s, int *values)
+void sn_stage_sort (sn_stage_t *s, int *values)
 {
   sn_comparator_t *c;
   int i;
@@ -73,8 +73,6 @@ int sn_stage_sort (sn_stage_t *s, int *values)
       values[max] = temp;
     }
   }
-
-  return (0);
 } /* int sn_stage_sort */
 
 int sn_stage_comparator_add (sn_stage_t *s, const sn_comparator_t *c)

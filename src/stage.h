@@ -93,10 +93,9 @@ void sn_stage_destroy (sn_stage_t *s);
  *   integer values pointed to must be at least the number of inputs of the
  *   comparator network. Otherwise, segmentation faults or memory corruption
  *   will occur.
- * \return Zero on success, non-zero on failure.
  * \see sn_network_sort
  */
-int sn_stage_sort (sn_stage_t *s, int *values);
+void sn_stage_sort (sn_stage_t *s, int *values);
 
 /**
  * Adds a comparator to a stage. If this would return in a conflict (a

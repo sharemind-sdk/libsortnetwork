@@ -894,18 +894,10 @@ sn_network_t *sn_network_combine (sn_network_t *n0, /* {{{ */
 
 int sn_network_sort (sn_network_t *n, int *values) /* {{{ */
 {
-  int status;
-  int i;
+  for (int i = 0; i < n->m_stages_num; i++)
+    sn_stage_sort (n->m_stages[i], values);
 
-  status = 0;
-  for (i = 0; i < n->m_stages_num; i++)
-  {
-    status = sn_stage_sort (n->m_stages[i], values);
-    if (status != 0)
-      return (status);
-  }
-
-  return (status);
+  return 0;
 } /* }}} int sn_network_sort */
 
 int sn_network_brute_force_check (sn_network_t *n) /* {{{ */
