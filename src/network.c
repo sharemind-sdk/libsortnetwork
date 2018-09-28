@@ -396,7 +396,7 @@ int sn_network_comparator_add (sn_network_t *n, /* {{{ */
   {
     s = n->m_stages[n->m_stages_num - 1];
 
-    if (sn_stage_comparator_check_conflict (s, c) == 0)
+    if (sn_stage_comparator_check_conflict (s, c) == SN_NO_CONFLICT)
     {
       sn_stage_comparator_add (s, c);
       return (0);
@@ -467,16 +467,15 @@ int sn_network_compress (sn_network_t *n) /* {{{ */
 
       for (k = i - 1; k >= 0; k--)
       {
-        int conflict;
-
-        conflict = sn_stage_comparator_check_conflict (n->m_stages[k], c);
-        if (conflict == 0)
+        sn_conflict_type const conflict =
+                sn_stage_comparator_check_conflict(n->m_stages[k], c);
+        if (conflict == SN_NO_CONFLICT)
         {
           move_to = k;
           continue;
         }
 
-        if (conflict == 2)
+        if (conflict == SN_COMPARATOR_ALREADY_PRESENT)
           move_to = -1;
         break;
       }

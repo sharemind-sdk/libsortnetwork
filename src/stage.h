@@ -121,16 +121,22 @@ int sn_stage_comparator_add (sn_stage_t *s, const sn_comparator_t *c);
  */
 int sn_stage_comparator_remove (sn_stage_t *s, int index);
 
+typedef enum {
+    SN_NO_CONFLICT = 0,
+    SN_CONFLICT = 1,
+    SN_COMPARATOR_ALREADY_PRESENT = 2
+} sn_conflict_type;
+
 /**
  * Checks whether the given comparator can be added to a stage, i.e. if neither
  * line if used by another comparator.
  *
  * \param s Pointer to the stage.
  * \param c Pointer to the comparator.
- * \return Zero if there is no conflict, one if there is a conflict and two if
- *   the comparator is already present in the stage.
+ * \returns The conflict type.
  */
-int sn_stage_comparator_check_conflict (sn_stage_t *s, const sn_comparator_t *c);
+sn_conflict_type sn_stage_comparator_check_conflict(sn_stage_t * s,
+                                                    sn_comparator_t const * c);
 
 /**
  * Inverts a stage by switching the direction of all comparators.

@@ -83,9 +83,10 @@ int sn_stage_comparator_add (sn_stage_t *s, const sn_comparator_t *c)
   if ((s == NULL) || (c == NULL))
     return (EINVAL);
 
-  i = sn_stage_comparator_check_conflict (s, c);
-  if (i != 0)
-    return (i);
+  sn_conflict_type const conflictType =
+          sn_stage_comparator_check_conflict(s, c);
+  if (conflictType != SN_NO_CONFLICT)
+    return (int) conflictType;
 
   temp = (sn_comparator_t *) realloc (s->m_comparators,
       (s->m_comparators_num + 1) * sizeof (sn_comparator_t));
@@ -173,7 +174,8 @@ sn_stage_t *sn_stage_clone (const sn_stage_t *s)
   return (s_copy);
 } /* sn_stage_t *sn_stage_clone */
 
-int sn_stage_comparator_check_conflict (sn_stage_t *s, const sn_comparator_t *c0)
+sn_conflict_type sn_stage_comparator_check_conflict(sn_stage_t * s,
+                                                    sn_comparator_t const * c0)
 {
   int i;
 
@@ -187,14 +189,14 @@ int sn_stage_comparator_check_conflict (sn_stage_t *s, const sn_comparator_t *c0
     {
       if ((SN_COMP_MIN(c0) == SN_COMP_MIN(c1))
           && (SN_COMP_MAX(c0) == SN_COMP_MAX(c1)))
-        return (2);
+        return SN_COMPARATOR_ALREADY_PRESENT;
       else
-        return (1);
+        return SN_CONFLICT;
     }
   }
 
-  return (0);
-} /* int sn_stage_comparator_check_conflict */
+  return SN_NO_CONFLICT;
+} /* sn_conflict_type sn_stage_comparator_check_conflict */
 
 void sn_stage_invert (sn_stage_t *s)
 {
