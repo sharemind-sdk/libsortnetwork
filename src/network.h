@@ -186,10 +186,10 @@ int sn_network_brute_force_check (sn_network_t *n);
 /**
  * Inverts a comparator network by switching the direction of all comparators.
  *
- * \param n The network to invert.
+ * \param n The network to invert, must be non-NULL.
  * \return Zero on success, non-zero on failure.
  */
-int sn_network_invert (sn_network_t *n);
+void sn_network_invert (sn_network_t *n);
 
 /**
  * Shifts a comparator network (permutes the inputs). Each input is shifted

@@ -432,18 +432,12 @@ int sn_network_get_comparator_num (const sn_network_t *n) /* {{{ */
   return (num);
 } /* }}} int sn_network_get_comparator_num */
 
-int sn_network_invert (sn_network_t *n) /* {{{ */
+void sn_network_invert (sn_network_t *n) /* {{{ */
 {
-  int i;
-
-  if (n == NULL)
-    return (EINVAL);
-
-  for (i = 0; i < n->m_stages_num; i++)
+  assert(n);
+  for (int i = 0; i < n->m_stages_num; i++)
     sn_stage_invert (n->m_stages[i]);
-
-  return (0);
-} /* }}} int sn_network_invert */
+} /* }}} void sn_network_invert */
 
 int sn_network_shift (sn_network_t *n, int sw) /* {{{ */
 {
