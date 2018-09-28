@@ -38,9 +38,10 @@ sn_network_t *sn_network_create (int inputs_num) /* {{{ */
   n = (sn_network_t *) malloc (sizeof (sn_network_t));
   if (n == NULL)
     return (NULL);
-  memset (n, '\0', sizeof (sn_network_t));
 
   n->m_inputs_num = inputs_num;
+  n->m_stages = NULL;
+  n->m_stages_num = 0;
 
   return (n);
 } /* }}} sn_network_t *sn_network_create */
@@ -922,7 +923,8 @@ int sn_network_brute_force_check (sn_network_t *n) /* {{{ */
   int status;
   int i;
 
-  memset (test_pattern, 0, sizeof (test_pattern));
+  for (i = 0; i < n->m_inputs_num; ++i)
+      test_pattern[i] = 0;
   while (42)
   {
     int previous;

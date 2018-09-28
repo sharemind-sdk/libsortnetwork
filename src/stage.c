@@ -37,9 +37,10 @@ sn_stage_t *sn_stage_create (int depth)
   s = (sn_stage_t *) malloc (sizeof (sn_stage_t));
   if (s == NULL)
     return (NULL);
-  memset (s, '\0', sizeof (sn_stage_t));
 
   s->m_depth = depth;
+  s->m_comparators = NULL;
+  s->m_comparators_num = 0;
   
   return (s);
 } /* sn_stage_t *sn_stage_create */
