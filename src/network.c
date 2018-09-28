@@ -387,27 +387,31 @@ sn_network_t *sn_network_clone (const sn_network_t *n) /* {{{ */
 int sn_network_comparator_add (sn_network_t *n, /* {{{ */
     const sn_comparator_t *c)
 {
-  sn_stage_t *s;
+  if (!n || !c)
+    return EINVAL;
 
-  if ((n == NULL) || (c == NULL))
-    return (EINVAL);
+  if (n->m_stages_num > 0) {
+    sn_stage_t * s = n->m_stages[n->m_stages_num - 1];
 
-  if (n->m_stages_num > 0)
-  {
-    s = n->m_stages[n->m_stages_num - 1];
-
-    if (sn_stage_comparator_check_conflict (s, c) == SN_NO_CONFLICT)
-    {
-      sn_stage_comparator_add (s, c);
-      return (0);
-    }
+    if (sn_stage_comparator_check_conflict(s, c) == SN_NO_CONFLICT)
+      return sn_stage_comparator_add(s, c);
   }
 
-  s = sn_stage_create (n->m_stages_num);
-  sn_stage_comparator_add (s, c);
-  sn_network_stage_add (n, s);
+  sn_stage_t * const s = sn_stage_create(n->m_stages_num);
+  if (!s)
+      return ENOMEM;
+  assert(sn_stage_comparator_check_conflict(s, c) == SN_NO_CONFLICT);
+  int r = sn_stage_comparator_add(s, c);
+  if (r != 0)
+    goto err_cleanup;
+  r = sn_network_stage_add(n, s);
+  if (r != 0)
+    goto err_cleanup;
+  return 0;
 
-  return (0);
+err_cleanup:
+  sn_stage_destroy(s);
+  return r;
 } /* }}} int sn_network_comparator_add */
 
 int sn_network_get_comparator_num (const sn_network_t *n) /* {{{ */
@@ -482,8 +486,10 @@ int sn_network_compress (sn_network_t *n) /* {{{ */
 
       if (move_to < i)
       {
-        if (move_to >= 0)
+        if (move_to >= 0) {
+          assert(sn_stage_comparator_check_conflict(s, c) == SN_NO_CONFLICT);
           sn_stage_comparator_add (n->m_stages[move_to], c);
+        }
         sn_stage_comparator_remove (s, j);
         j--;
       }
@@ -754,6 +760,7 @@ static int sn_network_add_odd_even_merger (sn_network_t *n, /* {{{ */
     if (s == NULL)
       return (-1);
 
+    assert(sn_stage_comparator_check_conflict(s, &c) == SN_NO_CONFLICT);
     sn_stage_comparator_add (s, &c);
     sn_network_stage_add (n, s);
 
