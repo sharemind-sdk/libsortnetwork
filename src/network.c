@@ -254,18 +254,22 @@ sn_network_t *sn_network_create_pairwise (int inputs_num) /* {{{ */
   int i;
 
   if (n == NULL)
-    return (NULL);
+    goto err_0;
 
   for (i = 0; i < inputs_num; i++)
     inputs[i] = i;
-  
-  if (sn_network_create_pairwise_internal (n, inputs, inputs_num)) {
-      sn_network_destroy(n);
-      return NULL;
-  }
+
+  if (sn_network_create_pairwise_internal (n, inputs, inputs_num))
+      goto err_1;
+
   sn_network_compress (n);
 
   return (n);
+
+err_1:
+  sn_network_destroy(n);
+err_0:
+  return NULL;
 } /* }}} sn_network_t *sn_network_create_pairwise */
 
 int sn_network_network_add (sn_network_t *n, sn_network_t *other) /* {{{ */
@@ -399,7 +403,7 @@ int sn_network_comparator_add (sn_network_t *n, /* {{{ */
   if (n->m_stages_num > 0)
   {
     s = n->m_stages[n->m_stages_num - 1];
-    
+
     if (sn_stage_comparator_check_conflict (s, c) == 0)
     {
       sn_stage_comparator_add (s, c);
@@ -602,10 +606,10 @@ int sn_network_cut_at (sn_network_t *n, int input, /* {{{ */
   {
     sn_stage_t *s;
     int new_position;
-    
+
     s = n->m_stages[i];
     new_position = sn_stage_cut_at (s, position, dir);
-    
+
     if (position != new_position)
     {
       int j;
