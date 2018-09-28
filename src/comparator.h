@@ -44,26 +44,26 @@ extern "C" {
  */
 struct sn_comparator_s
 {
-  int min; /**< Index of the line onto which the smaller element will be put. */
-  int max; /**< Index of the line onto which the larger element will be put. */
-  void *user_data; /**< Pointer to user data. */
-  void (*free_func) (void *); /**< Pointer to a function used to free the user data pointer. */
+  int m_min; /**< Index of the line onto which the smaller element will be put. */
+  int m_max; /**< Index of the line onto which the larger element will be put. */
+  void *m_user_data; /**< Pointer to user data. */
+  void (*m_free_func) (void *); /**< Pointer to a function used to free the user data pointer. */
 };
 typedef struct sn_comparator_s sn_comparator_t;
 
 /** Returns the "left" line, i.e. the line with the smaller index. */
-#define SN_COMP_LEFT(c)  (((c)->min < (c)->max) ? (c)->min : (c)->max)
+#define SN_COMP_LEFT(c)  (((c)->m_min < (c)->m_max) ? (c)->m_min : (c)->m_max)
 /** Returns the "right" line, i.e. the line with the larger index. */
-#define SN_COMP_RIGHT(c) (((c)->min > (c)->max) ? (c)->min : (c)->max)
+#define SN_COMP_RIGHT(c) (((c)->m_min > (c)->m_max) ? (c)->m_min : (c)->m_max)
 /** Returns the index of the line onto which the smaller element will be put. */
-#define SN_COMP_MIN(c) (c)->min
+#define SN_COMP_MIN(c) (c)->m_min
 /** Returns the index of the line onto which the larger element will be put. */
-#define SN_COMP_MAX(c) (c)->max
+#define SN_COMP_MAX(c) (c)->m_max
 
 /** Expands to the user data pointer. */
-#define SN_COMP_USER_DATA(c) (c)->user_data
+#define SN_COMP_USER_DATA(c) (c)->m_user_data
 /** Expands to the free-function pointer. */
-#define SN_COMP_FREE_FUNC(c) (c)->free_func
+#define SN_COMP_FREE_FUNC(c) (c)->m_free_func
 
 /**
  * Initializes a new comparator object.

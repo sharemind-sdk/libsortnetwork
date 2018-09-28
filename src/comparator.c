@@ -55,8 +55,8 @@ sn_comparator_t *sn_comparator_create (int min, int max)
 
 void sn_comparator_destroy (sn_comparator_t *c)
 {
-  if (c->free_func != NULL)
-    c->free_func (c->user_data);
+  if (c->m_free_func != NULL)
+    c->m_free_func (c->m_user_data);
 
   if (c != NULL)
     free (c);
@@ -64,37 +64,37 @@ void sn_comparator_destroy (sn_comparator_t *c)
 
 void sn_comparator_invert (sn_comparator_t *c)
 {
-  int max = c->min;
-  int min = c->max;
+  int max = c->m_min;
+  int min = c->m_max;
 
-  c->min = min;
-  c->max = max;
+  c->m_min = min;
+  c->m_max = max;
 } /* void sn_comparator_invert */
 
 void sn_comparator_shift (sn_comparator_t *c, int sw, int inputs_num)
 {
-  c->min = (c->min + sw) % inputs_num;
-  c->max = (c->max + sw) % inputs_num;
+  c->m_min = (c->m_min + sw) % inputs_num;
+  c->m_max = (c->m_max + sw) % inputs_num;
 } /* void sn_comparator_shift */
 
 void sn_comparator_swap (sn_comparator_t *c, int con0, int con1)
 {
-  if (c->min == con0)
+  if (c->m_min == con0)
   {
-    c->min = con1;
+    c->m_min = con1;
   }
-  else if (c->min == con1)
+  else if (c->m_min == con1)
   {
-    c->min = con0;
+    c->m_min = con0;
   }
 
-  if (c->max == con0)
+  if (c->m_max == con0)
   {
-    c->max = con1;
+    c->m_max = con1;
   }
-  else if (c->max == con1)
+  else if (c->m_max == con1)
   {
-    c->max = con0;
+    c->m_max = con0;
   }
 } /* void sn_comparator_swap */
 
@@ -119,8 +119,8 @@ uint64_t sn_comparator_get_hashval (const sn_comparator_t *c) /* {{{ */
     return (0);
 
   /* 100937 and 103319 are some random prime numbers */
-  return ((((uint64_t) c->min) * 100937)
-      + (((uint64_t) c->max) * 103319));
+  return ((((uint64_t) c->m_min) * 100937)
+      + (((uint64_t) c->m_max) * 103319));
 } /* }}} uint32_t sn_comparator_get_hashval */
 
 /* vim: set shiftwidth=2 softtabstop=2 : */
