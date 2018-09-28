@@ -51,18 +51,11 @@ void sn_network_destroy (sn_network_t *n) /* {{{ */
   if (n == NULL)
     return;
 
-  if (n->m_stages != NULL)
-  {
-    int i;
-    for (i = 0; i < n->m_stages_num; i++)
-    {
+  if (n->m_stages != NULL) {
+    for (int i = 0; i < n->m_stages_num; ++i)
       sn_stage_destroy (n->m_stages[i]);
-      n->m_stages[i] = NULL;
-    }
     free (n->m_stages);
-    n->m_stages = NULL;
   }
-
   free (n);
 } /* }}} void sn_network_destroy */
 
