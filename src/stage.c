@@ -199,18 +199,12 @@ int sn_stage_comparator_check_conflict (sn_stage_t *s, const sn_comparator_t *c0
   return (0);
 } /* int sn_stage_comparator_check_conflict */
 
-int sn_stage_invert (sn_stage_t *s)
+void sn_stage_invert (sn_stage_t *s)
 {
-  int i;
-
-  if (s == NULL)
-    return (EINVAL);
-
-  for (i = 0; i < s->m_comparators_num; i++)
+  assert(s);
+  for (int i = 0; i < s->m_comparators_num; ++i)
     sn_comparator_invert (s->m_comparators + i);
-
-  return (0);
-} /* int sn_stage_invert */
+} /* void sn_stage_invert */
 
 int sn_stage_shift (sn_stage_t *s, int sw, int inputs_num)
 {

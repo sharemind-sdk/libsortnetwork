@@ -136,11 +136,10 @@ int sn_stage_comparator_check_conflict (sn_stage_t *s, const sn_comparator_t *c)
 /**
  * Inverts a stage by switching the direction of all comparators.
  *
- * \param s The stage to invert.
- * \return Zero on success, non-zero on failure.
+ * \param s The stage to invert, must be non-NULL.
  * \see sn_network_invert
  */
-int sn_stage_invert (sn_stage_t *s);
+void sn_stage_invert (sn_stage_t *s);
 
 /**
  * Shifts a stage (permutes the inputs). Each input is shifted \c sw positions,
