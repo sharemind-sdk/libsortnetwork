@@ -66,6 +66,14 @@ typedef struct sn_comparator_s sn_comparator_t;
 #define SN_COMP_FREE_FUNC(c) (c)->free_func
 
 /**
+ * Initializes a new comparator object.
+ *
+ * \param min Index of the line onto which the smaller element will be put.
+ * \param max Index of the line onto which the larger element will be put.
+ */
+void sn_comparator_init(sn_comparator_t * c, int min, int max);
+
+/**
  * Allocates, initializes and returns a new comparator object. The returned
  * pointer must be freed by sn_comparator_destroy().
  *

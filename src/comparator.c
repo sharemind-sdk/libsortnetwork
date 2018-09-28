@@ -34,6 +34,14 @@
 
 #include "comparator.h"
 
+
+void sn_comparator_init(sn_comparator_t * c, int min, int max) {
+  c->m_min = min;
+  c->m_max = max;
+  c->m_user_data = NULL;
+  c->m_free_func = NULL;
+}
+
 sn_comparator_t *sn_comparator_create (int min, int max)
 {
   sn_comparator_t *c;
@@ -41,13 +49,7 @@ sn_comparator_t *sn_comparator_create (int min, int max)
   c = (sn_comparator_t *) malloc (sizeof (sn_comparator_t));
   if (c == NULL)
     return (NULL);
-  memset (c, '\0', sizeof (sn_comparator_t));
-
-  c->min = min;
-  c->max = max;
-  c->user_data = NULL;
-  c->free_func = NULL;
-
+  sn_comparator_init(c, min, max);
   return (c);
 } /* sn_comparator_t *sn_comparator_create */
 
