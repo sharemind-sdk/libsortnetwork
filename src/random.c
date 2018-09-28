@@ -70,7 +70,7 @@ static int read_dev_random (void *buffer, size_t buffer_size)
     if (status < 0)
     {
       if (errno == EINTR)
-	continue;
+        continue;
 
       fprintf (stderr, "read_dev_random: read failed.\n");
       break;

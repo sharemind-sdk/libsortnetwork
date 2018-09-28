@@ -112,7 +112,7 @@ int sn_stage_comparator_add (sn_stage_t *s, const sn_comparator_t *c)
   {
     int nmemb = s->m_comparators_num - i;
     memmove (s->m_comparators + (i + 1), s->m_comparators + i,
-	nmemb * sizeof (sn_comparator_t));
+        nmemb * sizeof (sn_comparator_t));
   }
   memcpy (s->m_comparators + i, c, sizeof (sn_comparator_t));
   s->m_comparators_num++;
@@ -133,7 +133,7 @@ int sn_stage_comparator_remove (sn_stage_t *s, int c_num)
 
   if (nmemb > 0)
     memmove (s->m_comparators + c_num, s->m_comparators + (c_num + 1),
-	nmemb * sizeof (sn_comparator_t));
+        nmemb * sizeof (sn_comparator_t));
   s->m_comparators_num--;
 
   /* Free the unused memory */
@@ -191,15 +191,15 @@ int sn_stage_comparator_check_conflict (sn_stage_t *s, const sn_comparator_t *c0
   {
     sn_comparator_t *c1 = s->m_comparators + i;
     if ((SN_COMP_MIN(c0) == SN_COMP_MIN(c1))
-	|| (SN_COMP_MIN(c0) == SN_COMP_MAX(c1))
-	|| (SN_COMP_MAX(c0) == SN_COMP_MIN(c1))
-	|| (SN_COMP_MAX(c0) == SN_COMP_MAX(c1)))
+        || (SN_COMP_MIN(c0) == SN_COMP_MAX(c1))
+        || (SN_COMP_MAX(c0) == SN_COMP_MIN(c1))
+        || (SN_COMP_MAX(c0) == SN_COMP_MAX(c1)))
     {
       if ((SN_COMP_MIN(c0) == SN_COMP_MIN(c1))
-	  && (SN_COMP_MAX(c0) == SN_COMP_MAX(c1)))
-	return (2);
+          && (SN_COMP_MAX(c0) == SN_COMP_MAX(c1)))
+        return (2);
       else
-	return (1);
+        return (1);
     }
   }
 
@@ -225,7 +225,7 @@ int sn_stage_show_fh (sn_stage_t *s, FILE *fh) /* {{{ */
 
     for (j = 0; j < lines_used; j++)
       if (SN_COMP_LEFT (c) > right[j])
-	break;
+        break;
 
     lines[i] = j;
     right[j] = SN_COMP_RIGHT (c);
@@ -246,42 +246,42 @@ int sn_stage_show_fh (sn_stage_t *s, FILE *fh) /* {{{ */
       {
     sn_comparator_t *c = s->m_comparators + k;
 
-	/* Check if this comparator is displayed on another line */
-	if (lines[k] != i)
-	  continue;
+        /* Check if this comparator is displayed on another line */
+        if (lines[k] != i)
+          continue;
 
-	if (j == SN_COMP_MIN (c))
-	  on_elem = -1;
-	else if (j == SN_COMP_MAX (c))
-	  on_elem = 1;
+        if (j == SN_COMP_MIN (c))
+          on_elem = -1;
+        else if (j == SN_COMP_MAX (c))
+          on_elem = 1;
 
-	if ((j >= SN_COMP_LEFT (c)) && (j < SN_COMP_RIGHT (c)))
-	  line_after = 1;
+        if ((j >= SN_COMP_LEFT (c)) && (j < SN_COMP_RIGHT (c)))
+          line_after = 1;
 
-	if ((on_elem != 0) || (line_after != 0))
-	  break;
+        if ((on_elem != 0) || (line_after != 0))
+          break;
       }
 
       if (on_elem == 0)
       {
-	if (line_after == 0)
-	  fprintf (fh, "     ");
-	else
-	  fprintf (fh, "-----");
+        if (line_after == 0)
+          fprintf (fh, "     ");
+        else
+          fprintf (fh, "-----");
       }
       else if (on_elem == -1)
       {
-	if (line_after == 0)
-	  fprintf (fh, "-!   ");
-	else
-	  fprintf (fh, " !---");
+        if (line_after == 0)
+          fprintf (fh, "-!   ");
+        else
+          fprintf (fh, " !---");
       }
       else
       {
-	if (line_after == 0)
-	  fprintf (fh, "->   ");
-	else
-	  fprintf (fh, " <---");
+        if (line_after == 0)
+          fprintf (fh, "->   ");
+        else
+          fprintf (fh, " <---");
       }
     } /* for (columns) */
 
