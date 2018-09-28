@@ -47,9 +47,9 @@ extern "C" {
  */
 struct sn_stage_s
 {
-  int depth;                    /**< Depth of this stage, where zero means closest to the input. */
-  sn_comparator_t *comparators; /**< Pointer to a list of comparators contained in this stage. */
-  int comparators_num;          /**< Number of comparators in this stage. */
+  int m_depth;                    /**< Depth of this stage, where zero means closest to the input. */
+  sn_comparator_t *m_comparators; /**< Pointer to a list of comparators contained in this stage. */
+  int m_comparators_num;          /**< Number of comparators in this stage. */
 };
 typedef struct sn_stage_s sn_stage_t;
 
@@ -64,9 +64,9 @@ enum sn_network_cut_dir_e
   DIR_MAX  /**< Assume positive infinity. */
 };
 
-#define SN_STAGE_DEPTH(s) (s)->depth
-#define SN_STAGE_COMP_NUM(s) (s)->comparators_num
-#define SN_STAGE_COMP_GET(s,n) ((s)->comparators + (n))
+#define SN_STAGE_DEPTH(s) (s)->m_depth
+#define SN_STAGE_COMP_NUM(s) (s)->m_comparators_num
+#define SN_STAGE_COMP_GET(s,n) ((s)->m_comparators + (n))
 
 /**
  * Creates an empty stage and returns a pointer to it. The stage must be freed

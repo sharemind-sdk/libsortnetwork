@@ -46,7 +46,7 @@ sn_stage_t *sn_stage_create (int depth)
     return (NULL);
   memset (s, '\0', sizeof (sn_stage_t));
 
-  s->depth = depth;
+  s->m_depth = depth;
   
   return (s);
 } /* sn_stage_t *sn_stage_create */
@@ -55,8 +55,8 @@ void sn_stage_destroy (sn_stage_t *s)
 {
   if (s == NULL)
     return;
-  if (s->comparators != NULL)
-    free (s->comparators);
+  if (s->m_comparators != NULL)
+    free (s->m_comparators);
   free (s);
 } /* void sn_stage_destroy */
 
@@ -65,9 +65,9 @@ int sn_stage_sort (sn_stage_t *s, int *values)
   sn_comparator_t *c;
   int i;
 
-  for (i = 0; i < s->comparators_num; i++)
+  for (i = 0; i < s->m_comparators_num; i++)
   {
-    c = s->comparators + i;
+    c = s->m_comparators + i;
     int const min = SN_COMP_MIN(c);
     int const max = SN_COMP_MAX(c);
     if (values[min] > values[max])
@@ -95,60 +95,60 @@ int sn_stage_comparator_add (sn_stage_t *s, const sn_comparator_t *c)
   if (i != 0)
     return (i);
 
-  temp = (sn_comparator_t *) realloc (s->comparators,
-      (s->comparators_num + 1) * sizeof (sn_comparator_t));
+  temp = (sn_comparator_t *) realloc (s->m_comparators,
+      (s->m_comparators_num + 1) * sizeof (sn_comparator_t));
   if (temp == NULL)
     return (ENOMEM);
-  s->comparators = temp;
+  s->m_comparators = temp;
   temp = NULL;
 
-  for (i = 0; i < s->comparators_num; i++)
-    if (sn_comparator_compare (c, s->comparators + i) <= 0)
+  for (i = 0; i < s->m_comparators_num; i++)
+    if (sn_comparator_compare (c, s->m_comparators + i) <= 0)
       break;
 
   /* Insert the elements in ascending order */
-  assert (i <= s->comparators_num);
-  if (i < s->comparators_num)
+  assert (i <= s->m_comparators_num);
+  if (i < s->m_comparators_num)
   {
-    int nmemb = s->comparators_num - i;
-    memmove (s->comparators + (i + 1), s->comparators + i,
+    int nmemb = s->m_comparators_num - i;
+    memmove (s->m_comparators + (i + 1), s->m_comparators + i,
 	nmemb * sizeof (sn_comparator_t));
   }
-  memcpy (s->comparators + i, c, sizeof (sn_comparator_t));
-  s->comparators_num++;
+  memcpy (s->m_comparators + i, c, sizeof (sn_comparator_t));
+  s->m_comparators_num++;
 
   return (0);
 } /* int sn_stage_comparator_add */
 
 int sn_stage_comparator_remove (sn_stage_t *s, int c_num)
 {
-  int nmemb = s->comparators_num - (c_num + 1);
+  int nmemb = s->m_comparators_num - (c_num + 1);
   sn_comparator_t *temp;
 
-  if ((s == NULL) || (s->comparators_num <= c_num))
+  if ((s == NULL) || (s->m_comparators_num <= c_num))
     return (EINVAL);
 
-  assert (c_num < s->comparators_num);
+  assert (c_num < s->m_comparators_num);
   assert (c_num >= 0);
 
   if (nmemb > 0)
-    memmove (s->comparators + c_num, s->comparators + (c_num + 1),
+    memmove (s->m_comparators + c_num, s->m_comparators + (c_num + 1),
 	nmemb * sizeof (sn_comparator_t));
-  s->comparators_num--;
+  s->m_comparators_num--;
 
   /* Free the unused memory */
-  if (s->comparators_num == 0)
+  if (s->m_comparators_num == 0)
   {
-    free (s->comparators);
-    s->comparators = NULL;
+    free (s->m_comparators);
+    s->m_comparators = NULL;
   }
   else
   {
-    temp = (sn_comparator_t *) realloc (s->comparators,
-	s->comparators_num * sizeof (sn_comparator_t));
+    temp = (sn_comparator_t *) realloc (s->m_comparators,
+    s->m_comparators_num * sizeof (sn_comparator_t));
     if (temp == NULL)
       return (-1);
-    s->comparators = temp;
+    s->m_comparators = temp;
   }
 
   return (0);
@@ -159,26 +159,26 @@ sn_stage_t *sn_stage_clone (const sn_stage_t *s)
   sn_stage_t *s_copy;
   int i;
 
-  s_copy = sn_stage_create (s->depth);
+  s_copy = sn_stage_create (s->m_depth);
   if (s_copy == NULL)
     return (NULL);
 
-  s_copy->comparators = (sn_comparator_t *) malloc (s->comparators_num
+  s_copy->m_comparators = (sn_comparator_t *) malloc (s->m_comparators_num
       * sizeof (sn_comparator_t));
-  if (s_copy->comparators == NULL)
+  if (s_copy->m_comparators == NULL)
   {
     free (s_copy);
     return (NULL);
   }
 
-  for (i = 0; i < s->comparators_num; i++)
+  for (i = 0; i < s->m_comparators_num; i++)
   {
-    SN_COMP_MIN (s_copy->comparators + i) = SN_COMP_MIN (s->comparators + i);
-    SN_COMP_MAX (s_copy->comparators + i) = SN_COMP_MAX (s->comparators + i);
-    SN_COMP_USER_DATA (s_copy->comparators + i) = NULL;
-    SN_COMP_FREE_FUNC (s_copy->comparators + i) = NULL;
+    SN_COMP_MIN (s_copy->m_comparators + i) = SN_COMP_MIN (s->m_comparators + i);
+    SN_COMP_MAX (s_copy->m_comparators + i) = SN_COMP_MAX (s->m_comparators + i);
+    SN_COMP_USER_DATA (s_copy->m_comparators + i) = NULL;
+    SN_COMP_FREE_FUNC (s_copy->m_comparators + i) = NULL;
   }
-  s_copy->comparators_num = s->comparators_num;
+  s_copy->m_comparators_num = s->m_comparators_num;
 
   return (s_copy);
 } /* sn_stage_t *sn_stage_clone */
@@ -187,9 +187,9 @@ int sn_stage_comparator_check_conflict (sn_stage_t *s, const sn_comparator_t *c0
 {
   int i;
 
-  for (i = 0; i < s->comparators_num; i++)
+  for (i = 0; i < s->m_comparators_num; i++)
   {
-    sn_comparator_t *c1 = s->comparators + i;
+    sn_comparator_t *c1 = s->m_comparators + i;
     if ((SN_COMP_MIN(c0) == SN_COMP_MIN(c1))
 	|| (SN_COMP_MIN(c0) == SN_COMP_MAX(c1))
 	|| (SN_COMP_MAX(c0) == SN_COMP_MIN(c1))
@@ -208,20 +208,20 @@ int sn_stage_comparator_check_conflict (sn_stage_t *s, const sn_comparator_t *c0
 
 int sn_stage_show_fh (sn_stage_t *s, FILE *fh) /* {{{ */
 {
-  int lines[s->comparators_num];
-  int right[s->comparators_num];
+  int lines[s->m_comparators_num];
+  int right[s->m_comparators_num];
   int lines_used = 0;
 
-  for (int i = 0; i < s->comparators_num; i++)
+  for (int i = 0; i < s->m_comparators_num; i++)
   {
     lines[i] = -1;
     right[i] = -1;
   }
 
-  for (int i = 0; i < s->comparators_num; i++)
+  for (int i = 0; i < s->m_comparators_num; i++)
   {
     int j;
-    sn_comparator_t *c = s->comparators + i;
+    sn_comparator_t *c = s->m_comparators + i;
 
     for (j = 0; j < lines_used; j++)
       if (SN_COMP_LEFT (c) > right[j])
@@ -235,16 +235,16 @@ int sn_stage_show_fh (sn_stage_t *s, FILE *fh) /* {{{ */
 
   for (int i = 0; i < lines_used; i++)
   {
-    fprintf (fh, "%3i: ", s->depth);
+    fprintf (fh, "%3i: ", s->m_depth);
 
     for (int j = 0; j <= right[i]; j++)
     {
       int on_elem = 0;
       int line_after = 0;
 
-      for (int k = 0; k < s->comparators_num; k++)
+      for (int k = 0; k < s->m_comparators_num; k++)
       {
-	sn_comparator_t *c = s->comparators + k;
+    sn_comparator_t *c = s->m_comparators + k;
 
 	/* Check if this comparator is displayed on another line */
 	if (lines[k] != i)
@@ -303,8 +303,8 @@ int sn_stage_invert (sn_stage_t *s)
   if (s == NULL)
     return (EINVAL);
 
-  for (i = 0; i < s->comparators_num; i++)
-    sn_comparator_invert (s->comparators + i);
+  for (i = 0; i < s->m_comparators_num; i++)
+    sn_comparator_invert (s->m_comparators + i);
 
   return (0);
 } /* int sn_stage_invert */
@@ -320,8 +320,8 @@ int sn_stage_shift (sn_stage_t *s, int sw, int inputs_num)
   if (sw == 0)
     return (0);
 
-  for (i = 0; i < s->comparators_num; i++)
-    sn_comparator_shift (s->comparators + i, sw, inputs_num);
+  for (i = 0; i < s->m_comparators_num; i++)
+    sn_comparator_shift (s->m_comparators + i, sw, inputs_num);
 
   return (0);
 } /* int sn_stage_shift */
@@ -337,9 +337,9 @@ int sn_stage_unify (sn_stage_t *s) /* {{{ */
   if (s == NULL)
     return (EINVAL);
 
-  qsort (s->comparators,
-      (size_t) s->comparators_num,
-      sizeof (*s->comparators),
+  qsort (s->m_comparators,
+      (size_t) s->m_comparators_num,
+      sizeof (*s->m_comparators),
       sn_stage_unify__qsort_callback);
 
   return (0);
@@ -352,8 +352,8 @@ int sn_stage_swap (sn_stage_t *s, int con0, int con1)
   if (s == NULL)
     return (EINVAL);
 
-  for (i = 0; i < s->comparators_num; i++)
-    sn_comparator_swap (s->comparators + i, con0, con1);
+  for (i = 0; i < s->m_comparators_num; i++)
+    sn_comparator_swap (s->m_comparators + i, con0, con1);
 
   return (0);
 } /* int sn_stage_swap */
@@ -366,9 +366,9 @@ int sn_stage_cut_at (sn_stage_t *s, int input, enum sn_network_cut_dir_e dir)
   if ((s == NULL) || (input < 0))
     return (-EINVAL);
 
-  for (i = 0; i < s->comparators_num; i++)
+  for (i = 0; i < s->m_comparators_num; i++)
   {
-    sn_comparator_t *c = s->comparators + i;
+    sn_comparator_t *c = s->m_comparators + i;
 
     if ((SN_COMP_MIN (c) != input) && (SN_COMP_MAX (c) != input))
       continue;
@@ -400,9 +400,9 @@ int sn_stage_cut (sn_stage_t *s, int *mask, /* {{{ */
   if ((s == NULL) || (mask == NULL) || (prev == NULL))
     return (EINVAL);
 
-  for (i = 0; i < s->comparators_num; i++)
+  for (i = 0; i < s->m_comparators_num; i++)
   {
-    sn_comparator_t *c = s->comparators + i;
+    sn_comparator_t *c = s->m_comparators + i;
     int left = SN_COMP_LEFT (c);
     int right = SN_COMP_RIGHT (c);
 
@@ -421,7 +421,7 @@ int sn_stage_cut (sn_stage_t *s, int *mask, /* {{{ */
       mask[right] = mask[left];
       mask[left] = tmp;
 
-      for (j = s->depth - 1; j >= 0; j--)
+      for (j = s->m_depth - 1; j >= 0; j--)
         sn_stage_swap (prev[j],
             left, right);
     }
@@ -437,9 +437,9 @@ int sn_stage_remove_input (sn_stage_t *s, int input)
 {
   int i;
 
-  for (i = 0; i < s->comparators_num; i++)
+  for (i = 0; i < s->m_comparators_num; i++)
   {
-    sn_comparator_t *c = s->comparators + i;
+    sn_comparator_t *c = s->m_comparators + i;
 
     if ((SN_COMP_MIN (c) == input) || (SN_COMP_MAX (c) == input))
     {
@@ -491,7 +491,7 @@ sn_stage_t *sn_stage_read (FILE *fh)
     sn_stage_comparator_add (s, &c);
   }
 
-  if (s->comparators_num == 0)
+  if (s->m_comparators_num == 0)
   {
     sn_stage_destroy (s);
     return (NULL);
@@ -504,13 +504,13 @@ int sn_stage_write (sn_stage_t *s, FILE *fh)
 {
   int i;
 
-  if (s->comparators_num <= 0)
+  if (s->m_comparators_num <= 0)
     return (0);
 
-  for (i = 0; i < s->comparators_num; i++)
+  for (i = 0; i < s->m_comparators_num; i++)
     fprintf (fh, "%i %i\n",
-	SN_COMP_MIN (s->comparators + i),
-	SN_COMP_MAX (s->comparators + i));
+    SN_COMP_MIN (s->m_comparators + i),
+    SN_COMP_MAX (s->m_comparators + i));
   fprintf (fh, "\n");
 
   return (0);
@@ -524,7 +524,7 @@ int sn_stage_serialize (sn_stage_t *s,
   ssize_t status;
   int i;
 
-  if (s->comparators_num <= 0)
+  if (s->m_comparators_num <= 0)
     return (0);
 
   buffer = *ret_buffer;
@@ -537,11 +537,11 @@ int sn_stage_serialize (sn_stage_t *s,
   buffer += status; \
   buffer_size -= (size_t) status;
 
-  for (i = 0; i < s->comparators_num; i++)
+  for (i = 0; i < s->m_comparators_num; i++)
   {
     SNPRINTF_OR_FAIL ("%i %i\r\n",
-	SN_COMP_MIN (s->comparators + i),
-	SN_COMP_MAX (s->comparators + i));
+    SN_COMP_MIN (s->m_comparators + i),
+    SN_COMP_MAX (s->m_comparators + i));
   }
 
   SNPRINTF_OR_FAIL ("\r\n");
@@ -624,7 +624,7 @@ sn_stage_t *sn_stage_unserialize (char **ret_buffer, size_t *ret_buffer_size)
     sn_stage_comparator_add (s, &c);
   } /* while (buffer_size > 0) */
 
-  if ((status != 0) || (s->comparators_num == 0))
+  if ((status != 0) || (s->m_comparators_num == 0))
   {
     sn_stage_destroy (s);
     return (NULL);
@@ -647,14 +647,14 @@ int sn_stage_compare (const sn_stage_t *s0, const sn_stage_t *s1) /* {{{ */
   else if (s1 == NULL)
     return (1);
 
-  if (s0->comparators_num < s1->comparators_num)
+  if (s0->m_comparators_num < s1->m_comparators_num)
     return (-1);
-  else if (s0->comparators_num > s1->comparators_num)
+  else if (s0->m_comparators_num > s1->m_comparators_num)
     return (1);
 
-  for (i = 0; i < s0->comparators_num; i++)
+  for (i = 0; i < s0->m_comparators_num; i++)
   {
-    status = sn_comparator_compare (s0->comparators + i, s1->comparators + i);
+    status = sn_comparator_compare (s0->m_comparators + i, s1->m_comparators + i);
     if (status != 0)
       return (status);
   }
@@ -670,10 +670,10 @@ uint64_t sn_stage_get_hashval (const sn_stage_t *s) /* {{{ */
   if (s == NULL)
     return (0);
 
-  hash = (uint64_t) s->depth;
+  hash = (uint64_t) s->m_depth;
 
-  for (i = 0; i < s->comparators_num; i++)
-    hash = (hash * 99991) + sn_comparator_get_hashval (s->comparators + i);
+  for (i = 0; i < s->m_comparators_num; i++)
+    hash = (hash * 99991) + sn_comparator_get_hashval (s->m_comparators + i);
 
   return (hash);
 } /* }}} uint64_t sn_stage_get_hashval */
