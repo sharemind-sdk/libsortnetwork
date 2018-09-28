@@ -700,12 +700,9 @@ static int sn_network_add_bitonic_merger (sn_network_t *n, /* {{{ */
   if (indizes_num > 2)
   {
     int even_indizes[indizes_num];
-    int even_indizes_num;
+    int const even_indizes_num = (indizes_num + 1) / 2;
     int odd_indizes[indizes_num];
-    int odd_indizes_num;
-
-    even_indizes_num = (indizes_num + 1) / 2;
-    odd_indizes_num = indizes_num / 2;
+    int const odd_indizes_num = indizes_num / 2;
 
     for (i = 0; i < even_indizes_num; i++)
       even_indizes[i] = indizes[2 * i];
