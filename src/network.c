@@ -661,10 +661,10 @@ static sn_network_t *sn_network_concatenate (sn_network_t *n0, /* {{{ */
       for (j = 0; j < SN_STAGE_COMP_NUM (n1->m_stages[i]); j++)
       {
         sn_comparator_t *c_orig = SN_STAGE_COMP_GET (n1->m_stages[i], j);
-        sn_comparator_t  c_copy;
-
-        SN_COMP_MIN(&c_copy) = SN_COMP_MIN(c_orig) + n0->m_inputs_num;
-        SN_COMP_MAX(&c_copy) = SN_COMP_MAX(c_orig) + n0->m_inputs_num;
+        sn_comparator_t c_copy;
+        sn_comparator_init(&c_copy,
+                           SN_COMP_MIN(c_orig) + n0->m_inputs_num,
+                           SN_COMP_MAX(c_orig) + n0->m_inputs_num);
 
         sn_stage_comparator_add (s, &c_copy);
       }
