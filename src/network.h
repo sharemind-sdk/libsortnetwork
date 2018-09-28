@@ -24,9 +24,6 @@
 #ifndef SHAREMIND_LIBSORTNETWORK_NETWORK_H
 #define SHAREMIND_LIBSORTNETWORK_NETWORK_H
 
-#include <stdio.h>
-#include <stdint.h>
-
 #include "comparator.h"
 #include "stage.h"
 

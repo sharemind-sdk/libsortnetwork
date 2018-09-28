@@ -21,20 +21,14 @@
  * Modified by Cybernetica AS <sharemind-support at cyber.ee>
  */
 
-#ifndef _ISOC99_SOURCE
-# define _ISOC99_SOURCE
-#endif
-#ifndef _POSIX_C_SOURCE
-# define _POSIX_C_SOURCE 200112L
-#endif
+#include "stage.h"
 
-#include <stdlib.h>
-#include <string.h>
 #include <assert.h>
 #include <errno.h>
-
+#include <stdlib.h>
+#include <string.h>
 #include "comparator.h"
-#include "stage.h"
+
 
 sn_stage_t *sn_stage_create (int depth)
 {

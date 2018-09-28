@@ -21,23 +21,15 @@
  * Modified by Cybernetica AS <sharemind-support at cyber.ee>
  */
 
-#ifndef _ISOC99_SOURCE
-# define _ISOC99_SOURCE
-#endif
-#ifndef _POSIX_C_SOURCE
-# define _POSIX_C_SOURCE 200112L
-#endif
+#include "network.h"
 
-#include <stddef.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <strings.h>
-#include <ctype.h>
 #include <assert.h>
 #include <errno.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include "network.h"
 
 sn_network_t *sn_network_create (int inputs_num) /* {{{ */
 {

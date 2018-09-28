@@ -21,17 +21,10 @@
  * Modified by Cybernetica AS <sharemind-support at cyber.ee>
  */
 
-#ifndef _ISOC99_SOURCE
-# define _ISOC99_SOURCE
-#endif
-#ifndef _POSIX_C_SOURCE
-# define _POSIX_C_SOURCE 200112L
-#endif
+#include "comparator.h"
 
 #include <stdlib.h>
-#include <string.h>
 
-#include "comparator.h"
 
 
 void sn_comparator_init(sn_comparator_t * c, int min, int max) {

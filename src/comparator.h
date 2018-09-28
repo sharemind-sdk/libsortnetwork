@@ -24,8 +24,6 @@
 #ifndef SHAREMIND_LIBSORTNETWORK_COMPARATOR_H
 #define SHAREMIND_LIBSORTNETWORK_COMPARATOR_H
 
-#include <stdint.h>
-
 
 #ifdef __cplusplus
 extern "C" {
