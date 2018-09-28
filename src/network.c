@@ -50,7 +50,7 @@ sn_network_t *sn_network_create (int inputs_num) /* {{{ */
     return (NULL);
   memset (n, '\0', sizeof (sn_network_t));
 
-  n->inputs_num = inputs_num;
+  n->m_inputs_num = inputs_num;
 
   return (n);
 } /* }}} sn_network_t *sn_network_create */
@@ -60,16 +60,16 @@ void sn_network_destroy (sn_network_t *n) /* {{{ */
   if (n == NULL)
     return;
 
-  if (n->stages != NULL)
+  if (n->m_stages != NULL)
   {
     int i;
-    for (i = 0; i < n->stages_num; i++)
+    for (i = 0; i < n->m_stages_num; i++)
     {
-      sn_stage_destroy (n->stages[i]);
-      n->stages[i] = NULL;
+      sn_stage_destroy (n->m_stages[i]);
+      n->m_stages[i] = NULL;
     }
-    free (n->stages);
-    n->stages = NULL;
+    free (n->m_stages);
+    n->m_stages = NULL;
   }
 
   free (n);
@@ -271,24 +271,24 @@ int sn_network_network_add (sn_network_t *n, sn_network_t *other) /* {{{ */
   if ((n == NULL) || (other == NULL))
     return (EINVAL);
 
-  stages_num = n->stages_num + other->stages_num;
-  if (stages_num <= n->stages_num)
+  stages_num = n->m_stages_num + other->m_stages_num;
+  if (stages_num <= n->m_stages_num)
     return (EINVAL);
 
   sn_stage_t ** const tmp =
-          (sn_stage_t **) realloc(n->stages, sizeof(*n->stages) * stages_num);
+          (sn_stage_t **) realloc(n->m_stages, sizeof(*n->m_stages) * stages_num);
   if (tmp == NULL)
     return (ENOMEM);
-  n->stages = tmp;
+  n->m_stages = tmp;
 
-  memcpy (n->stages + n->stages_num, other->stages,
-      sizeof (*other->stages) * other->stages_num);
-  for (i = n->stages_num; i < stages_num; i++)
-    SN_STAGE_DEPTH(n->stages[i]) = i;
+  memcpy (n->m_stages + n->m_stages_num, other->m_stages,
+      sizeof (*other->m_stages) * other->m_stages_num);
+  for (i = n->m_stages_num; i < stages_num; i++)
+    SN_STAGE_DEPTH(n->m_stages[i]) = i;
 
-  n->stages_num = stages_num;
+  n->m_stages_num = stages_num;
 
-  free (other->stages);
+  free (other->m_stages);
   free (other);
 
   return (0);
@@ -301,51 +301,51 @@ int sn_network_stage_add (sn_network_t *n, sn_stage_t *s) /* {{{ */
   if ((n == NULL) || (s == NULL))
     return (EINVAL);
 
-  temp = (sn_stage_t **) realloc (n->stages, (n->stages_num + 1)
+  temp = (sn_stage_t **) realloc (n->m_stages, (n->m_stages_num + 1)
       * sizeof (sn_stage_t *));
   if (temp == NULL)
     return (-1);
 
-  n->stages = temp;
-  SN_STAGE_DEPTH (s) = n->stages_num;
-  n->stages[n->stages_num] = s;
-  n->stages_num++;
+  n->m_stages = temp;
+  SN_STAGE_DEPTH (s) = n->m_stages_num;
+  n->m_stages[n->m_stages_num] = s;
+  n->m_stages_num++;
 
   return (0);
 } /* }}} int sn_network_stage_add */
 
 int sn_network_stage_remove (sn_network_t *n, int s_num) /* {{{ */
 {
-  int nmemb = n->stages_num - (s_num + 1);
+  int nmemb = n->m_stages_num - (s_num + 1);
   sn_stage_t **temp;
 
-  if ((n == NULL) || (s_num >= n->stages_num))
+  if ((n == NULL) || (s_num >= n->m_stages_num))
     return (EINVAL);
 
-  sn_stage_destroy (n->stages[s_num]);
-  n->stages[s_num] = NULL;
+  sn_stage_destroy (n->m_stages[s_num]);
+  n->m_stages[s_num] = NULL;
 
   if (nmemb > 0)
   {
-    memmove (n->stages + s_num, n->stages + (s_num + 1),
+    memmove (n->m_stages + s_num, n->m_stages + (s_num + 1),
         nmemb * sizeof (sn_stage_t *));
-    n->stages[n->stages_num - 1] = NULL;
+    n->m_stages[n->m_stages_num - 1] = NULL;
   }
-  n->stages_num--;
+  n->m_stages_num--;
 
   /* Free the unused memory */
-  if (n->stages_num == 0)
+  if (n->m_stages_num == 0)
   {
-    free (n->stages);
-    n->stages = NULL;
+    free (n->m_stages);
+    n->m_stages = NULL;
   }
   else
   {
-    temp = (sn_stage_t **) realloc (n->stages,
-        n->stages_num * sizeof (sn_stage_t *));
+    temp = (sn_stage_t **) realloc (n->m_stages,
+        n->m_stages_num * sizeof (sn_stage_t *));
     if (temp == NULL)
       return (-1);
-    n->stages = temp;
+    n->m_stages = temp;
   }
 
   return (0);
@@ -356,16 +356,16 @@ sn_network_t *sn_network_clone (const sn_network_t *n) /* {{{ */
   sn_network_t *n_copy;
   int i;
 
-  n_copy = sn_network_create (n->inputs_num);
+  n_copy = sn_network_create (n->m_inputs_num);
   if (n_copy == NULL)
     return (NULL);
 
-  for (i = 0; i < n->stages_num; i++)
+  for (i = 0; i < n->m_stages_num; i++)
   {
     sn_stage_t *s;
     int status;
 
-    s = sn_stage_clone (n->stages[i]);
+    s = sn_stage_clone (n->m_stages[i]);
     if (s == NULL)
       break;
 
@@ -374,7 +374,7 @@ sn_network_t *sn_network_clone (const sn_network_t *n) /* {{{ */
       break;
   }
 
-  if (i < n->stages_num)
+  if (i < n->m_stages_num)
   {
     sn_network_destroy (n_copy);
     return (NULL);
@@ -391,9 +391,9 @@ int sn_network_comparator_add (sn_network_t *n, /* {{{ */
   if ((n == NULL) || (c == NULL))
     return (EINVAL);
 
-  if (n->stages_num > 0)
+  if (n->m_stages_num > 0)
   {
-    s = n->stages[n->stages_num - 1];
+    s = n->m_stages[n->m_stages_num - 1];
     
     if (sn_stage_comparator_check_conflict (s, c) == 0)
     {
@@ -402,7 +402,7 @@ int sn_network_comparator_add (sn_network_t *n, /* {{{ */
     }
   }
 
-  s = sn_stage_create (n->stages_num);
+  s = sn_stage_create (n->m_stages_num);
   sn_stage_comparator_add (s, c);
   sn_network_stage_add (n, s);
 
@@ -418,8 +418,8 @@ int sn_network_get_comparator_num (const sn_network_t *n) /* {{{ */
     return (-1);
 
   num = 0;
-  for (i = 0; i < n->stages_num; i++)
-    num += SN_STAGE_COMP_NUM(n->stages[i]);
+  for (i = 0; i < n->m_stages_num; i++)
+    num += SN_STAGE_COMP_NUM(n->m_stages[i]);
 
   return (num);
 } /* }}} int sn_network_get_comparator_num */
@@ -428,8 +428,8 @@ int sn_network_show_fh (sn_network_t *n, FILE *fh) /* {{{ */
 {
   int i;
 
-  for (i = 0; i < n->stages_num; i++)
-    sn_stage_show_fh (n->stages[i], fh);
+  for (i = 0; i < n->m_stages_num; i++)
+    sn_stage_show_fh (n->m_stages[i], fh);
 
   return (0);
 } /* }}} int sn_network_show_fh */
@@ -446,8 +446,8 @@ int sn_network_invert (sn_network_t *n) /* {{{ */
   if (n == NULL)
     return (EINVAL);
 
-  for (i = 0; i < n->stages_num; i++)
-    sn_stage_invert (n->stages[i]);
+  for (i = 0; i < n->m_stages_num; i++)
+    sn_stage_invert (n->m_stages[i]);
 
   return (0);
 } /* }}} int sn_network_invert */
@@ -462,8 +462,8 @@ int sn_network_shift (sn_network_t *n, int sw) /* {{{ */
   if (sw == 0)
     return (0);
 
-  for (i = 0; i < n->stages_num; i++)
-    sn_stage_shift (n->stages[i], sw, SN_NETWORK_INPUT_NUM (n));
+  for (i = 0; i < n->m_stages_num; i++)
+    sn_stage_shift (n->m_stages[i], sw, SN_NETWORK_INPUT_NUM (n));
 
   return (0);
 } /* }}} int sn_network_shift */
@@ -474,11 +474,11 @@ int sn_network_compress (sn_network_t *n) /* {{{ */
   int j;
   int k;
 
-  for (i = 1; i < n->stages_num; i++)
+  for (i = 1; i < n->m_stages_num; i++)
   {
     sn_stage_t *s;
 
-    s = n->stages[i];
+    s = n->m_stages[i];
 
     for (j = 0; j < SN_STAGE_COMP_NUM (s); j++)
     {
@@ -489,7 +489,7 @@ int sn_network_compress (sn_network_t *n) /* {{{ */
       {
         int conflict;
 
-        conflict = sn_stage_comparator_check_conflict (n->stages[k], c);
+        conflict = sn_stage_comparator_check_conflict (n->m_stages[k], c);
         if (conflict == 0)
         {
           move_to = k;
@@ -504,16 +504,16 @@ int sn_network_compress (sn_network_t *n) /* {{{ */
       if (move_to < i)
       {
         if (move_to >= 0)
-          sn_stage_comparator_add (n->stages[move_to], c);
+          sn_stage_comparator_add (n->m_stages[move_to], c);
         sn_stage_comparator_remove (s, j);
         j--;
       }
     }
   }
 
-  while ((n->stages_num > 0)
-      && (SN_STAGE_COMP_NUM (n->stages[n->stages_num - 1]) == 0))
-    sn_network_stage_remove (n, n->stages_num - 1);
+  while ((n->m_stages_num > 0)
+      && (SN_STAGE_COMP_NUM (n->m_stages[n->m_stages_num - 1]) == 0))
+    sn_network_stage_remove (n, n->m_stages_num - 1);
 
   return (0);
 } /* }}} int sn_network_compress */
@@ -522,12 +522,12 @@ int sn_network_normalize (sn_network_t *n) /* {{{ */
 {
   int i;
 
-  for (i = 0; i < n->stages_num; i++)
+  for (i = 0; i < n->m_stages_num; i++)
   {
     sn_stage_t *s;
     int j;
 
-    s = n->stages[i];
+    s = n->m_stages[i];
 
     for (j = 0; j < SN_STAGE_COMP_NUM (s); j++)
     {
@@ -544,14 +544,14 @@ int sn_network_normalize (sn_network_t *n) /* {{{ */
       {
         int k;
 
-        for (k = i; k < n->stages_num; k++) 
-          sn_stage_swap (n->stages[k], min, max);
+        for (k = i; k < n->m_stages_num; k++)
+          sn_stage_swap (n->m_stages[k], min, max);
 
         i = -1;
         break; /* for (j) */
       }
     } /* for (j = 0 .. #comparators) */
-  } /* for (i = n->stages_num - 1 .. 0) */
+  } /* for (i = n->m_stages_num - 1 .. 0) */
 
   return (0);
 } /* }}} int sn_network_normalize */
@@ -566,8 +566,8 @@ int sn_network_unify (sn_network_t *n) /* {{{ */
   sn_network_normalize (n);
   sn_network_compress (n);
 
-  for (i = 0; i < n->stages_num; i++)
-    sn_stage_unify (n->stages[i]);
+  for (i = 0; i < n->m_stages_num; i++)
+    sn_stage_unify (n->m_stages[i]);
 
   return (0);
 } /* }}} int sn_network_unify */
@@ -576,13 +576,13 @@ int sn_network_remove_input (sn_network_t *n, int input) /* {{{ */
 {
   int i;
 
-  if ((n == NULL) || (input < 0) || (input >= n->inputs_num))
+  if ((n == NULL) || (input < 0) || (input >= n->m_inputs_num))
     return (EINVAL);
 
-  for (i = 0; i < n->stages_num; i++)
-    sn_stage_remove_input (n->stages[i], input);
+  for (i = 0; i < n->m_stages_num; i++)
+    sn_stage_remove_input (n->m_stages[i], input);
 
-  n->inputs_num--;
+  n->m_inputs_num--;
 
   return (0);
 } /* }}} int sn_network_remove_input */
@@ -593,12 +593,12 @@ int sn_network_cut_at (sn_network_t *n, int input, /* {{{ */
   int i;
   int position = input;
 
-  for (i = 0; i < n->stages_num; i++)
+  for (i = 0; i < n->m_stages_num; i++)
   {
     sn_stage_t *s;
     int new_position;
     
-    s = n->stages[i];
+    s = n->m_stages[i];
     new_position = sn_stage_cut_at (s, position, dir);
     
     if (position != new_position)
@@ -606,14 +606,14 @@ int sn_network_cut_at (sn_network_t *n, int input, /* {{{ */
       int j;
 
       for (j = 0; j < i; j++)
-        sn_stage_swap (n->stages[j], position, new_position);
+        sn_stage_swap (n->m_stages[j], position, new_position);
     }
 
     position = new_position;
   }
 
   assert (((dir == DIR_MIN) && (position == 0))
-      || ((dir == DIR_MAX) && (position == (n->inputs_num - 1))));
+      || ((dir == DIR_MAX) && (position == (n->m_inputs_num - 1))));
 
   sn_network_remove_input (n, position);
 
@@ -625,22 +625,22 @@ int sn_network_cut (sn_network_t *n, int *mask) /* {{{ */
   int inputs_num;
   int i;
 
-  for (i = 0; i < n->stages_num; i++)
+  for (i = 0; i < n->m_stages_num; i++)
   {
-    sn_stage_t *s = n->stages[i];
+    sn_stage_t *s = n->m_stages[i];
 
-    sn_stage_cut (s, mask, n->stages);
+    sn_stage_cut (s, mask, n->m_stages);
   }
 
   /* Use a copy of this member since it will be updated by
    * sn_network_remove_input(). */
-  inputs_num = n->inputs_num;
+  inputs_num = n->m_inputs_num;
   for (i = 0; i < inputs_num; i++)
   {
     if (mask[i] < 0)
       sn_network_remove_input (n, 0);
     else if (mask[i] > 0)
-      sn_network_remove_input (n, n->inputs_num - 1);
+      sn_network_remove_input (n, n->m_inputs_num - 1);
   }
 
   return (0);
@@ -659,11 +659,11 @@ static sn_network_t *sn_network_concatenate (sn_network_t *n0, /* {{{ */
   int i;
   int j;
 
-  stages_num = (n0->stages_num > n1->stages_num)
-    ? n0->stages_num
-    : n1->stages_num;
+  stages_num = (n0->m_stages_num > n1->m_stages_num)
+    ? n0->m_stages_num
+    : n1->m_stages_num;
 
-  n = sn_network_create (n0->inputs_num + n1->inputs_num);
+  n = sn_network_create (n0->m_inputs_num + n1->m_inputs_num);
   if (n == NULL)
     return (NULL);
 
@@ -671,21 +671,21 @@ static sn_network_t *sn_network_concatenate (sn_network_t *n0, /* {{{ */
   {
     sn_stage_t *s = sn_stage_create (i);
 
-    if (i < n0->stages_num)
-      for (j = 0; j < SN_STAGE_COMP_NUM (n0->stages[i]); j++)
+    if (i < n0->m_stages_num)
+      for (j = 0; j < SN_STAGE_COMP_NUM (n0->m_stages[i]); j++)
       {
-        sn_comparator_t *c = SN_STAGE_COMP_GET (n0->stages[i], j);
+        sn_comparator_t *c = SN_STAGE_COMP_GET (n0->m_stages[i], j);
         sn_stage_comparator_add (s, c);
       }
 
-    if (i < n1->stages_num)
-      for (j = 0; j < SN_STAGE_COMP_NUM (n1->stages[i]); j++)
+    if (i < n1->m_stages_num)
+      for (j = 0; j < SN_STAGE_COMP_NUM (n1->m_stages[i]); j++)
       {
-        sn_comparator_t *c_orig = SN_STAGE_COMP_GET (n1->stages[i], j);
+        sn_comparator_t *c_orig = SN_STAGE_COMP_GET (n1->m_stages[i], j);
         sn_comparator_t  c_copy;
 
-        SN_COMP_MIN(&c_copy) = SN_COMP_MIN(c_orig) + n0->inputs_num;
-        SN_COMP_MAX(&c_copy) = SN_COMP_MAX(c_orig) + n0->inputs_num;
+        SN_COMP_MIN(&c_copy) = SN_COMP_MIN(c_orig) + n0->m_inputs_num;
+        SN_COMP_MAX(&c_copy) = SN_COMP_MAX(c_orig) + n0->m_inputs_num;
 
         sn_stage_comparator_add (s, &c_copy);
       }
@@ -755,7 +755,7 @@ static int sn_network_add_odd_even_merger (sn_network_t *n, /* {{{ */
 
     sn_comparator_init(&c, *indizes_left, *indizes_right);
 
-    s = sn_stage_create (n->stages_num);
+    s = sn_stage_create (n->m_stages_num);
     if (s == NULL)
       return (-1);
 
@@ -792,7 +792,7 @@ static int sn_network_add_odd_even_merger (sn_network_t *n, /* {{{ */
       tmp_right, tmp_right_num);
 
   /* Apply ``comparison-interchange'' operations. */
-  sn_stage_t * const s = sn_stage_create(n->stages_num);
+  sn_stage_t * const s = sn_stage_create(n->m_stages_num);
 
   max_index = indizes_left_num + indizes_right_num;
   if ((max_index % 2) == 0)
@@ -857,15 +857,15 @@ sn_network_t *sn_network_combine_odd_even_merge (sn_network_t *n0, /* {{{ */
     sn_network_t *n1)
 {
   sn_network_t *n;
-  int indizes_left[n0->inputs_num];
+  int indizes_left[n0->m_inputs_num];
   int indizes_left_num;
-  int indizes_right[n1->inputs_num];
+  int indizes_right[n1->m_inputs_num];
   int indizes_right_num;
   int status;
   int i;
 
-  indizes_left_num = n0->inputs_num;
-  indizes_right_num = n1->inputs_num;
+  indizes_left_num = n0->m_inputs_num;
+  indizes_right_num = n1->m_inputs_num;
   for (i = 0; i < indizes_left_num; i++)
     indizes_left[i] = i;
   for (i = 0; i < indizes_right_num; i++)
@@ -900,9 +900,9 @@ int sn_network_sort (sn_network_t *n, int *values) /* {{{ */
   int i;
 
   status = 0;
-  for (i = 0; i < n->stages_num; i++)
+  for (i = 0; i < n->m_stages_num; i++)
   {
-    status = sn_stage_sort (n->stages[i], values);
+    status = sn_stage_sort (n->m_stages[i], values);
     if (status != 0)
       return (status);
   }
@@ -912,8 +912,8 @@ int sn_network_sort (sn_network_t *n, int *values) /* {{{ */
 
 int sn_network_brute_force_check (sn_network_t *n) /* {{{ */
 {
-  int test_pattern[n->inputs_num];
-  int values[n->inputs_num];
+  int test_pattern[n->m_inputs_num];
+  int values[n->m_inputs_num];
   int status;
   int i;
 
@@ -931,7 +931,7 @@ int sn_network_brute_force_check (sn_network_t *n) /* {{{ */
 
     /* Check if the array is now sorted. */
     previous = values[0];
-    for (i = 1; i < n->inputs_num; i++)
+    for (i = 1; i < n->m_inputs_num; i++)
     {
       if (previous > values[i])
         return (1);
@@ -940,7 +940,7 @@ int sn_network_brute_force_check (sn_network_t *n) /* {{{ */
 
     /* Generate the next test pattern */
     overflow = 1;
-    for (i = 0; i < n->inputs_num; i++)
+    for (i = 0; i < n->m_inputs_num; i++)
     {
       if (test_pattern[i] == 0)
       {
@@ -1048,11 +1048,11 @@ int sn_network_write (sn_network_t *n, FILE *fh) /* {{{ */
 {
   int i;
 
-  fprintf (fh, "Inputs: %i\n", n->inputs_num);
+  fprintf (fh, "Inputs: %i\n", n->m_inputs_num);
   fprintf (fh, "\n");
 
-  for (i = 0; i < n->stages_num; i++)
-    sn_stage_write (n->stages[i], fh);
+  for (i = 0; i < n->m_stages_num; i++)
+    sn_stage_write (n->m_stages[i], fh);
 
   return (0);
 } /* }}} int sn_network_write */
@@ -1091,11 +1091,11 @@ int sn_network_serialize (sn_network_t *n, char **ret_buffer, /* {{{ */
   buffer += status; \
   buffer_size -= (size_t) status;
 
-  SNPRINTF_OR_FAIL ("Inputs: %i\r\n\r\n", n->inputs_num);
+  SNPRINTF_OR_FAIL ("Inputs: %i\r\n\r\n", n->m_inputs_num);
 
-  for (i = 0; i < n->stages_num; i++)
+  for (i = 0; i < n->m_stages_num; i++)
   {
-    status = sn_stage_serialize (n->stages[i], &buffer, &buffer_size);
+    status = sn_stage_serialize (n->m_stages[i], &buffer, &buffer_size);
     if (status != 0)
       return (status);
   }
@@ -1196,19 +1196,19 @@ int sn_network_compare (const sn_network_t *n0, const sn_network_t *n1) /* {{{ *
   else if (n1 == NULL)
     return (1);
 
-  if (n0->inputs_num < n1->inputs_num)
+  if (n0->m_inputs_num < n1->m_inputs_num)
     return (-1);
-  else if (n0->inputs_num > n1->inputs_num)
+  else if (n0->m_inputs_num > n1->m_inputs_num)
     return (1);
 
-  if (n0->stages_num < n1->stages_num)
+  if (n0->m_stages_num < n1->m_stages_num)
     return (-1);
-  else if (n0->stages_num > n1->stages_num)
+  else if (n0->m_stages_num > n1->m_stages_num)
     return (1);
 
-  for (i = 0; i < n0->stages_num; i++)
+  for (i = 0; i < n0->m_stages_num; i++)
   {
-    status = sn_stage_compare (n0->stages[i], n1->stages[i]);
+    status = sn_stage_compare (n0->m_stages[i], n1->m_stages[i]);
     if (status != 0)
       return (status);
   }
@@ -1224,10 +1224,10 @@ uint64_t sn_network_get_hashval (const sn_network_t *n) /* {{{ */
   if (n == NULL)
     return (0);
 
-  hash = (uint64_t) n->inputs_num;
+  hash = (uint64_t) n->m_inputs_num;
 
-  for (i = 0; i < n->stages_num; i++)
-    hash = (hash * 104207) + sn_stage_get_hashval (n->stages[i]);
+  for (i = 0; i < n->m_stages_num; i++)
+    hash = (hash * 104207) + sn_stage_get_hashval (n->m_stages[i]);
 
   return (hash);
 } /* }}} uint64_t sn_network_get_hashval */

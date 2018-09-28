@@ -49,15 +49,15 @@ extern "C" {
  */
 struct sn_network_s
 {
-  int inputs_num;       /**< Number of inputs of the comparator network. */
-  sn_stage_t **stages;  /**< Array of pointers to the stages of a comparator network. */
-  int stages_num;       /**< Number of stages in this comparator network. */
+  int m_inputs_num;       /**< Number of inputs of the comparator network. */
+  sn_stage_t **m_stages;  /**< Array of pointers to the stages of a comparator network. */
+  int m_stages_num;       /**< Number of stages in this comparator network. */
 };
 typedef struct sn_network_s sn_network_t;
 
-#define SN_NETWORK_STAGE_NUM(n) (n)->stages_num
-#define SN_NETWORK_STAGE_GET(n,i) ((n)->stages[i])
-#define SN_NETWORK_INPUT_NUM(n) (n)->inputs_num
+#define SN_NETWORK_STAGE_NUM(n) (n)->m_stages_num
+#define SN_NETWORK_STAGE_GET(n,i) ((n)->m_stages[i])
+#define SN_NETWORK_INPUT_NUM(n) (n)->m_inputs_num
 
 /**
  * Creates an empty comparator network and returns a pointer to it. The
