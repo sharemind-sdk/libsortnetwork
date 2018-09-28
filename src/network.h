@@ -29,8 +29,8 @@
  * \endverbatim
  **/
 
-#ifndef SN_NETWORK_H
-#define SN_NETWORK_H 1
+#ifndef SHAREMIND_LIBSORTNETWORK_NETWORK_H
+#define SHAREMIND_LIBSORTNETWORK_NETWORK_H
 
 #include <stdio.h>
 #include <stdint.h>
@@ -383,6 +383,6 @@ uint64_t sn_network_get_hashval (const sn_network_t *n);
 } /* extern "C" { */
 #endif
 
-#endif /* SN_NETWORK_H */
+#endif /* SHAREMIND_LIBSORTNETWORK_NETWORK_H */
 
 /* vim: set shiftwidth=2 softtabstop=2 : */

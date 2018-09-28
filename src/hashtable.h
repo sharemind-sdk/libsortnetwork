@@ -29,8 +29,8 @@
  * \endverbatim
  **/
 
-#ifndef SN_HASHTABLE_H
-#define SN_HASHTABLE_H 1
+#ifndef SHAREMIND_LIBSORTNETWORK_HASHTABLE_H
+#define SHAREMIND_LIBSORTNETWORK_HASHTABLE_H
 
 #include <stdint.h>
 
@@ -60,5 +60,5 @@ uint64_t sn_hashtable_get_total (sn_hashtable_t *ht);
 } /* extern "C" { */
 #endif
 
-#endif /* SN_HASHTABLE_H */
+#endif /* SHAREMIND_LIBSORTNETWORK_HASHTABLE_H */
 /* vim: set sw=2 sts=2 et fdm=marker : */

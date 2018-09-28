@@ -22,8 +22,8 @@
  * Modified by Cybernetica AS <sharemind-support at cyber.ee>
  **/
 
-#ifndef SN_RANDOM_H
-#define SN_RANDOM_H 1
+#ifndef SHAREMIND_LIBSORTNETWORK_RANDOM_H
+#define SHAREMIND_LIBSORTNETWORK_RANDOM_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,4 +41,4 @@ double sn_double_random (void);
 } /* extern "C" { */
 #endif
 
-#endif /* SN_RANDOM_H */
+#endif /* SHAREMIND_LIBSORTNETWORK_RANDOM_H */

@@ -27,8 +27,8 @@
  * \endverbatim
  **/
 
-#ifndef SN_STAGE_H
-#define SN_STAGE_H 1
+#ifndef SHAREMIND_LIBSORTNETWORK_STAGE_H
+#define SHAREMIND_LIBSORTNETWORK_STAGE_H
 
 #include <stdio.h>
 #include <stdint.h>
@@ -269,6 +269,6 @@ uint64_t sn_stage_get_hashval (const sn_stage_t *s);
 } /* extern "C" { */
 #endif
 
-#endif /* SN_STAGE_H */
+#endif /* SHAREMIND_LIBSORTNETWORK_STAGE_H */
 
 /* vim: set shiftwidth=2 softtabstop=2 : */

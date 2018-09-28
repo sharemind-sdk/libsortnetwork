@@ -27,8 +27,8 @@
  * \endverbatim
  **/
 
-#ifndef SN_COMPARATOR_H
-#define SN_COMPARATOR_H 1
+#ifndef SHAREMIND_LIBSORTNETWORK_COMPARATOR_H
+#define SHAREMIND_LIBSORTNETWORK_COMPARATOR_H
 
 #include <stdint.h>
 
@@ -137,6 +137,6 @@ uint64_t sn_comparator_get_hashval (const sn_comparator_t *c);
 } /* extern "C" { */
 #endif
 
-#endif /* SN_COMPARATOR_H */
+#endif /* SHAREMIND_LIBSORTNETWORK_COMPARATOR_H */
 
 /* vim: set shiftwidth=2 softtabstop=2 : */
