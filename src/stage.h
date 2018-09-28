@@ -43,16 +43,6 @@ struct sn_stage_s
 };
 typedef struct sn_stage_s sn_stage_t;
 
-/**
- * Direction into which to cut.
- *
- * \see sn_network_cut_at, sn_stage_cut_at
- */
-typedef enum {
-  SN_DIR_MIN, /**< Assume negative infinity. */
-  SN_DIR_MAX  /**< Assume positive infinity. */
-} sn_network_cut_dir;
-
 #define SN_STAGE_DEPTH(s) (s)->m_depth
 #define SN_STAGE_COMP_NUM(s) (s)->m_comparators_num
 #define SN_STAGE_COMP_GET(s,n) ((s)->m_comparators + (n))
@@ -171,24 +161,6 @@ int sn_stage_unify (sn_stage_t *s);
  * \see sn_network_normalize(), sn_comparator_swap()
  */
 int sn_stage_swap (sn_stage_t *s, int con0, int con1);
-
-/**
- * Removes an input / line by assuming positive or negative infinity is applied
- * to one line.
- *
- * \param s The stage to work with.
- * \param input The input / line on which is assumed to be positive or negative
- *   infinity.
- * \param dir Direction in which to cut; whether positive or negative infinity
- *   is assumed.
- * \return The new position of the infinite value on success or less than zero
- *   on failure.
- * \see sn_network_cut_at
- */
-int sn_stage_cut_at (sn_stage_t *s, int input, sn_network_cut_dir dir);
-
-/* FIXME: Documentation */
-int sn_stage_cut (sn_stage_t *s, int *mask, sn_stage_t **prev);
 
 /**
  * Remove an input from a stage, remove all touching comparators and adapt the

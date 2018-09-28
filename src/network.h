@@ -231,25 +231,6 @@ int sn_network_unify (sn_network_t *n);
 int sn_network_remove_input (sn_network_t *n, int input);
 
 /**
- * Removes an inputs from a comparator network by assuming positive or negative
- * infinity to be supplied to a given input. The value will take a
- * deterministic way through the comparator network. After removing the path
- * and all comparators it touched from the comparator network, a new comparator
- * network with \f$ n-1 \f$ inputs remains. The remaining outputs behave
- * identical to the original network with respect to one another.
- *
- * \param n The comparator network to modify.
- * \param input The input to remove.
- * \param dir The direction in which to cut, i.e. whether to assume positive or
- *   negative infinity.
- * \return Zero on success, non-zero on failure.
- */
-int sn_network_cut_at (sn_network_t *n, int input, sn_network_cut_dir dir);
-
-/* FIXME: Documentation */
-int sn_network_cut (sn_network_t *n, int *mask);
-
-/**
  * An alias for sn_network_combine_odd_even_merge().
  */
 sn_network_t *sn_network_combine (sn_network_t *n0, sn_network_t *n1);

@@ -572,65 +572,6 @@ int sn_network_remove_input (sn_network_t *n, int input) /* {{{ */
   return (0);
 } /* }}} int sn_network_remove_input */
 
-int sn_network_cut_at (sn_network_t *n, int input, /* {{{ */
-    sn_network_cut_dir dir)
-{
-  int i;
-  int position = input;
-
-  for (i = 0; i < n->m_stages_num; i++)
-  {
-    sn_stage_t *s;
-    int new_position;
-
-    s = n->m_stages[i];
-    new_position = sn_stage_cut_at (s, position, dir);
-
-    if (position != new_position)
-    {
-      int j;
-
-      for (j = 0; j < i; j++)
-        sn_stage_swap (n->m_stages[j], position, new_position);
-    }
-
-    position = new_position;
-  }
-
-  assert (((dir == SN_DIR_MIN) && (position == 0))
-      || ((dir == SN_DIR_MAX) && (position == (n->m_inputs_num - 1))));
-
-  sn_network_remove_input (n, position);
-
-  return (0);
-} /* }}} int sn_network_cut_at */
-
-int sn_network_cut (sn_network_t *n, int *mask) /* {{{ */
-{
-  int inputs_num;
-  int i;
-
-  for (i = 0; i < n->m_stages_num; i++)
-  {
-    sn_stage_t *s = n->m_stages[i];
-
-    sn_stage_cut (s, mask, n->m_stages);
-  }
-
-  /* Use a copy of this member since it will be updated by
-   * sn_network_remove_input(). */
-  inputs_num = n->m_inputs_num;
-  for (i = 0; i < inputs_num; i++)
-  {
-    if (mask[i] < 0)
-      sn_network_remove_input (n, 0);
-    else if (mask[i] > 0)
-      sn_network_remove_input (n, n->m_inputs_num - 1);
-  }
-
-  return (0);
-} /* }}} int sn_network_cut */
-
 /* sn_network_concatenate
  *
  * `Glues' two networks together, resulting in a comparator network with twice
