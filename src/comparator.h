@@ -59,6 +59,7 @@ typedef struct sn_comparator_s sn_comparator_t;
 /**
  * Initializes a new comparator object.
  *
+ * \param c Pointer to the comparator to initialize, must be non-NULL.
  * \param min Index of the line onto which the smaller element will be put.
  * \param max Index of the line onto which the larger element will be put.
  */
@@ -78,7 +79,7 @@ sn_comparator_t *sn_comparator_create (int min, int max);
  * Destroys a comparator object, freeing all allocated space.
  *
  * \param c Pointer to the comparator object. This pointer must be allocated by
- *   sn_comparator_create().
+ *   sn_comparator_create(), and must be non-NULL.
  */
 void sn_comparator_destroy (sn_comparator_t *c);
 
@@ -86,7 +87,7 @@ void sn_comparator_destroy (sn_comparator_t *c);
  * Inverts a comparator by switching the minimum and maximum indexes stored in
  * the comparator.
  *
- * \param c Pointer to the comparator.
+ * \param c Pointer to the comparator, must be non-NULL.
  */
 void sn_comparator_invert (sn_comparator_t *c);
 
@@ -94,7 +95,7 @@ void sn_comparator_invert (sn_comparator_t *c);
  * Shifts the indexes stored in the comparator by a constant offset. If the
  * index becomes too large, it will "wrap around".
  *
- * \param c The comparator to modify.
+ * \param c The comparator to modify, must be non-NULL.
  * \param sw The offset by which to shift the indexes.
  * \param inputs_num The number of lines / inputs of the comparator network.
  *   This number is used to wrap large indexes around.
@@ -106,7 +107,7 @@ void sn_comparator_shift (sn_comparator_t *c, int sw, int inputs_num);
  * another index and vice versa. If the comparator does not touch either line,
  * this is a no-op.
  *
- * \param c The comparator to modify.
+ * \param c The comparator to modify, must be non-NULL.
  * \param con0 Index of the first line.
  * \param con1 Index of the second line.
  */
@@ -117,8 +118,8 @@ void sn_comparator_swap (sn_comparator_t *c, int con0, int con1);
  * zero if the first comparator is smaller than, equal to or larger than the
  * second comparator, respectively.
  *
- * \param c0 Pointer to the first comparator.
- * \param c1 Pointer to the second comparator.
+ * \param c0 Pointer to the first comparator, must be non-NULL.
+ * \param c1 Pointer to the second comparator, must be non-NULL.
  */
 int sn_comparator_compare (const sn_comparator_t *c0,
     const sn_comparator_t *c1);
