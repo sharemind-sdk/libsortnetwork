@@ -244,7 +244,7 @@ int sn_network_remove_input (sn_network_t *n, int input);
  *   negative infinity.
  * \return Zero on success, non-zero on failure.
  */
-int sn_network_cut_at (sn_network_t *n, int input, enum sn_network_cut_dir_e dir);
+int sn_network_cut_at (sn_network_t *n, int input, sn_network_cut_dir dir);
 
 /* FIXME: Documentation */
 int sn_network_cut (sn_network_t *n, int *mask);

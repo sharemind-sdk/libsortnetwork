@@ -254,7 +254,7 @@ int sn_stage_swap (sn_stage_t *s, int con0, int con1)
   return (0);
 } /* int sn_stage_swap */
 
-int sn_stage_cut_at (sn_stage_t *s, int input, enum sn_network_cut_dir_e dir)
+int sn_stage_cut_at (sn_stage_t *s, int input, sn_network_cut_dir dir)
 {
   int new_position = input;
   int i;
@@ -269,11 +269,11 @@ int sn_stage_cut_at (sn_stage_t *s, int input, enum sn_network_cut_dir_e dir)
     if ((SN_COMP_MIN (c) != input) && (SN_COMP_MAX (c) != input))
       continue;
 
-    if ((dir == DIR_MIN) && (SN_COMP_MAX (c) == input))
+    if ((dir == SN_DIR_MIN) && (SN_COMP_MAX (c) == input))
     {
       new_position = SN_COMP_MIN (c);
     }
-    else if ((dir == DIR_MAX) && (SN_COMP_MIN (c) == input))
+    else if ((dir == SN_DIR_MAX) && (SN_COMP_MIN (c) == input))
     {
       new_position = SN_COMP_MAX (c);
     }

@@ -573,7 +573,7 @@ int sn_network_remove_input (sn_network_t *n, int input) /* {{{ */
 } /* }}} int sn_network_remove_input */
 
 int sn_network_cut_at (sn_network_t *n, int input, /* {{{ */
-    enum sn_network_cut_dir_e dir)
+    sn_network_cut_dir dir)
 {
   int i;
   int position = input;
@@ -597,8 +597,8 @@ int sn_network_cut_at (sn_network_t *n, int input, /* {{{ */
     position = new_position;
   }
 
-  assert (((dir == DIR_MIN) && (position == 0))
-      || ((dir == DIR_MAX) && (position == (n->m_inputs_num - 1))));
+  assert (((dir == SN_DIR_MIN) && (position == 0))
+      || ((dir == SN_DIR_MAX) && (position == (n->m_inputs_num - 1))));
 
   sn_network_remove_input (n, position);
 

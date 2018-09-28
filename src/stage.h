@@ -48,11 +48,10 @@ typedef struct sn_stage_s sn_stage_t;
  *
  * \see sn_network_cut_at, sn_stage_cut_at
  */
-enum sn_network_cut_dir_e
-{
-  DIR_MIN, /**< Assume negative infinity. */
-  DIR_MAX  /**< Assume positive infinity. */
-};
+typedef enum {
+  SN_DIR_MIN, /**< Assume negative infinity. */
+  SN_DIR_MAX  /**< Assume positive infinity. */
+} sn_network_cut_dir;
 
 #define SN_STAGE_DEPTH(s) (s)->m_depth
 #define SN_STAGE_COMP_NUM(s) (s)->m_comparators_num
@@ -186,7 +185,7 @@ int sn_stage_swap (sn_stage_t *s, int con0, int con1);
  *   on failure.
  * \see sn_network_cut_at
  */
-int sn_stage_cut_at (sn_stage_t *s, int input, enum sn_network_cut_dir_e dir);
+int sn_stage_cut_at (sn_stage_t *s, int input, sn_network_cut_dir dir);
 
 /* FIXME: Documentation */
 int sn_stage_cut (sn_stage_t *s, int *mask, sn_stage_t **prev);
