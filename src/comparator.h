@@ -59,24 +59,6 @@ typedef struct sn_comparator_s sn_comparator_t;
 void sn_comparator_init(sn_comparator_t * c, int min, int max);
 
 /**
- * Allocates, initializes and returns a new comparator object. The returned
- * pointer must be freed by sn_comparator_destroy().
- *
- * \param min Index of the line onto which the smaller element will be put.
- * \param max Index of the line onto which the larger element will be put.
- * \return The newly allocated object or \c NULL on failure.
- */
-sn_comparator_t *sn_comparator_create (int min, int max);
-
-/**
- * Destroys a comparator object, freeing all allocated space.
- *
- * \param c Pointer to the comparator object. This pointer must be allocated by
- *   sn_comparator_create(), and must be non-NULL.
- */
-void sn_comparator_destroy (sn_comparator_t *c);
-
-/**
  * Inverts a comparator by switching the minimum and maximum indexes stored in
  * the comparator.
  *

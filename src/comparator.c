@@ -34,23 +34,6 @@ void sn_comparator_init(sn_comparator_t * c, int min, int max) {
   c->m_max = max;
 }
 
-sn_comparator_t *sn_comparator_create (int min, int max)
-{
-  sn_comparator_t *c;
-
-  c = (sn_comparator_t *) malloc (sizeof (sn_comparator_t));
-  if (c == NULL)
-    return (NULL);
-  sn_comparator_init(c, min, max);
-  return (c);
-} /* sn_comparator_t *sn_comparator_create */
-
-void sn_comparator_destroy (sn_comparator_t *c)
-{
-  assert(c);
-  free(c);
-} /* void sn_comparator_destroy */
-
 void sn_comparator_invert (sn_comparator_t *c)
 {
   assert(c);
