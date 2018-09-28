@@ -190,7 +190,7 @@ static int sn_network_create_pairwise_internal (sn_network_t *n, /* {{{ */
     return (0);
 
   if (SIZE_MAX / sizeof(int) < (size_t) inputs_num)
-      return 1;
+      return (ENOMEM);
   int * inputs_copy = (int *) malloc(sizeof(int) * (size_t) inputs_num);
 
   /* Sort "pairs" recursively. Like with odd-even mergesort, odd and even lines
