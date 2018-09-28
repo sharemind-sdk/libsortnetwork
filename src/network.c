@@ -185,7 +185,6 @@ static int sn_network_create_pairwise_internal (sn_network_t *n, /* {{{ */
     int *inputs, int inputs_num)
 {
   int i;
-  int inputs_copy[inputs_num];
   int m;
 
   for (i = 1; i < inputs_num; i += 2)
@@ -197,6 +196,10 @@ static int sn_network_create_pairwise_internal (sn_network_t *n, /* {{{ */
 
   if (inputs_num <= 2)
     return (0);
+
+  if (SIZE_MAX / sizeof(int) < (size_t) inputs_num)
+      return 1;
+  int * inputs_copy = (int *) malloc(sizeof(int) * (size_t) inputs_num);
 
   /* Sort "pairs" recursively. Like with odd-even mergesort, odd and even lines
    * are handled recursively and later reunited. */
@@ -240,6 +243,7 @@ static int sn_network_create_pairwise_internal (sn_network_t *n, /* {{{ */
     m = (m + 1) / 2;
   } /* while (m > 1) */
 
+  free(inputs_copy);
   return (0);
 } /* }}} int sn_network_create_pairwise_internal */
 
@@ -255,7 +259,10 @@ sn_network_t *sn_network_create_pairwise (int inputs_num) /* {{{ */
   for (i = 0; i < inputs_num; i++)
     inputs[i] = i;
   
-  sn_network_create_pairwise_internal (n, inputs, inputs_num);
+  if (sn_network_create_pairwise_internal (n, inputs, inputs_num)) {
+      sn_network_destroy(n);
+      return NULL;
+  }
   sn_network_compress (n);
 
   return (n);
