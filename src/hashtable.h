@@ -61,4 +61,3 @@ uint64_t sn_hashtable_get_total (sn_hashtable_t *ht);
 #endif
 
 #endif /* SHAREMIND_LIBSORTNETWORK_HASHTABLE_H */
-/* vim: set sw=2 sts=2 et fdm=marker : */

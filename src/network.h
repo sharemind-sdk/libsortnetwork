@@ -384,5 +384,3 @@ uint64_t sn_network_get_hashval (const sn_network_t *n);
 #endif
 
 #endif /* SHAREMIND_LIBSORTNETWORK_NETWORK_H */
-
-/* vim: set shiftwidth=2 softtabstop=2 : */

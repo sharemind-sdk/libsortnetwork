@@ -220,5 +220,3 @@ uint64_t sn_hashtable_get_total (sn_hashtable_t *ht) /* {{{ */
 
   return (ht->collisions_num + ht->networks_num);
 } /* }}} uint64_t sn_hashtable_get_total */
-
-/* vim: set sw=2 sts=2 et fdm=marker : */

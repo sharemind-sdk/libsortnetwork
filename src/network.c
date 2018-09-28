@@ -1231,5 +1231,3 @@ uint64_t sn_network_get_hashval (const sn_network_t *n) /* {{{ */
 
   return (hash);
 } /* }}} uint64_t sn_network_get_hashval */
-
-/* vim: set sw=2 sts=2 et fdm=marker : */

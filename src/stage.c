@@ -677,5 +677,3 @@ uint64_t sn_stage_get_hashval (const sn_stage_t *s) /* {{{ */
 
   return (hash);
 } /* }}} uint64_t sn_stage_get_hashval */
-
-/* vim: set shiftwidth=2 softtabstop=2 expandtab fdm=marker : */

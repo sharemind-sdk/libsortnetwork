@@ -270,5 +270,3 @@ uint64_t sn_stage_get_hashval (const sn_stage_t *s);
 #endif
 
 #endif /* SHAREMIND_LIBSORTNETWORK_STAGE_H */
-
-/* vim: set shiftwidth=2 softtabstop=2 : */

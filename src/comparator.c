@@ -122,5 +122,3 @@ uint64_t sn_comparator_get_hashval (const sn_comparator_t *c) /* {{{ */
   return ((((uint64_t) c->m_min) * 100937)
       + (((uint64_t) c->m_max) * 103319));
 } /* }}} uint32_t sn_comparator_get_hashval */
-
-/* vim: set shiftwidth=2 softtabstop=2 : */
