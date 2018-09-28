@@ -86,14 +86,10 @@ sn_network_t *sn_network_create_odd_even_mergesort (int inputs_num) /* {{{ */
   }
   if (inputs_num == 2)
   {
-    sn_comparator_t c;
-
     n = sn_network_create (inputs_num);
 
-    memset (&c, 0, sizeof (c));
-    c.min = 0;
-    c.max = 1;
-
+    sn_comparator_t c;
+    sn_comparator_init(&c, 0, 1);
     sn_network_comparator_add (n, &c);
 
     return (n);
@@ -142,14 +138,10 @@ sn_network_t *sn_network_create_bitonic_mergesort (int inputs_num) /* {{{ */
   }
   if (inputs_num == 2)
   {
-    sn_comparator_t c;
-
     n = sn_network_create (inputs_num);
 
-    memset (&c, 0, sizeof (c));
-    c.min = 0;
-    c.max = 1;
-
+    sn_comparator_t c;
+    sn_comparator_init(&c, 0, 1);
     sn_network_comparator_add (n, &c);
 
     return (n);
@@ -545,8 +537,8 @@ int sn_network_normalize (sn_network_t *n) /* {{{ */
 
       c = SN_STAGE_COMP_GET (s, j);
 
-      min = c->min;
-      max = c->max;
+      min = SN_COMP_MIN(c);
+      max = SN_COMP_MAX(c);
 
       if (min > max)
       {
@@ -734,11 +726,7 @@ static int sn_network_add_bitonic_merger (sn_network_t *n, /* {{{ */
   for (i = 1; i < indizes_num; i += 2)
   {
     sn_comparator_t c;
-
-    memset (&c, 0, sizeof (c));
-    c.min = indizes[i - 1];
-    c.max = indizes[i];
-
+    sn_comparator_init(&c, indizes[i - 1], indizes[i]);
     sn_network_comparator_add (n, &c);
   }
 
@@ -765,8 +753,7 @@ static int sn_network_add_odd_even_merger (sn_network_t *n, /* {{{ */
     sn_comparator_t c;
     sn_stage_t *s;
 
-    c.min = *indizes_left;
-    c.max = *indizes_right;
+    sn_comparator_init(&c, *indizes_left, *indizes_right);
 
     s = sn_stage_create (n->stages_num);
     if (s == NULL)
@@ -816,17 +803,15 @@ static int sn_network_add_odd_even_merger (sn_network_t *n, /* {{{ */
   for (i = 1; i <= max_index; i += 2)
   {
     sn_comparator_t c;
-
-    if (i < indizes_left_num)
-      c.min = indizes_left[i];
-    else
-      c.min = indizes_right[i - indizes_left_num];
-
-    if ((i + 1) < indizes_left_num)
-      c.max = indizes_left[i + 1];
-    else
-      c.max = indizes_right[i + 1 - indizes_left_num];
-
+    sn_comparator_init(
+                &c,
+                (i < indizes_left_num)
+                    ? indizes_left[i]
+                    : indizes_right[i - indizes_left_num],
+                ((i + 1) < indizes_left_num)
+                    ? indizes_left[i + 1]
+                    : indizes_right[i + 1 - indizes_left_num]
+                );
     sn_stage_comparator_add (s, &c);
   }
 
