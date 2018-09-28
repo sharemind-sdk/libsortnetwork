@@ -60,11 +60,9 @@ void sn_comparator_destroy (sn_comparator_t *c)
 void sn_comparator_invert (sn_comparator_t *c)
 {
   assert(c);
-  int max = c->m_min;
-  int min = c->m_max;
-
-  c->m_min = min;
-  c->m_max = max;
+  int const tmp = c->m_min;
+  c->m_min = c->m_max;
+  c->m_max = tmp;
 } /* void sn_comparator_invert */
 
 void sn_comparator_shift (sn_comparator_t *c, int sw, int inputs_num)
