@@ -1,13 +1,6 @@
-/**
- * \file sn_network.h
- * \brief The sn_network_t class and associated methods.
- *
- * This is more details about what this file does.
- *
- * \verbatim
- * libsortnetwork - src/sn_network.h
+/*
  * Copyright (C) 2008-2010  Florian octo Forster
- * Copyright (C)      2017  Cybernetica AS
+ * Copyright (C) 2017-2018  Cybernetica AS
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -26,8 +19,7 @@
  * Authors:
  *   Florian octo Forster <ff at octo.it>
  * Modified by Cybernetica AS <sharemind-support at cyber.ee>
- * \endverbatim
- **/
+ */
 
 #ifndef SHAREMIND_LIBSORTNETWORK_NETWORK_H
 #define SHAREMIND_LIBSORTNETWORK_NETWORK_H

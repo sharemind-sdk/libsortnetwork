@@ -1,7 +1,6 @@
-/**
- * libsortnetwork - src/network.c
+/*
  * Copyright (C) 2008-2010  Florian octo Forster
- * Copyright (C)      2017  Cybernetica AS
+ * Copyright (C) 2017-2018  Cybernetica AS
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -20,7 +19,7 @@
  * Authors:
  *   Florian octo Forster <ff at octo.it>
  * Modified by Cybernetica AS <sharemind-support at cyber.ee>
- **/
+ */
 
 #ifndef _ISOC99_SOURCE
 # define _ISOC99_SOURCE
