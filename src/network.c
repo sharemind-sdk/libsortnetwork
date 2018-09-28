@@ -182,9 +182,9 @@ static int sn_network_create_pairwise_internal (sn_network_t *n, /* {{{ */
 
   for (i = 1; i < inputs_num; i += 2)
   {
-    sn_comparator_t *c = sn_comparator_create (inputs[i-1], inputs[i]);
-    sn_network_comparator_add (n, c);
-    sn_comparator_destroy (c);
+    sn_comparator_t c;
+    sn_comparator_init(&c, inputs[i-1], inputs[i]);
+    sn_network_comparator_add (n, &c);
   }
 
   if (inputs_num <= 2)
@@ -227,12 +227,11 @@ static int sn_network_create_pairwise_internal (sn_network_t *n, /* {{{ */
     {
       int left = i;
       int right = i + len;
-      sn_comparator_t *c;
 
       assert (left < right);
-      c = sn_comparator_create (inputs[left], inputs[right]);
-      sn_network_comparator_add (n, c);
-      sn_comparator_destroy (c);
+      sn_comparator_t c;
+      sn_comparator_init(&c, inputs[left], inputs[right]);
+      sn_network_comparator_add(n, &c);
     }
 
     m = (m + 1) / 2;
