@@ -68,13 +68,15 @@ int sn_stage_sort (sn_stage_t *s, int *values)
   for (i = 0; i < s->comparators_num; i++)
   {
     c = s->comparators + i;
-    if (values[c->min] > values[c->max])
+    int const min = SN_COMP_MIN(c);
+    int const max = SN_COMP_MAX(c);
+    if (values[min] > values[max])
     {
       int temp;
       
-      temp = values[c->min];
-      values[c->min] = values[c->max];
-      values[c->max] = temp;
+      temp = values[min];
+      values[min] = values[max];
+      values[max] = temp;
     }
   }
 
@@ -468,23 +470,24 @@ sn_stage_t *sn_stage_read (FILE *fh)
   while (fgets (buffer, sizeof (buffer), fh) != NULL)
   {
     char *endptr;
-    sn_comparator_t c;
 
     if ((buffer[0] == '\0') || (buffer[0] == '\n') || (buffer[0] == '\r'))
       break;
     
     buffer_ptr = buffer;
     endptr = NULL;
-    c.min = (int) strtol (buffer_ptr, &endptr, 0);
+    int const min = (int) strtol (buffer_ptr, &endptr, 0);
     if (buffer_ptr == endptr)
       continue;
 
     buffer_ptr = endptr;
     endptr = NULL;
-    c.max = (int) strtol (buffer_ptr, &endptr, 0);
+    int const max = (int) strtol (buffer_ptr, &endptr, 0);
     if (buffer_ptr == endptr)
       continue;
 
+    sn_comparator_t c;
+    sn_comparator_init(&c, min, max);
     sn_stage_comparator_add (s, &c);
   }
 
@@ -568,7 +571,6 @@ sn_stage_t *sn_stage_unserialize (char **ret_buffer, size_t *ret_buffer_size)
   status = 0;
   while (buffer_size > 0)
   {
-    sn_comparator_t c;
     char *endptr;
     char *substr;
     size_t substr_length;
@@ -601,7 +603,7 @@ sn_stage_t *sn_stage_unserialize (char **ret_buffer, size_t *ret_buffer_size)
     }
 
     endptr = NULL;
-    c.min = (int) strtol (substr, &endptr, 0);
+    int const min = (int) strtol (substr, &endptr, 0);
     if (substr == endptr)
     {
       status = -1;
@@ -610,13 +612,15 @@ sn_stage_t *sn_stage_unserialize (char **ret_buffer, size_t *ret_buffer_size)
 
     substr = endptr;
     endptr = NULL;
-    c.max = (int) strtol (substr, &endptr, 0);
+    int const max = (int) strtol (substr, &endptr, 0);
     if (substr == endptr)
     {
       status = -1;
       break;
     }
 
+    sn_comparator_t c;
+    sn_comparator_init(&c, min, max);
     sn_stage_comparator_add (s, &c);
   } /* while (buffer_size > 0) */
 
