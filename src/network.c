@@ -250,22 +250,27 @@ static int sn_network_create_pairwise_internal (sn_network_t *n, /* {{{ */
 sn_network_t *sn_network_create_pairwise (int inputs_num) /* {{{ */
 {
   sn_network_t *n = sn_network_create (inputs_num);
-  int inputs[inputs_num];
+  int * inputs;
   int i;
 
   if (n == NULL)
     goto err_0;
 
+  if (SIZE_MAX / sizeof(int) < inputs_num)
+    goto err_1;
+  inputs = (int *) malloc(sizeof(int) * inputs_num);
   for (i = 0; i < inputs_num; i++)
     inputs[i] = i;
 
   if (sn_network_create_pairwise_internal (n, inputs, inputs_num))
-      goto err_1;
+      goto err_2;
 
   sn_network_compress (n);
 
   return (n);
 
+err_2:
+  free(inputs);
 err_1:
   sn_network_destroy(n);
 err_0:
