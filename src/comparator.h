@@ -131,8 +131,6 @@ void sn_comparator_swap (sn_comparator_t *c, int con0, int con1);
 int sn_comparator_compare (const sn_comparator_t *c0,
     const sn_comparator_t *c1);
 
-uint64_t sn_comparator_get_hashval (const sn_comparator_t *c);
-
 #ifdef __cplusplus
 } /* extern "C" { */
 #endif

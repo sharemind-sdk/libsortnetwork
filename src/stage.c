@@ -661,19 +661,3 @@ int sn_stage_compare (const sn_stage_t *s0, const sn_stage_t *s1) /* {{{ */
 
   return (0);
 } /* }}} int sn_stage_compare */
-
-uint64_t sn_stage_get_hashval (const sn_stage_t *s) /* {{{ */
-{
-  uint64_t hash;
-  int i;
-
-  if (s == NULL)
-    return (0);
-
-  hash = (uint64_t) s->m_depth;
-
-  for (i = 0; i < s->m_comparators_num; i++)
-    hash = (hash * 99991) + sn_comparator_get_hashval (s->m_comparators + i);
-
-  return (hash);
-} /* }}} uint64_t sn_stage_get_hashval */
