@@ -35,6 +35,18 @@ SharemindAddSharedLibrary(libsortnetwork
 )
 
 
+# Tests:
+SharemindAddSimpleTests("${CMAKE_CURRENT_SOURCE_DIR}/tests/Test*.cpp"
+    INCLUDE_DIRECTORIES
+        "${SharemindCxxHeaders_INCLUDE_DIRS}"
+    LEGACY_DEFINITIONS
+        "${SharemindCxxHeaders_DEFINITIONS}"
+    LINK_LIBRARIES
+        "${SharemindCxxHeaders_LIBRARIES}"
+        "libsortnetwork"
+)
+
+
 # Install CMake files:
 SharemindCreateCMakeFindFiles(
     INCLUDE_DIRS
