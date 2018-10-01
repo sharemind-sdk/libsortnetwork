@@ -24,83 +24,120 @@
 #ifndef SHAREMIND_LIBSORTNETWORK_COMPARATOR_H
 #define SHAREMIND_LIBSORTNETWORK_COMPARATOR_H
 
+#include <cstddef>
+#include <utility>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
-/**
- * Struct representing a comparator. Don't access the members of this struct
- * directly, use the macros below instead.
- */
-struct sn_comparator_s
-{
-  int m_min; /**< Index of the line onto which the smaller element will be put. */
-  int m_max; /**< Index of the line onto which the larger element will be put. */
+namespace sharemind {
+namespace SortingNetwork {
+
+class Comparator {
+
+public: /* Methods: */
+
+    /**
+      \param[in] min Index of the line onto which the smaller element will be
+                     put.
+      \param[in] max Index of the line onto which the larger element will be
+                     put.
+    */
+    constexpr Comparator(std::size_t min, std::size_t max) noexcept
+        : m_min(min)
+        , m_max(max)
+    {}
+
+    constexpr Comparator(Comparator &&) noexcept = default;
+    constexpr Comparator(Comparator const &) noexcept = default;
+
+    #if __cplusplus >= 201402L
+    constexpr
+    #endif
+    Comparator & operator=(Comparator &&) noexcept = default;
+
+    #if __cplusplus >= 201402L
+    constexpr
+    #endif
+    Comparator & operator=(Comparator const &) noexcept = default;
+
+    /** \returns the "left" line, i.e. the line with the smaller index. */
+    constexpr std::size_t left() const noexcept
+    { return (m_min < m_max) ? m_min : m_max; }
+
+    /** \returns the "right" line, i.e. the line with the larger index. */
+    constexpr std::size_t right() const noexcept
+    { return (m_min > m_max) ? m_min : m_max; }
+
+    /** \returns the index of the line onto which the smaller element will be
+                 put. */
+    constexpr std::size_t min() const noexcept { return m_min; }
+
+    /**
+       Sets the index of the line onto which the smaller element will be put.
+       \param[in] newValue The new index.
+    */
+    void setMin(std::size_t newValue) noexcept { m_min = newValue; }
+
+    /** \returns the index of the line onto which the larger element will be
+                 put. */
+    constexpr std::size_t max() const noexcept { return m_max; }
+
+    /**
+       Sets the index of the line onto which the larger element will be put.
+       \param[in] newValue The new index.
+    */
+    void setMax(std::size_t newValue) noexcept { m_max = newValue; }
+
+    /**
+      Inverts the comparator by switching the minimum and maximum indexes stored
+      in the comparator.
+    */
+    void invert() noexcept { std::swap(m_min, m_max); }
+
+    /**
+      Shifts the indexes stored in the comparator by a constant offset. If the
+      index becomes too large, it will "wrap around".
+      \param[in] offset The offset by which to shift the indexes.
+      \param[in] numInputs The number of lines / inputs of the comparator
+                           network, a number used to wrap large indexes around.
+                           Must be 2 or greater.
+    */
+    void shift(std::size_t offset, std::size_t numInputs) noexcept;
+
+    /**
+      Swaps two line indexes by replacing all occurrences of one index with
+      another index and vice versa. If the comparator does not touch either
+      line, this is a no-op.
+      \param[in] index1 Index of the first line.
+      \param[in] index2 Index of the second line.
+    */
+    void swapIndexes(std::size_t index1, std::size_t index2) noexcept;
+
+    /**
+      \returns a value less than, equal to, or greater than zero if this
+               comparator is respectively smaller than, equal to or larger than
+               the given argument.
+      \param[in] other Reference to the other comparator.
+    */
+    int compare(Comparator const & other) const noexcept;
+
+private: /* Fields: */
+
+    /** Index of the line onto which the smaller element will be put: */
+    std::size_t m_min;
+
+    /** Index of the line onto which the larger element will be put: */
+    std::size_t m_max;
+
 };
-typedef struct sn_comparator_s sn_comparator_t;
 
-/** Returns the "left" line, i.e. the line with the smaller index. */
-#define SN_COMP_LEFT(c)  (((c)->m_min < (c)->m_max) ? (c)->m_min : (c)->m_max)
-/** Returns the "right" line, i.e. the line with the larger index. */
-#define SN_COMP_RIGHT(c) (((c)->m_min > (c)->m_max) ? (c)->m_min : (c)->m_max)
-/** Returns the index of the line onto which the smaller element will be put. */
-#define SN_COMP_MIN(c) (c)->m_min
-/** Returns the index of the line onto which the larger element will be put. */
-#define SN_COMP_MAX(c) (c)->m_max
+bool operator<(Comparator const & lhs, Comparator const & rhs) noexcept;
+bool operator<=(Comparator const & lhs, Comparator const & rhs) noexcept;
+bool operator==(Comparator const & lhs, Comparator const & rhs) noexcept;
+bool operator!=(Comparator const & lhs, Comparator const & rhs) noexcept;
+bool operator>=(Comparator const & lhs, Comparator const & rhs) noexcept;
+bool operator>(Comparator const & lhs, Comparator const & rhs) noexcept;
 
-/**
- * Initializes a new comparator object.
- *
- * \param c Pointer to the comparator to initialize, must be non-NULL.
- * \param min Index of the line onto which the smaller element will be put.
- * \param max Index of the line onto which the larger element will be put.
- */
-void sn_comparator_init(sn_comparator_t * c, int min, int max);
-
-/**
- * Inverts a comparator by switching the minimum and maximum indexes stored in
- * the comparator.
- *
- * \param c Pointer to the comparator, must be non-NULL.
- */
-void sn_comparator_invert (sn_comparator_t *c);
-
-/**
- * Shifts the indexes stored in the comparator by a constant offset. If the
- * index becomes too large, it will "wrap around".
- *
- * \param c The comparator to modify, must be non-NULL.
- * \param sw The offset by which to shift the indexes.
- * \param inputs_num The number of lines / inputs of the comparator network.
- *   This number is used to wrap large indexes around.
- */
-void sn_comparator_shift (sn_comparator_t *c, int sw, int inputs_num);
-
-/**
- * Swaps two line indexes by replacing all occurrences of one index with
- * another index and vice versa. If the comparator does not touch either line,
- * this is a no-op.
- *
- * \param c The comparator to modify, must be non-NULL.
- * \param con0 Index of the first line.
- * \param con1 Index of the second line.
- */
-void sn_comparator_swap (sn_comparator_t *c, int con0, int con1);
-
-/**
- * Compares two comparators and returns less than zero, zero, or greater than
- * zero if the first comparator is smaller than, equal to or larger than the
- * second comparator, respectively.
- *
- * \param c0 Pointer to the first comparator, must be non-NULL.
- * \param c1 Pointer to the second comparator, must be non-NULL.
- */
-int sn_comparator_compare (const sn_comparator_t *c0,
-    const sn_comparator_t *c1);
-
-#ifdef __cplusplus
-} /* extern "C" { */
-#endif
+} /* namespace SortingNetwork { */
+} /* namespace sharemind { */
 
 #endif /* SHAREMIND_LIBSORTNETWORK_COMPARATOR_H */

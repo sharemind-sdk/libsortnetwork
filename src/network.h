@@ -24,253 +24,242 @@
 #ifndef SHAREMIND_LIBSORTNETWORK_NETWORK_H
 #define SHAREMIND_LIBSORTNETWORK_NETWORK_H
 
+#include <cassert>
+#include <cstddef>
+#include <sharemind/Concepts.h>
+#include <sharemind/Iterator.h>
+#include <type_traits>
+#include <vector>
 #include "comparator.h"
 #include "stage.h"
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace sharemind {
+namespace SortingNetwork {
 
-/**
- * The global struct representing a comparator or sort network.
- */
-struct sn_network_s
-{
-  int m_inputs_num;       /**< Number of inputs of the comparator network. */
-  sn_stage_t **m_stages;  /**< Array of pointers to the stages of a comparator network. */
-  int m_stages_num;       /**< Number of stages in this comparator network. */
+/** Represents a comparator network. */
+class Network {
+
+public: /* Types: */
+
+    using Stages = std::vector<Stage>;
+
+public: /* Methods: */
+
+    /**
+       Creates an empty sorting network for the given number of items.
+       \param[in] numInputs The number of items to sort.
+    */
+    Network(std::size_t numInputs)
+            noexcept(std::is_nothrow_default_constructible<Stages>::value);
+
+    Network(Network &&) noexcept;
+    Network(Network const &);
+
+    /**
+      Creates a new sorting network using Batcher's Odd-Even-Mergesort
+      algorithm.
+      \param[in] numInputs The number of items to sort.
+    */
+    static Network makeOddEvenMergeSort(std::size_t numInputs);
+
+    /**
+      Creates a new sort network using Batcher's Bitonic-Mergesort algorithm.
+      \param[in] numInputs The number of items to sort.
+    */
+    static Network makeBitonicMergeSort(std::size_t numInputs);
+
+    /**
+      Creates a new sorting network using the Pairwise sorting algorithm
+      published by Ian Parberry.
+      \param[in] numInputs The number of items to sort.
+    */
+    static Network makePairwiseSort(std::size_t numInputs);
+
+    ~Network() noexcept;
+
+    Network & operator=(Network &&) noexcept;
+    Network & operator=(Network const &);
+
+    std::size_t numInputs() const noexcept { return m_numInputs; }
+
+    Stages & stages() noexcept { return m_stages; }
+
+    Stages const & stages() const noexcept { return m_stages; }
+
+    Stage & stage(std::size_t stageIndex) noexcept
+    { return m_stages[stageIndex]; }
+
+    Stage const & stage(std::size_t stageIndex) const noexcept
+    { return m_stages[stageIndex]; }
+
+    std::size_t numStages() const noexcept { return m_stages.size(); }
+
+    /** \returns the total amount of comparators in this network. */
+    std::size_t numComparators() const noexcept;
+
+    /** \returns the number of comparators for a given stage in this network. */
+    std::size_t numComparators(std::size_t stageIndex) const noexcept {
+        assert(stageIndex < m_stages.size());
+        return m_stages[stageIndex].numComparators();
+    }
+
+    /**
+      Appends another network to this network.
+      \param[in] network The network to be appended to this network.
+    */
+    void addNetwork(Network network);
+
+    /**
+      Appends a new empty stage to this network.
+      \returns a reference to the newly appended stage.
+    */
+    Stage & appendStage();
+
+    /**
+      Appends a new stage to this network.
+      \param[in] stage The stage to append.
+      \returns a reference to the newly appended stage.
+    */
+    Stage & appendStage(Stage stage);
+
+    /**
+      Removes a stage from this network.
+      \param[in] index The depth of the stage to remove, with the 0-th stage
+                       being closest to the inputs.
+    */
+    void removeStage(std::size_t index);
+
+    /**
+      Adds a comparator to a comparator network. The code tries to add the
+      comparator to the last stage, i.e. the stage closest to the outputs. If
+      this is not possible, because one line is used by another comparator, a
+      new stage is created and appended to the sorting network.
+      \param[in] comparator Reference to a comparator to add.
+     */
+    void addComparator(Comparator comparator);
+
+    /** Inverts this network by switching the direction of all comparators. */
+    void invert() noexcept;
+
+    /**
+       \returns an inverted copy of this network by switching the direction of
+                all comparators.
+    */
+    Network inverted() const noexcept;
+
+    /**
+      Shifts this network (permutes the inputs). Each input is shifted by the
+      given offset, higher inputs are "wrapped around".
+      \param[in] offset The number of positions to shift.
+    */
+    void shift(std::size_t offset) noexcept;
+
+    /**
+      Applies a comparator network to the given array of integers.
+      \param[in] first Iterator to the first value to sort.
+      \pre The number of values pointed to must be at least the number of inputs
+           of the comparator network.
+     */
+    template <typename It,
+              SHAREMIND_REQUIRES_CONCEPTS(RandomAccessIterator(It))>
+    void sortValues(It first) const {
+        for (auto const & stage : m_stages)
+            stage.sortValues(first);
+    }
+
+    /**
+      Compresses this network by moving all comparators to the earliest possible
+      stage and removing all remaining empty stages.
+    */
+    void compress();
+
+    /**
+      Returns a copy of this network on which compress() has been called.
+      \returns A compressed version of this network.
+    */
+    Network compressed() const;
+
+    /**
+      Converts a non-standard network to a standard network, i.e. a network in
+      which all comparators point in the same direction.
+    */
+    void normalize() noexcept;
+
+    /**
+      Returns a copy of this network on which normalize() has been called.
+      \returns A normalized version of this network.
+    */
+    Network normalized() const;
+
+    void unify();
+    Network unified() const;
+
+    /**
+      Removes an input and all comparators touching that input from the
+      comparator network.
+      \param[in] index The index of the input to remove.
+    */
+    void removeInput(std::size_t index);
+
+    /**
+      Checks whether a this network is a sorting network by testing all
+      \f$ 2^n \f$ 0-1-patterns. Since this function has exponential running
+      time, using it with comparator networks with many inputs is not advisable.
+      \throws std::bad_alloc if out of memory.
+      \returns whether this network is a sorting network.
+     */
+    bool bruteForceIsSortingNetwork() const;
+
+    /**
+      Compares this network with another and returns zero if they are equal. If
+      they are not equal, a number greater than zero or less than zero is
+      returned in a consistent matter, so this function can be used to sort
+      networks and detect duplicates. It is strongly recommended that you call
+      unify() on both Networks before comparing them, because their internal
+      structure does matter for this function.
+      \param[in] other The other network to compare this network with.
+      \returns Zero if the two networks are equal, non-zero otherwise. Return
+        values are consistent so this function can be used to sort networks.
+     */
+    int compare(Network const & other) const noexcept;
+
+private: /* Fields: */
+
+    /** Number of inputs of the comparator network: */
+    std::size_t m_numInputs;
+
+    /** Stages of the comparator network: */
+    Stages m_stages;
+
 };
-typedef struct sn_network_s sn_network_t;
 
-#define SN_NETWORK_STAGE_NUM(n) (n)->m_stages_num
-#define SN_NETWORK_STAGE_GET(n,i) ((n)->m_stages[i])
-#define SN_NETWORK_INPUT_NUM(n) (n)->m_inputs_num
-
-/**
- * Creates an empty comparator network and returns a pointer to it. The
- * comparator network must be freed using sn_network_destroy().
- *
- * \param inputs_num Number of inputs the comparator network has.
- * \return Pointer to the comparator network or \c NULL on error.
- */
-sn_network_t *sn_network_create (int inputs_num);
+bool operator<(Network const & lhs, Network const & rhs) noexcept;
+bool operator<=(Network const & lhs, Network const & rhs) noexcept;
+bool operator==(Network const & lhs, Network const & rhs) noexcept;
+bool operator!=(Network const & lhs, Network const & rhs) noexcept;
+bool operator>=(Network const & lhs, Network const & rhs) noexcept;
+bool operator>(Network const & lhs, Network const & rhs) noexcept;
 
 /**
- * Clones an existing comparator network.
- *
- * \param n Comparator network to clone.
- * \return Copied sort network or \c NULL on error. The returned network must
- *   be freed using sn_network_destroy().
+  Combines two comparator networks using a bitonic merger.
+  \pre The number of inputs of both comparator networks must be identical and a
+       power of two.
+  \param[in] n0 First network.
+  \param[in] n1 Second network.
+  \returns The resulting network.
  */
-sn_network_t *sn_network_clone (const sn_network_t *n);
+Network combineBitonicMerge(Network const & n0, Network const & n1);
 
 /**
- * Destroys a comparator network allocated with sn_network_create() or one of
- * the other methods returning a \c sn_network_t. This frees all allocated
- * space.
- *
- * \param n The comparator network to destroy. May be \c NULL.
+  Combines two comparator networks using the odd-even-merger.
+  \param[in] n0 First network.
+  \param[in] n1 Second network.
+  \returns The resulting network.
  */
-void sn_network_destroy (sn_network_t *n);
+Network combineOddEvenMerge(Network const & n0, Network const & n1);
 
-/**
- * Creates a new sort network using Batcher's Odd-Even-Mergesort algorithm.
- *
- * \param inputs_num Number of inputs / outputs of the sorting network.
- * \return A pointer to the newly allocated sorting network or \c NULL if an
- *   invalid number of inputs was given or allocation failed.
- */
-sn_network_t *sn_network_create_odd_even_mergesort (int inputs_num);
-
-/**
- * Creates a new sort network using Batcher's Bitonic-Mergesort algorithm.
- *
- * \param inputs_num Number of inputs / outputs of the sorting network.
- * \return A pointer to the newly allocated sorting network or \c NULL if an
- *   invalid number of inputs was given or allocation failed.
- */
-sn_network_t *sn_network_create_bitonic_mergesort (int inputs_num);
-
-/**
- * Creates a new sorting network using the Pairwise sorting algorithm published
- * by Ian Parberry.
- * \param inputs_num Number of inputs / outputs of the sorting network.
- * \return A pointer to the newly allocated sorting network or \c NULL if an
- *   invalid number of inputs was given or allocation failed.
- */
-sn_network_t *sn_network_create_pairwise (int inputs_num);
-
-/**
- * Append another network to a given network.
- *
- * \param n The comparator network to which the other network is added. This
- *   network is modified.
- * \param other The network to be added to the first network. This network is
- *   consumed by this function and the memory pointed to is freed. You cannot
- *   use that network after this call, so use sn_network_clone() if required.
- * \return Zero on success, non-zero on failure.
- */
-int sn_network_network_add (sn_network_t *n, sn_network_t *other);
-
-/**
- * Append a new stage to a comparator network.
- *
- * \param n The comparator network to which to add the stage.
- * \param s A pointer to a stage. The memory pointed to by this parameter is
- *   not copied and freed by sn_network_destroy(). It is the caller's
- *   responsibility to call sn_stage_clone() if appropriate.
- * \return Zero on success, non-zero on failure.
- */
-int sn_network_stage_add (sn_network_t *n, sn_stage_t *s);
-
-/**
- * Remove a stage from a comparator network.
- *
- * \param n A pointer to the comparator network to modify.
- * \param s_num The depth of the comparator network to remove, with zero being
- *   meaning the stage closest to the inputs.
- * \return Zero on success, non-zero on failure.
- */
-int sn_network_stage_remove (sn_network_t *n, int s_num);
-
-/**
- * Adds a comparator to a comparator network. The code tries to add the
- * comparator to the last stage, i.e. the stage closest to the outputs. If this
- * is not possible, because one line is used by another comparator, a new stage
- * is created and appended to the sorting network.
- *
- * \param n Pointer to the comparator netork.
- * \param c Pointer to a comparator to add. The given comparator is copied. It
- *   is the caller's responsibility to free c.
- * \return Zero on success, non-zero on failure.
- */
-int sn_network_comparator_add (sn_network_t *n, const sn_comparator_t *c);
-
-/**
- * Returns the number of comparators contained in the comparator network. This
- * will traverse all comparators in all stages, resulting in a running time of
- * \f$ \mathcal{O}(n) \f$.
- *
- * \param n Comparator network to work with.
- * \return The number of comparators contained in the network or less than zero
- *  on error (\c n is \c NULL).
- */
-int sn_network_get_comparator_num (const sn_network_t *n);
-
-/**
- * Applies a comparator network to an array of integers. This is implemented by
- * calling sn_stage_sort() with every stage of the network.
- *
- * \param n Pointer to the comparator netork.
- * \param[in,out] values Pointer to integer values to sort. The number of
- *   integer values pointed to must be at least the number of inputs of the
- *   comparator network. Otherwise, segmentation faults or memory corruption
- *   will occur.
- * \see sn_stage_sort
- */
-void sn_network_sort(sn_network_t *n, int *values);
-
-/**
- * Checks whether a given comparator network is a sorting network by testing
- * all \f$ 2^n \f$ 0-1-patterns. Since this function has exponential running
- * time, using it with comparator networks with many inputs is not advisable.
- *
- * \param n The comparator network to test.
- * \return Zero if the comparator network is a sort network, one if the
- *   comparator network is \em not a sort network, or something else on error.
- */
-int sn_network_brute_force_check (sn_network_t *n);
-
-/**
- * Inverts a comparator network by switching the direction of all comparators.
- *
- * \param n The network to invert, must be non-NULL.
- * \return Zero on success, non-zero on failure.
- */
-void sn_network_invert (sn_network_t *n);
-
-/**
- * Shifts a comparator network (permutes the inputs). Each input is shifted
- * \f$ s \f$ positions, higher inputs are "wrapped around".
- *
- * \param n The comparator network to shift.
- * \param s The number of positions to shift.
- * \return Zero on success, non-zero on failure.
- */
-int sn_network_shift (sn_network_t *n, int s);
-
-/**
- * Compresses a comparator network by moving all comparators to the earliest
- * possible stage and removing all remaining empty stages.
- *
- * \param n The network to compress.
- * \return Zero on success, non-zero on failure.
- */
-int sn_network_compress (sn_network_t *n);
-
-/**
- * Converts a non-standard comparator network to a standard comparator network,
- * i.e. a network in which all comparators point in the same direction.
- *
- * \param n The network to normalize.
- * \return Zero on success, non-zero on failure.
- */
-int sn_network_normalize (sn_network_t *n);
-
-int sn_network_unify (sn_network_t *n);
-
-/**
- * Removes an input and all comparators touching that input from the comparator
- * network.
- *
- * \param n The network to modify.
- * \param input The zero-based index of the input to remove.
- * \return Zero on success, non-zero on failure.
- */
-int sn_network_remove_input (sn_network_t *n, int input);
-
-/**
- * An alias for sn_network_combine_odd_even_merge().
- */
-sn_network_t *sn_network_combine (sn_network_t *n0, sn_network_t *n1);
-
-/**
- * Combines two comparator networks using a bitonic merger. The number of
- * inputs of both comparator networks must be identical and a power of two.
- *
- * \param n0 First network.
- * \param n1 Second network.
- * \return Newly allocated network with twice the number of inputs or \c NULL
- *   on error.
- */
-sn_network_t *sn_network_combine_bitonic_merge (sn_network_t *n0, sn_network_t *n1);
-
-/**
- * Combines two comparator networks using the odd-even-merger.
- *
- * \param n0 First network.
- * \param n1 Second network.
- * \return Newly allocated network or \c NULL on error.
- */
-sn_network_t *sn_network_combine_odd_even_merge (sn_network_t *n0, sn_network_t *n1);
-
-/**
- * Compares two networks and returns zero if they are equal. If they are not
- * equal, a number greater than zero or less than zero is returned in a
- * consistent matter, so this function can be used to sort networks and detect
- * duplicates. It is strongly recommended that you call sn_network_unify()
- * before comparing two networks, because they internal structure does matter
- * for this function.
- *
- * \return Zero if the two networks are equal, non-zero otherwise. Return
- *   values are consistent so this function can be used to sort networks.
- * \see sn_network_unify
- */
-int sn_network_compare (const sn_network_t *n0, const sn_network_t *n1);
-
-#ifdef __cplusplus
-} /* extern "C" { */
-#endif
+} /* namespace SortingNetwork { */
+} /* namespace sharemind { */
 
 #endif /* SHAREMIND_LIBSORTNETWORK_NETWORK_H */

@@ -1,39 +1,37 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
-PROJECT(SharemindLibSortNetwork VERSION 0.2.0 LANGUAGES C)
+PROJECT(SharemindLibSortNetwork VERSION 0.2.0 LANGUAGES CXX)
 
 INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/config.local" OPTIONAL)
 INCLUDE("${CMAKE_CURRENT_BINARY_DIR}/config.local" OPTIONAL)
 
 FIND_PACKAGE(SharemindCMakeHelpers 1.3 REQUIRED)
 
+FIND_PACKAGE(SharemindCxxHeaders 0.5 REQUIRED)
 
 # Headers:
-FILE(GLOB_RECURSE SharemindLibSortNetwork_HEADERS
+FILE(GLOB SharemindLibSortNetwork_HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
 ADD_CUSTOM_TARGET("include_LIBSORTNETWORK_HEADERS_in_IDE"
     SOURCES ${SharemindLibSortNetwork_HEADERS})
-SET(SharemindLibSortNetwork_INSTALL_HEADERS
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/comparator.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/network.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/stage.h"
-)
-INSTALL(FILES ${SharemindLibSortNetwork_INSTALL_HEADERS}
+INSTALL(FILES ${SharemindLibSortNetwork_HEADERS}
         DESTINATION "include/sharemind/libsortnetwork"
         COMPONENT "dev")
 
 
 # The library:
-SharemindSetC99CompileOptions()
+SharemindSetCxx11CompileOptions()
 FILE(GLOB_RECURSE SharemindLibSortNetwork_SOURCES
-     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
+     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 SharemindAddSharedLibrary(libsortnetwork
     OUTPUT_NAME "sharemind_sortnetwork"
     SOURCES
         ${SharemindLibSortNetwork_SOURCES}
-    COMPILE_DEFINITIONS
-        "_ISOC99_SOURCE=1"
-        "_POSIX_C_SOURCE=200809L"
-        "_XOPEN_SOURCE=700"
+    INCLUDE_DIRECTORIES
+        "${SharemindCxxHeaders_INCLUDE_DIRS}"
+    LEGACY_DEFINITIONS
+        "${SharemindCxxHeaders_DEFINITIONS}"
+    LINK_LIBRARIES
+        "${SharemindCxxHeaders_LIBRARIES}"
 )
 
 
@@ -55,6 +53,7 @@ SharemindAddComponentPackage("lib"
     DEB_SECTION "libs"
     DEB_DEPENDS
         "libc6 (>= 2.19)"
+        "libstdc++6 (>= 4.8.0)"
 )
 SharemindAddComponentPackage("dev"
     NAME "libsharemind-sortnetwork-dev"
@@ -63,6 +62,7 @@ SharemindAddComponentPackage("dev"
     DEB_DEPENDS
         "libsharemind-sortnetwork (= ${SharemindLibSortNetwork_DEB_lib_PACKAGE_VERSION})"
         "libc6-dev (>= 2.19)"
+        "libstdc++-dev"
 )
 SharemindAddComponentPackage("debug"
     NAME "libsharemind-sortnetwork-dbg"
