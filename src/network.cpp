@@ -346,13 +346,6 @@ Network concatenate(Network const & n0, Network const & n1) {
     return n;
 }
 
-constexpr std::size_t plusOneHalf(std::size_t v) noexcept {
-    return (v == std::numeric_limits<std::size_t>::max())
-           ? ((std::numeric_limits<std::size_t>::max() / 2u)
-              + (std::numeric_limits<std::size_t>::max() % 2u))
-           : ((v + 1u) / 2u);
-}
-
 void addBitonicMerger(Network & n,
                       std::size_t const numIndexes,
                       std::size_t const offset,
@@ -363,9 +356,8 @@ void addBitonicMerger(Network & n,
         return;
 
     if (numIndexes > 2u) {
-        auto const even_indizes_num = plusOneHalf(numIndexes);
         auto const odd_indizes_num = numIndexes / 2u;
-        assert(even_indizes_num >= odd_indizes_num);
+        auto const even_indizes_num = numIndexes - odd_indizes_num;
 
         addBitonicMerger(n, even_indizes_num, offset, 2u * skip);
         addBitonicMerger(n, odd_indizes_num, offset + skip, 2u * skip);
@@ -395,10 +387,12 @@ void addOddEvenMerger(Network & n,
 
     {
         /* Merge odd sequences */
-        std::vector<std::size_t> tmpLeft(plusOneHalf(indexesLeft.size()));
+        std::vector<std::size_t> tmpLeft(
+                    indexesLeft.size() - indexesLeft.size() / 2u);
         for (std::size_t i = 0u; i < tmpLeft.size(); ++i)
             tmpLeft[i] = indexesLeft[2u * i];
-        std::vector<std::size_t> tmpRight(plusOneHalf(indexesRight.size()));
+        std::vector<std::size_t> tmpRight(
+                    indexesRight.size() - indexesRight.size() / 2u);
         for (std::size_t i = 0u; i < tmpRight.size(); ++i)
             tmpRight[i] = indexesRight[2u * i];
         addOddEvenMerger(n, tmpLeft, tmpRight);
