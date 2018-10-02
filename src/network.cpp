@@ -324,10 +324,8 @@ namespace {
  * bitonic sequence, though, that can be used by the mergers below. */
 Network concatenate(Network const & n0, Network const & n1) {
     auto const inputsInN0 = n0.numInputs();
-    if (std::numeric_limits<decltype(n0.numInputs())>::max() - inputsInN0
-        < n1.numInputs())
-        throw std::length_error("Resulting comparator network exceeds "
-                                "implementation limits!");
+    assert(std::numeric_limits<decltype(n0.numInputs())>::max() - inputsInN0
+           >= n1.numInputs());
     Network n(n0.numInputs() + n1.numInputs());
     auto const stagesInN0 = n0.numStages();
     auto const stagesInN1 = n1.numStages();
