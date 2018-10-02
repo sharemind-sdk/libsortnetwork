@@ -353,9 +353,12 @@ constexpr std::size_t plusOneHalf(std::size_t v) noexcept {
            : ((v + 1u) / 2u);
 }
 
-void addBitonicMerger(Network & n, std::vector<std::size_t> const & indexes) {
-    assert(!indexes.empty());
-    auto const numIndexes = indexes.size();
+void addBitonicMerger(Network & n,
+                      std::size_t const numIndexes,
+                      std::size_t const offset,
+                      std::size_t const skip)
+{
+    assert(numIndexes > 0u);
     if (numIndexes <= 1u)
         return;
 
@@ -364,19 +367,14 @@ void addBitonicMerger(Network & n, std::vector<std::size_t> const & indexes) {
         auto const odd_indizes_num = numIndexes / 2u;
         assert(even_indizes_num >= odd_indizes_num);
 
-        std::vector<std::size_t> tmpIndexes(even_indizes_num);
-        for (std::size_t i = 0u; i < even_indizes_num; i++)
-            tmpIndexes[i] = indexes[2u * i];
-        addBitonicMerger(n, tmpIndexes);
-
-        tmpIndexes.resize(odd_indizes_num);
-        for (std::size_t i = 0u; i < odd_indizes_num; i++)
-            tmpIndexes[i] = indexes[2u * i + 1u];
-        addBitonicMerger(n, tmpIndexes);
+        addBitonicMerger(n, even_indizes_num, offset, 2u * skip);
+        addBitonicMerger(n, odd_indizes_num, offset + skip, 2u * skip);
     }
 
-    for (std::size_t i = 1u; i < numIndexes; i += 2u)
-        n.addComparator(Comparator(indexes[i - 1u], indexes[i]));
+    for (std::size_t i = 1u; i < numIndexes; i += 2u) {
+        auto const secondIndex = offset + (skip * i);
+        n.addComparator(Comparator(secondIndex - skip, secondIndex));
+    }
 }
 
 void addOddEvenMerger(Network & n,
@@ -453,10 +451,7 @@ Network combineBitonicMerge(Network const & n0, Network const & n1) {
        ...,  (z_{n-4},z_{n-3}), (z_{n-2},z_{n-1}), i.e. bound to the end of the
        list, possibly leaving z_0 uncompared. */
     auto n(concatenate(n0.inverted(), n1));
-    std::vector<std::size_t> indexes(n0.numInputs() + n1.numInputs());
-    for (std::size_t i = 0u; i < indexes.size(); ++i)
-        indexes[i] = i;
-    addBitonicMerger(n, indexes);
+    addBitonicMerger(n, n0.numInputs() + n1.numInputs(), 0u, 1u);
     return n;
 }
 
