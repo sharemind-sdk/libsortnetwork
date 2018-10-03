@@ -28,6 +28,7 @@
 #include <limits>
 #include <list>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 #include "comparator.h"
 
@@ -319,10 +320,9 @@ Network makeSortWithDivideAndConquer(std::size_t numItems, Conquer & conquer) {
 
 } // anonymous namespace
 
-Network::Network(std::size_t numInputs)
-        noexcept(std::is_nothrow_default_constructible<Stages>::value)
+Network::Network(std::size_t numInputs) noexcept
     : m_numInputs(numInputs)
-{}
+{ static_assert(std::is_nothrow_default_constructible<Stages>::value, ""); }
 
 Network::Network(Network &&) noexcept = default;
 Network::Network(Network const &) = default;

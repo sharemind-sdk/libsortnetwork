@@ -28,7 +28,6 @@
 #include <cstddef>
 #include <sharemind/Concepts.h>
 #include <sharemind/Iterator.h>
-#include <type_traits>
 #include <vector>
 #include "comparator.h"
 #include "stage.h"
@@ -50,8 +49,7 @@ public: /* Methods: */
        Creates an empty sorting network for the given number of items.
        \param[in] numInputs The number of items to sort.
     */
-    Network(std::size_t numInputs)
-            noexcept(std::is_nothrow_default_constructible<Stages>::value);
+    Network(std::size_t numInputs) noexcept;
 
     Network(Network &&) noexcept;
     Network(Network const &);
