@@ -252,29 +252,69 @@ void createPairwiseInternal(Network & n,
 
 template <typename Conquer>
 Network makeSortWithDivideAndConquer(std::size_t numItems, Conquer & conquer) {
-    if (numItems <= 1u)
+    if (numItems <= 2u) {
+        if (numItems == 2u) {
+            Network n(2u);
+            n.addComparator(Comparator(0u, 1u));
+            return n;
+        }
         return Network(numItems);
-
-    if (numItems == 2u) {
-        Network n(2u);
-        n.addComparator(Comparator(0u, 1u));
-        return n;
     }
 
-    auto const numItemsLeft = numItems / 2u;
-    auto const numItemsRight = numItems - numItemsLeft;
+    // Use a stack machine instead of recursion:
+    enum DivideAndConquerOp : char { Recurse, ConquerOneDouble, ConquerTwo };
+    std::vector<Network> networkStack; // arguments for conquer
+    std::vector<DivideAndConquerOp> operationStack;
+    operationStack.emplace_back(Recurse);
+    std::vector<std::size_t> argumentStack; // arguments for creating networks
+    argumentStack.emplace_back(numItems);
 
-    if (numItemsLeft == numItemsRight) {
-        auto const nLeft(makeSortWithDivideAndConquer(numItemsLeft, conquer));
-        auto r(conquer(nLeft, nLeft));
-        r.compress();
-        return r;
-    } else {
-        auto r(conquer(makeSortWithDivideAndConquer(numItemsLeft, conquer),
-                       makeSortWithDivideAndConquer(numItemsRight, conquer)));
-        r.compress();
-        return r;
-    }
+    do {
+        auto const operation(operationStack.back());
+        operationStack.pop_back();
+        if (operation == Recurse) {
+            assert(!argumentStack.empty());
+            numItems = argumentStack.back();
+            argumentStack.pop_back();
+            if (numItems <= 1u) {
+                networkStack.emplace_back(numItems);
+            } else if (numItems == 2u) {
+                networkStack.emplace_back(numItems);
+                networkStack.back().addComparator(Comparator(0u, 1u));
+            } else {
+                auto const numItemsLeft = numItems / 2u;
+                auto const numItemsRight = numItems - numItemsLeft;
+                if (numItemsLeft == numItemsRight) {
+                    argumentStack.emplace_back(numItemsLeft);
+                    operationStack.emplace_back(ConquerOneDouble);
+                    operationStack.emplace_back(Recurse);
+                } else {
+                    argumentStack.emplace_back(numItemsRight);
+                    argumentStack.emplace_back(numItemsLeft);
+                    operationStack.emplace_back(ConquerTwo);
+                    operationStack.emplace_back(Recurse);
+                    operationStack.emplace_back(Recurse);
+                }
+            }
+        } else if (operation == ConquerOneDouble) {
+            assert(!networkStack.empty());
+            networkStack.back() = conquer(networkStack.back(),
+                                          networkStack.back());
+            networkStack.back().compress();
+        } else {
+            assert(operation == ConquerTwo);
+            assert(networkStack.size() >= 2u);
+            {
+                auto const firstArg(std::move(networkStack.back()));
+                networkStack.pop_back();
+                networkStack.back() = conquer(firstArg, networkStack.back());
+            }
+            networkStack.back().compress();
+        }
+    } while (!operationStack.empty());
+    assert(argumentStack.empty());
+    assert(networkStack.size() == 1u);
+    return std::move(networkStack.front());
 }
 
 } // anonymous namespace
