@@ -28,6 +28,7 @@
 #include <sharemind/Concepts.h>
 #include <sharemind/Iterator.h>
 #include <vector>
+#include <utility>
 #include "comparator.h"
 
 
