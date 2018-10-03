@@ -34,6 +34,192 @@
 
 namespace sharemind {
 namespace SortingNetwork {
+namespace {
+
+/* `Glues' two networks together, resulting in a comparator network with twice
+ * as many inputs but one that doesn't really sort anymore. It produces a
+ * bitonic sequence, though, that can be used by the mergers below. */
+Network concatenate(Network const & n0, Network const & n1) {
+    auto const inputsInN0 = n0.numInputs();
+    assert(std::numeric_limits<decltype(n0.numInputs())>::max() - inputsInN0
+           >= n1.numInputs());
+    Network n(n0.numInputs() + n1.numInputs());
+    auto const stagesInN0 = n0.numStages();
+    auto const stagesInN1 = n1.numStages();
+    auto const numStages = std::max(stagesInN0, stagesInN1);
+    for (std::size_t i = 0u; i < numStages; ++i) {
+        auto & stage = n.appendStage();
+        if (i < stagesInN0)
+            stage.comparators() = n0.stages()[i].comparators();
+        if (i < stagesInN1) {
+            for (auto const & comp : n1.stages()[i].comparators())
+                stage.addComparator(Comparator(comp.min() + inputsInN0,
+                                               comp.max() + inputsInN0));
+        }
+        n.appendStage(std::move(stage));
+    }
+    return n;
+}
+
+struct BitonicMergeJob {
+    void execute(Network & n, std::list<BitonicMergeJob> & jobs);
+    std::size_t const m_numIndexes;
+    std::size_t const m_offset;
+    std::size_t const m_skip;
+    bool const m_isRecursive;
+};
+
+std::list<BitonicMergeJob> bitonicMergerRecursive(std::size_t const numIndexes,
+                                                  std::size_t const offset,
+                                                  std::size_t const skip)
+{
+    std::list<BitonicMergeJob> jobs;
+    assert(numIndexes > 0u);
+    if (numIndexes <= 1u)
+        return jobs;
+
+    if (numIndexes > 2u) {
+        auto const odd_indizes_num = numIndexes / 2u;
+        auto const even_indizes_num = numIndexes - odd_indizes_num;
+
+        jobs.emplace_back(
+                    BitonicMergeJob{even_indizes_num, offset, 2u * skip, true});
+        jobs.emplace_back(
+                    BitonicMergeJob{odd_indizes_num, offset + skip, 2u * skip, true});
+    }
+    jobs.emplace_back(BitonicMergeJob{numIndexes, offset, skip, false});
+    return jobs;
+}
+
+void BitonicMergeJob::execute(Network & n, std::list<BitonicMergeJob> & jobs) {
+    if (m_isRecursive) {
+        jobs.splice(jobs.begin(),
+                    bitonicMergerRecursive(m_numIndexes, m_offset, m_skip));
+    } else {
+        assert(m_numIndexes > 1u);
+        for (std::size_t i = 1u; i < m_numIndexes; i += 2u) {
+            auto const secondIndex = m_offset + (m_skip * i);
+            n.addComparator(Comparator(secondIndex - m_skip, secondIndex));
+        }
+    }
+}
+
+void addBitonicMerger(Network & n, std::size_t const numIndexes) {
+    auto jobs(bitonicMergerRecursive(numIndexes, 0u, 1u));
+    while (!jobs.empty()) {
+        BitonicMergeJob job(std::move(jobs.front()));
+        jobs.pop_front();
+        job.execute(n, jobs);
+    }
+}
+
+void addOddEvenMerger(Network & n,
+                      std::vector<std::size_t> const & indexesLeft,
+                      std::vector<std::size_t> const & indexesRight)
+{
+    assert(std::numeric_limits<std::size_t>::max() - indexesLeft.size()
+           >= indexesRight.size());
+    if (indexesLeft.empty() || indexesRight.empty())
+        return;
+
+    if ((indexesLeft.size() == 1u) && (indexesRight.size() == 1u)) {
+        Comparator c(indexesLeft.front(), indexesRight.front());
+        auto & stage = n.appendStage();
+        stage.addComparator(std::move(c));
+        return;
+    }
+
+    {
+        /* Merge odd sequences */
+        std::vector<std::size_t> tmpLeft(
+                    indexesLeft.size() - indexesLeft.size() / 2u);
+        for (std::size_t i = 0u; i < tmpLeft.size(); ++i)
+            tmpLeft[i] = indexesLeft[2u * i];
+        std::vector<std::size_t> tmpRight(
+                    indexesRight.size() - indexesRight.size() / 2u);
+        for (std::size_t i = 0u; i < tmpRight.size(); ++i)
+            tmpRight[i] = indexesRight[2u * i];
+        addOddEvenMerger(n, tmpLeft, tmpRight);
+
+        /* Merge even sequences */
+        tmpLeft.resize(indexesLeft.size() / 2u);
+        for (std::size_t i = 0u; i < tmpLeft.size(); ++i)
+            tmpLeft[i] = indexesLeft[2u * i + 1u];
+        tmpRight.resize(indexesRight.size() / 2u);
+        for (std::size_t i = 0u; i < tmpRight.size(); ++i)
+            tmpRight[i] = indexesRight[2u * i + 1u];
+        addOddEvenMerger(n, tmpLeft, tmpRight);
+    }
+
+    /* Apply ``comparison-interchange'' operations. */
+    std::size_t maxIndex = indexesLeft.size() + indexesRight.size();
+    assert(maxIndex > 2u);
+    if (maxIndex % 2u) {
+        maxIndex -= 2u;
+    } else {
+        maxIndex -= 3u;
+    }
+
+    Stage s;
+    for (std::size_t i = 1u; i <= maxIndex; i += 2u)
+        s.addComparator(
+                    Comparator(
+                        (i < indexesLeft.size())
+                        ? indexesLeft[i]
+                        : indexesRight[i - indexesLeft.size()],
+                        ((i + 1u) < indexesLeft.size())
+                        ? indexesLeft[i + 1u]
+                        : indexesRight[i - indexesLeft.size() + 1u]));
+    if (!s.empty())
+        n.appendStage(std::move(s));
+}
+
+void createPairwiseInternal(Network & n,
+                            std::vector<std::size_t> const & inputs)
+{
+    for (std::size_t i = 1u; i < inputs.size(); i += 2u)
+        n.addComparator(Comparator(inputs[i - 1u], inputs[i]));
+    if (inputs.size() <= 2)
+        return;
+
+    {
+        std::vector<std::size_t> inputsCopy;
+        inputsCopy.reserve((inputs.size() + 1u) / 2u);
+
+        /* Sort "pairs" recursively. Like with odd-even mergesort, odd and even
+           lines are handled recursively and later reunited. */
+        for (std::size_t i = 0u; i < inputs.size(); i += 2u)
+            inputsCopy.emplace_back(inputs[i]);
+        /* Recursive call #1 with first set of lines */
+        createPairwiseInternal(n, inputsCopy);
+
+        inputsCopy.clear();
+        for (std::size_t i = 1u; i < inputs.size(); i += 2u)
+            inputsCopy.emplace_back(inputs[i]);
+        /* Recursive call #2 with second set of lines */
+        createPairwiseInternal(n, inputsCopy);
+    }
+
+    /* m is the "amplitude" of the sorted pairs. This is a bit tricky to read
+       due to different indices being used in the paper, unfortunately. */
+    auto m = (inputs.size() + 1u) / 2u;
+    while (m > 1u) {
+        auto len = m;
+        if ((m % 2u) == 0)
+            --len;
+
+        for (std::size_t i = 1u; (i + len) < inputs.size(); i += 2u) {
+            auto const left = i;
+            auto const right = i + len;
+            assert(left < right);
+            n.addComparator(Comparator(inputs[left], inputs[right]));
+        }
+
+        m = (m + 1u) / 2u;
+    } /* while (m > 1u) */
+}
+
+} // anonymous namespace
 
 Network::Network(std::size_t numInputs)
         noexcept(std::is_nothrow_default_constructible<Stages>::value)
@@ -89,55 +275,6 @@ Network Network::makeBitonicMergeSort(std::size_t numItems) {
         return r;
     }
 }
-
-namespace {
-
-void createPairwiseInternal(Network & n,
-                            std::vector<std::size_t> const & inputs)
-{
-    for (std::size_t i = 1u; i < inputs.size(); i += 2u)
-        n.addComparator(Comparator(inputs[i - 1u], inputs[i]));
-    if (inputs.size() <= 2)
-        return;
-
-    {
-        std::vector<std::size_t> inputsCopy;
-        inputsCopy.reserve((inputs.size() + 1u) / 2u);
-
-        /* Sort "pairs" recursively. Like with odd-even mergesort, odd and even
-           lines are handled recursively and later reunited. */
-        for (std::size_t i = 0u; i < inputs.size(); i += 2u)
-            inputsCopy.emplace_back(inputs[i]);
-        /* Recursive call #1 with first set of lines */
-        createPairwiseInternal(n, inputsCopy);
-
-        inputsCopy.clear();
-        for (std::size_t i = 1u; i < inputs.size(); i += 2u)
-            inputsCopy.emplace_back(inputs[i]);
-        /* Recursive call #2 with second set of lines */
-        createPairwiseInternal(n, inputsCopy);
-    }
-
-    /* m is the "amplitude" of the sorted pairs. This is a bit tricky to read
-       due to different indices being used in the paper, unfortunately. */
-    auto m = (inputs.size() + 1u) / 2u;
-    while (m > 1u) {
-        auto len = m;
-        if ((m % 2u) == 0)
-            --len;
-
-        for (std::size_t i = 1u; (i + len) < inputs.size(); i += 2u) {
-            auto const left = i;
-            auto const right = i + len;
-            assert(left < right);
-            n.addComparator(Comparator(inputs[left], inputs[right]));
-        }
-
-        m = (m + 1u) / 2u;
-    } /* while (m > 1u) */
-}
-
-} // anonymous namespace
 
 Network Network::makePairwiseSort(std::size_t numItems) {
     Network r(numItems);
@@ -317,148 +454,6 @@ void Network::removeInput(std::size_t index) {
         stage.removeInput(index);
     --m_numInputs;
 }
-
-namespace {
-
-/* `Glues' two networks together, resulting in a comparator network with twice
- * as many inputs but one that doesn't really sort anymore. It produces a
- * bitonic sequence, though, that can be used by the mergers below. */
-Network concatenate(Network const & n0, Network const & n1) {
-    auto const inputsInN0 = n0.numInputs();
-    assert(std::numeric_limits<decltype(n0.numInputs())>::max() - inputsInN0
-           >= n1.numInputs());
-    Network n(n0.numInputs() + n1.numInputs());
-    auto const stagesInN0 = n0.numStages();
-    auto const stagesInN1 = n1.numStages();
-    auto const numStages = std::max(stagesInN0, stagesInN1);
-    for (std::size_t i = 0u; i < numStages; ++i) {
-        auto & stage = n.appendStage();
-        if (i < stagesInN0)
-            stage.comparators() = n0.stages()[i].comparators();
-        if (i < stagesInN1) {
-            for (auto const & comp : n1.stages()[i].comparators())
-                stage.addComparator(Comparator(comp.min() + inputsInN0,
-                                               comp.max() + inputsInN0));
-        }
-        n.appendStage(std::move(stage));
-    }
-    return n;
-}
-
-struct BitonicMergeJob {
-    void execute(Network & n, std::list<BitonicMergeJob> & jobs);
-    std::size_t const m_numIndexes;
-    std::size_t const m_offset;
-    std::size_t const m_skip;
-    bool const m_isRecursive;
-};
-
-std::list<BitonicMergeJob> bitonicMergerRecursive(std::size_t const numIndexes,
-                                                  std::size_t const offset,
-                                                  std::size_t const skip)
-{
-    std::list<BitonicMergeJob> jobs;
-    assert(numIndexes > 0u);
-    if (numIndexes <= 1u)
-        return jobs;
-
-    if (numIndexes > 2u) {
-        auto const odd_indizes_num = numIndexes / 2u;
-        auto const even_indizes_num = numIndexes - odd_indizes_num;
-
-        jobs.emplace_back(
-                    BitonicMergeJob{even_indizes_num, offset, 2u * skip, true});
-        jobs.emplace_back(
-                    BitonicMergeJob{odd_indizes_num, offset + skip, 2u * skip, true});
-    }
-    jobs.emplace_back(BitonicMergeJob{numIndexes, offset, skip, false});
-    return jobs;
-}
-
-void BitonicMergeJob::execute(Network & n, std::list<BitonicMergeJob> & jobs) {
-    if (m_isRecursive) {
-        jobs.splice(jobs.begin(),
-                    bitonicMergerRecursive(m_numIndexes, m_offset, m_skip));
-    } else {
-        assert(m_numIndexes > 1u);
-        for (std::size_t i = 1u; i < m_numIndexes; i += 2u) {
-            auto const secondIndex = m_offset + (m_skip * i);
-            n.addComparator(Comparator(secondIndex - m_skip, secondIndex));
-        }
-    }
-}
-
-void addBitonicMerger(Network & n, std::size_t const numIndexes) {
-    auto jobs(bitonicMergerRecursive(numIndexes, 0u, 1u));
-    while (!jobs.empty()) {
-        BitonicMergeJob job(std::move(jobs.front()));
-        jobs.pop_front();
-        job.execute(n, jobs);
-    }
-}
-
-void addOddEvenMerger(Network & n,
-                      std::vector<std::size_t> const & indexesLeft,
-                      std::vector<std::size_t> const & indexesRight)
-{
-    assert(std::numeric_limits<std::size_t>::max() - indexesLeft.size()
-           >= indexesRight.size());
-    if (indexesLeft.empty() || indexesRight.empty())
-        return;
-
-    if ((indexesLeft.size() == 1u) && (indexesRight.size() == 1u)) {
-        Comparator c(indexesLeft.front(), indexesRight.front());
-        auto & stage = n.appendStage();
-        stage.addComparator(std::move(c));
-        return;
-    }
-
-    {
-        /* Merge odd sequences */
-        std::vector<std::size_t> tmpLeft(
-                    indexesLeft.size() - indexesLeft.size() / 2u);
-        for (std::size_t i = 0u; i < tmpLeft.size(); ++i)
-            tmpLeft[i] = indexesLeft[2u * i];
-        std::vector<std::size_t> tmpRight(
-                    indexesRight.size() - indexesRight.size() / 2u);
-        for (std::size_t i = 0u; i < tmpRight.size(); ++i)
-            tmpRight[i] = indexesRight[2u * i];
-        addOddEvenMerger(n, tmpLeft, tmpRight);
-
-        /* Merge even sequences */
-        tmpLeft.resize(indexesLeft.size() / 2u);
-        for (std::size_t i = 0u; i < tmpLeft.size(); ++i)
-            tmpLeft[i] = indexesLeft[2u * i + 1u];
-        tmpRight.resize(indexesRight.size() / 2u);
-        for (std::size_t i = 0u; i < tmpRight.size(); ++i)
-            tmpRight[i] = indexesRight[2u * i + 1u];
-        addOddEvenMerger(n, tmpLeft, tmpRight);
-    }
-
-    /* Apply ``comparison-interchange'' operations. */
-    std::size_t maxIndex = indexesLeft.size() + indexesRight.size();
-    assert(maxIndex > 2u);
-    if (maxIndex % 2u) {
-        maxIndex -= 2u;
-    } else {
-        maxIndex -= 3u;
-    }
-
-    Stage s;
-    for (std::size_t i = 1u; i <= maxIndex; i += 2u)
-        s.addComparator(
-                    Comparator(
-                        (i < indexesLeft.size())
-                        ? indexesLeft[i]
-                        : indexesRight[i - indexesLeft.size()],
-                        ((i + 1u) < indexesLeft.size())
-                        ? indexesLeft[i + 1u]
-                        : indexesRight[i - indexesLeft.size() + 1u]));
-    if (!s.empty())
-        n.appendStage(std::move(s));
-}
-
-} // anonymous namespace
 
 Network combineBitonicMerge(Network const & n0, Network const & n1) {
     if (std::numeric_limits<decltype(n0.numInputs())>::max() - n0.numInputs()
