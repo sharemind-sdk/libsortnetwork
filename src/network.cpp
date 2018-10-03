@@ -113,6 +113,21 @@ void addBitonicMerger(Network & n, std::size_t const numIndexes) {
     }
 }
 
+Network combineBitonicMerge_(Network const & n0, Network const & n1) {
+    assert(std::numeric_limits<decltype(n0.numInputs())>::max() - n0.numInputs()
+           >= n1.numInputs());
+
+    /* We need to invert n0, because the sequence must be
+         z_1 >= z_2 >= ... >= z_k <= z_{k+1} <= ... <= z_p
+       and NOT the other way around! Otherwise the comparators added in
+       addBitonicMerger() from comparing (z_0,z_1), (z_2,z_3), ... to comparing
+       ...,  (z_{n-4},z_{n-3}), (z_{n-2},z_{n-1}), i.e. bound to the end of the
+       list, possibly leaving z_0 uncompared. */
+    auto n(concatenate(n0.inverted(), n1));
+    addBitonicMerger(n, n0.numInputs() + n1.numInputs());
+    return n;
+}
+
 void addOddEvenMerger(Network & n,
                       std::vector<std::size_t> const & indexesLeft,
                       std::vector<std::size_t> const & indexesRight)
@@ -264,11 +279,11 @@ Network Network::makeBitonicMergeSort(std::size_t numItems) {
 
     if (numItemsLeft == numItemsRight) {
         auto const nLeft(makeBitonicMergeSort(numItemsLeft));
-        auto r(combineBitonicMerge(nLeft, nLeft));
+        auto r(combineBitonicMerge_(nLeft, nLeft));
         r.compress();
         return r;
     } else {
-        auto r(combineBitonicMerge(
+        auto r(combineBitonicMerge_(
                    makeBitonicMergeSort(numItemsLeft),
                    makeBitonicMergeSort(numItemsRight)));
         r.compress();
@@ -460,16 +475,7 @@ Network combineBitonicMerge(Network const & n0, Network const & n1) {
         < n1.numInputs())
         throw std::length_error("Resulting comparator network exceeds "
                                 "implementation limits!");
-
-    /* We need to invert n0, because the sequence must be
-         z_1 >= z_2 >= ... >= z_k <= z_{k+1} <= ... <= z_p
-       and NOT the other way around! Otherwise the comparators added in
-       addBitonicMerger() from comparing (z_0,z_1), (z_2,z_3), ... to comparing
-       ...,  (z_{n-4},z_{n-3}), (z_{n-2},z_{n-1}), i.e. bound to the end of the
-       list, possibly leaving z_0 uncompared. */
-    auto n(concatenate(n0.inverted(), n1));
-    addBitonicMerger(n, n0.numInputs() + n1.numInputs());
-    return n;
+    return combineBitonicMerge_(n0, n1);
 }
 
 Network combineOddEvenMerge(Network const & n0, Network const & n1) {
