@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <iterator>
 #include <limits>
+#include <list>
 #include <stdexcept>
 #include <utility>
 #include "comparator.h"
@@ -344,26 +345,55 @@ Network concatenate(Network const & n0, Network const & n1) {
     return n;
 }
 
-void addBitonicMerger(Network & n,
-                      std::size_t const numIndexes,
-                      std::size_t const offset,
-                      std::size_t const skip)
+struct BitonicMergeJob {
+    void execute(Network & n, std::list<BitonicMergeJob> & jobs);
+    std::size_t const m_numIndexes;
+    std::size_t const m_offset;
+    std::size_t const m_skip;
+    bool const m_isRecursive;
+};
+
+std::list<BitonicMergeJob> bitonicMergerRecursive(std::size_t const numIndexes,
+                                                  std::size_t const offset,
+                                                  std::size_t const skip)
 {
+    std::list<BitonicMergeJob> jobs;
     assert(numIndexes > 0u);
     if (numIndexes <= 1u)
-        return;
+        return jobs;
 
     if (numIndexes > 2u) {
         auto const odd_indizes_num = numIndexes / 2u;
         auto const even_indizes_num = numIndexes - odd_indizes_num;
 
-        addBitonicMerger(n, even_indizes_num, offset, 2u * skip);
-        addBitonicMerger(n, odd_indizes_num, offset + skip, 2u * skip);
+        jobs.emplace_back(
+                    BitonicMergeJob{even_indizes_num, offset, 2u * skip, true});
+        jobs.emplace_back(
+                    BitonicMergeJob{odd_indizes_num, offset + skip, 2u * skip, true});
     }
+    jobs.emplace_back(BitonicMergeJob{numIndexes, offset, skip, false});
+    return jobs;
+}
 
-    for (std::size_t i = 1u; i < numIndexes; i += 2u) {
-        auto const secondIndex = offset + (skip * i);
-        n.addComparator(Comparator(secondIndex - skip, secondIndex));
+void BitonicMergeJob::execute(Network & n, std::list<BitonicMergeJob> & jobs) {
+    if (m_isRecursive) {
+        jobs.splice(jobs.begin(),
+                    bitonicMergerRecursive(m_numIndexes, m_offset, m_skip));
+    } else {
+        assert(m_numIndexes > 1u);
+        for (std::size_t i = 1u; i < m_numIndexes; i += 2u) {
+            auto const secondIndex = m_offset + (m_skip * i);
+            n.addComparator(Comparator(secondIndex - m_skip, secondIndex));
+        }
+    }
+}
+
+void addBitonicMerger(Network & n, std::size_t const numIndexes) {
+    auto jobs(bitonicMergerRecursive(numIndexes, 0u, 1u));
+    while (!jobs.empty()) {
+        BitonicMergeJob job(std::move(jobs.front()));
+        jobs.pop_front();
+        job.execute(n, jobs);
     }
 }
 
@@ -443,7 +473,7 @@ Network combineBitonicMerge(Network const & n0, Network const & n1) {
        ...,  (z_{n-4},z_{n-3}), (z_{n-2},z_{n-1}), i.e. bound to the end of the
        list, possibly leaving z_0 uncompared. */
     auto n(concatenate(n0.inverted(), n1));
-    addBitonicMerger(n, n0.numInputs() + n1.numInputs(), 0u, 1u);
+    addBitonicMerger(n, n0.numInputs() + n1.numInputs());
     return n;
 }
 
