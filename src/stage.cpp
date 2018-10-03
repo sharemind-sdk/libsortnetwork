@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iterator>
+#include <type_traits>
 #include <utility>
 #include "comparator.h"
 
@@ -33,9 +34,8 @@
 namespace sharemind {
 namespace SortingNetwork {
 
-Stage::Stage()
-        noexcept(std::is_nothrow_default_constructible<Comparators>::value)
-{}
+Stage::Stage() noexcept
+{ static_assert(std::is_nothrow_default_constructible<Comparators>::value,""); }
 
 Stage::~Stage() noexcept = default;
 

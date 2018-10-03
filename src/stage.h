@@ -27,7 +27,6 @@
 #include <cstddef>
 #include <sharemind/Concepts.h>
 #include <sharemind/Iterator.h>
-#include <type_traits>
 #include <vector>
 #include "comparator.h"
 
@@ -50,7 +49,7 @@ public: /* Types: */
 public: /* Methods: */
 
     /** Creates an empty stage. */
-    Stage() noexcept(std::is_nothrow_default_constructible<Comparators>::value);
+    Stage() noexcept;
 
     Stage(Stage &&) noexcept;
     Stage(Stage const &);
