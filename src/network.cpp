@@ -256,12 +256,17 @@ Network Network::makeOddEvenMergeSort(std::size_t numItems) {
 
     auto const numItemsLeft = numItems / 2;
     auto const numItemsRight = numItems - numItemsLeft;
-    auto nLeft(makeOddEvenMergeSort(numItemsLeft));
-    auto nRight(makeOddEvenMergeSort(numItemsRight));
-
-    Network r(combineOddEvenMerge(nLeft, nRight));
-    r.compress();
-    return r;
+    if (numItemsLeft == numItemsRight) {
+        auto nLeft(makeOddEvenMergeSort(numItemsLeft));
+        auto r(combineOddEvenMerge(nLeft, nLeft));
+        r.compress();
+        return r;
+    } else {
+        auto r(combineOddEvenMerge(makeOddEvenMergeSort(numItemsLeft),
+                                   makeOddEvenMergeSort(numItemsRight)));
+        r.compress();
+        return r;
+    }
 }
 
 Network Network::makeBitonicMergeSort(std::size_t numItems) {
