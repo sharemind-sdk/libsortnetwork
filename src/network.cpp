@@ -234,6 +234,33 @@ void createPairwiseInternal(Network & n,
     } /* while (m > 1u) */
 }
 
+template <typename Conquer>
+Network makeSortWithDivideAndConquer(std::size_t numItems, Conquer & conquer) {
+    if (numItems <= 1u)
+        return Network(numItems);
+
+    if (numItems == 2u) {
+        Network n(2u);
+        n.addComparator(Comparator(0u, 1u));
+        return n;
+    }
+
+    auto const numItemsLeft = numItems / 2u;
+    auto const numItemsRight = numItems - numItemsLeft;
+
+    if (numItemsLeft == numItemsRight) {
+        auto const nLeft(makeSortWithDivideAndConquer(numItemsLeft, conquer));
+        auto r(conquer(nLeft, nLeft));
+        r.compress();
+        return r;
+    } else {
+        auto r(conquer(makeSortWithDivideAndConquer(numItemsLeft, conquer),
+                       makeSortWithDivideAndConquer(numItemsRight, conquer)));
+        r.compress();
+        return r;
+    }
+}
+
 } // anonymous namespace
 
 Network::Network(std::size_t numInputs)
@@ -244,56 +271,11 @@ Network::Network(std::size_t numInputs)
 Network::Network(Network &&) noexcept = default;
 Network::Network(Network const &) = default;
 
-Network Network::makeOddEvenMergeSort(std::size_t numItems) {
-    if (numItems <= 1)
-        return Network(numItems);
+Network Network::makeOddEvenMergeSort(std::size_t numItems)
+{ return makeSortWithDivideAndConquer(numItems, combineOddEvenMerge); }
 
-    if (numItems == 2) {
-        Network r(2);
-        r.addComparator(Comparator(0, 1));
-        return r;
-    }
-
-    auto const numItemsLeft = numItems / 2;
-    auto const numItemsRight = numItems - numItemsLeft;
-    if (numItemsLeft == numItemsRight) {
-        auto nLeft(makeOddEvenMergeSort(numItemsLeft));
-        auto r(combineOddEvenMerge(nLeft, nLeft));
-        r.compress();
-        return r;
-    } else {
-        auto r(combineOddEvenMerge(makeOddEvenMergeSort(numItemsLeft),
-                                   makeOddEvenMergeSort(numItemsRight)));
-        r.compress();
-        return r;
-    }
-}
-
-Network Network::makeBitonicMergeSort(std::size_t numItems) {
-    if (numItems <= 1)
-        return Network(numItems);
-
-    if (numItems == 2) {
-        Network n(numItems);
-        n.addComparator(Comparator(0, 1));
-        return n;
-    }
-
-    auto const numItemsLeft = numItems / 2;
-    auto const numItemsRight = numItems - numItemsLeft;
-
-    if (numItemsLeft == numItemsRight) {
-        auto const nLeft(makeBitonicMergeSort(numItemsLeft));
-        auto r(combineBitonicMerge_(nLeft, nLeft));
-        r.compress();
-        return r;
-    } else {
-        auto r(combineBitonicMerge_(makeBitonicMergeSort(numItemsLeft),
-                                    makeBitonicMergeSort(numItemsRight)));
-        r.compress();
-        return r;
-    }
-}
+Network Network::makeBitonicMergeSort(std::size_t numItems)
+{ return makeSortWithDivideAndConquer(numItems, combineBitonicMerge_); }
 
 Network Network::makePairwiseSort(std::size_t numItems) {
     Network r(numItems);
