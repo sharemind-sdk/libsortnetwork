@@ -206,10 +206,10 @@ Network combineOddEvenMerge_(Network const & n0, Network const & n1) {
     return n;
 }
 
-void createPairwiseInternal(Network & n,
-                            std::size_t const numIndexes,
-                            std::size_t const offset,
-                            std::size_t const skip)
+std::list<BitonicMergeJob> pairwiseRecursive(Network & n,
+                                             std::size_t const numIndexes,
+                                             std::size_t const offset,
+                                             std::size_t const skip)
 {
     for (std::size_t i = 1u; i < numIndexes; i += 2u) {
         auto const b = offset + (i * skip);
@@ -218,8 +218,9 @@ void createPairwiseInternal(Network & n,
         assert(a < n.numInputs());
         n.addComparator(Comparator(a, b));
     }
+    std::list<BitonicMergeJob> jobs;
     if (numIndexes <= 2)
-        return;
+        return jobs;
 
     {
         /* Sort "pairs" recursively. Like with odd-even mergesort, odd and even
@@ -228,31 +229,48 @@ void createPairwiseInternal(Network & n,
         /* Recursive call #1 with first set of lines */
         auto const numOddIndexes = numIndexes / 2u;
         auto const numEvenIndexes = numIndexes - numOddIndexes;
-        createPairwiseInternal(n, numEvenIndexes, offset, skip * 2u);
+        jobs.emplace_back(
+                    BitonicMergeJob{numEvenIndexes, offset, skip * 2u, true});
 
         /* Recursive call #2 with second set of lines */
-        createPairwiseInternal(n, numOddIndexes, offset + skip, skip * 2u);
+        jobs.emplace_back(
+                    BitonicMergeJob{numOddIndexes, offset + skip, skip * 2u, true});
     }
+    jobs.emplace_back(
+                BitonicMergeJob{numIndexes, offset, skip, false});
+    return jobs;
+}
 
-    /* m is the "amplitude" of the sorted pairs. This is a bit tricky to read
-       due to different indices being used in the paper, unfortunately. */
-    auto m = (numIndexes + 1u) / 2u;
-    while (m > 1u) {
-        auto len = m;
-        if ((m % 2u) == 0)
-            --len;
+void createPairwiseInternal(Network & n, std::size_t const numIndexes) {
+    auto jobs(pairwiseRecursive(n, numIndexes, 0u, 1u));
+    while (!jobs.empty()) {
+        BitonicMergeJob job(std::move(jobs.front()));
+        jobs.pop_front();
+        if (job.m_isRecursive) {
+            jobs.splice(jobs.begin(),
+                        pairwiseRecursive(n, job.m_numIndexes, job.m_offset, job.m_skip));
+        } else {
+            /* m is the "amplitude" of the sorted pairs. This is a bit tricky to read
+               due to different indices being used in the paper, unfortunately. */
+            auto m = (job.m_numIndexes + 1u) / 2u;
+            while (m > 1u) {
+                auto len = m;
+                if ((m % 2u) == 0)
+                    --len;
 
-        for (std::size_t i = 1u; i + len < numIndexes; i += 2u) {
-            auto const left = offset + (i * skip);
-            assert(left < n.numInputs());
-            auto const right = offset + ((i + len) * skip);
-            assert(left < right);
-            assert(right < n.numInputs());
-            n.addComparator(Comparator(left, right));
+                for (std::size_t i = 1u; i + len < job.m_numIndexes; i += 2u) {
+                    auto const left = job.m_offset + (i * job.m_skip);
+                    assert(left < n.numInputs());
+                    auto const right = job.m_offset + ((i + len) * job.m_skip);
+                    assert(left < right);
+                    assert(right < n.numInputs());
+                    n.addComparator(Comparator(left, right));
+                }
+
+                m = (m + 1u) / 2u;
+            } /* while (m > 1u) */
         }
-
-        m = (m + 1u) / 2u;
-    } /* while (m > 1u) */
+    }
 }
 
 template <typename Conquer>
@@ -339,7 +357,7 @@ Network Network::makeBitonicMergeSort(std::size_t numItems)
 
 Network Network::makePairwiseSort(std::size_t numItems) {
     Network r(numItems);
-    createPairwiseInternal(r, numItems, 0u, 1u);
+    createPairwiseInternal(r, numItems);
     r.compress();
     return r;
 }
