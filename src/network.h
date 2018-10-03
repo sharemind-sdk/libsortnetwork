@@ -204,8 +204,8 @@ public: /* Methods: */
       Checks whether a this network is a sorting network by testing all
       \f$ 2^n \f$ 0-1-patterns. Since this function has exponential running
       time, using it with comparator networks with many inputs is not advisable.
-      \throws std::bad_alloc if out of memory.
       \returns whether this network is a sorting network.
+      \throws std::bad_alloc an out-of-memory condition was encountered.
      */
     bool bruteForceIsSortingNetwork() const;
 
@@ -248,6 +248,9 @@ bool operator>(Network const & lhs, Network const & rhs) noexcept;
   \param[in] n0 First network.
   \param[in] n1 Second network.
   \returns The resulting network.
+  \throws std::length_error if the resulting network exceeds implementation
+                            limits.
+  \throws std::bad_alloc an out-of-memory condition was encountered.
  */
 Network combineBitonicMerge(Network const & n0, Network const & n1);
 
@@ -256,6 +259,9 @@ Network combineBitonicMerge(Network const & n0, Network const & n1);
   \param[in] n0 First network.
   \param[in] n1 Second network.
   \returns The resulting network.
+  \throws std::length_error if the resulting network exceeds implementation
+                            limits.
+  \throws std::bad_alloc an out-of-memory condition was encountered.
  */
 Network combineOddEvenMerge(Network const & n0, Network const & n1);
 
