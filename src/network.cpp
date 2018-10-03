@@ -513,6 +513,12 @@ int Network::compare(Network const & other) const noexcept {
     return 0;
 }
 
+void Network::swap(Network & other) noexcept {
+    static_assert(noexcept(std::swap(m_stages, other.m_stages)), "");
+    std::swap(m_numInputs, other.m_numInputs);
+    std::swap(m_stages, other.m_stages);
+}
+
 bool operator<(Network const & lhs, Network const & rhs) noexcept
 { return lhs.compare(rhs) < 0; }
 

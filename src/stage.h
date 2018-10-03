@@ -146,6 +146,8 @@ public: /* Methods: */
 
     int compare(Stage const & other) const noexcept;
 
+    void swap(Stage & other) noexcept;
+
 private: /* Fields: */
 
     /** Comparators contained in this stage: */

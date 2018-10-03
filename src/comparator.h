@@ -120,6 +120,8 @@ public: /* Methods: */
     */
     int compare(Comparator const & other) const noexcept;
 
+    void swap(Comparator & other) noexcept;
+
 private: /* Fields: */
 
     /** Index of the line onto which the smaller element will be put: */

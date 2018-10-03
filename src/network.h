@@ -224,6 +224,8 @@ public: /* Methods: */
      */
     int compare(Network const & other) const noexcept;
 
+    void swap(Network & other) noexcept;
+
 private: /* Fields: */
 
     /** Number of inputs of the comparator network: */

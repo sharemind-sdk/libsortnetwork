@@ -24,6 +24,7 @@
 #include "comparator.h"
 
 #include <cassert>
+#include <utility>
 
 
 namespace sharemind {
@@ -62,6 +63,11 @@ int Comparator::compare(Comparator const & other) const noexcept {
             return (r < otherR) ? -1 : 1;
     }
     return (0);
+}
+
+void Comparator::swap(Comparator & other) noexcept {
+    std::swap(m_min, other.m_min);
+    std::swap(m_max, other.m_max);
 }
 
 bool operator<(Comparator const & lhs, Comparator const & rhs) noexcept

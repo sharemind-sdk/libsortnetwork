@@ -137,6 +137,11 @@ int Stage::compare(Stage const & other) const noexcept {
     return 0;
 }
 
+void Stage::swap(Stage & other) noexcept {
+    static_assert(noexcept(std::swap(m_comparators, other.m_comparators)), "");
+    std::swap(m_comparators, other.m_comparators);
+}
+
 bool operator<(Stage const & lhs, Stage const & rhs) noexcept
 { return lhs.compare(rhs) < 0; }
 
