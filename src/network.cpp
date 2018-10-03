@@ -189,6 +189,22 @@ void addOddEvenMerger(Network & n,
         n.appendStage(std::move(s));
 }
 
+Network combineOddEvenMerge_(Network const & n0, Network const & n1) {
+    assert(std::numeric_limits<decltype(n0.numInputs())>::max() - n0.numInputs()
+           >= n1.numInputs());
+    std::vector<std::size_t> indexesLeft(n0.numInputs());
+    std::vector<std::size_t> indexesRight(n1.numInputs());
+    for (std::size_t i = 0u; i < n0.numInputs(); ++i)
+        indexesLeft[i] = i;
+    for (std::size_t i = 0u; i < n1.numInputs(); ++i)
+        indexesRight[i] = n0.numInputs() + i;
+
+    auto n(concatenate(n0, n1));
+    addOddEvenMerger(n, indexesLeft, indexesRight);
+    n.compress();
+    return n;
+}
+
 void createPairwiseInternal(Network & n,
                             std::vector<std::size_t> const & inputs)
 {
@@ -272,7 +288,7 @@ Network::Network(Network &&) noexcept = default;
 Network::Network(Network const &) = default;
 
 Network Network::makeOddEvenMergeSort(std::size_t numItems)
-{ return makeSortWithDivideAndConquer(numItems, combineOddEvenMerge); }
+{ return makeSortWithDivideAndConquer(numItems, combineOddEvenMerge_); }
 
 Network Network::makeBitonicMergeSort(std::size_t numItems)
 { return makeSortWithDivideAndConquer(numItems, combineBitonicMerge_); }
@@ -469,17 +485,7 @@ Network combineOddEvenMerge(Network const & n0, Network const & n1) {
         < n1.numInputs())
         throw std::length_error("Resulting comparator network exceeds "
                                 "implementation limits!");
-    std::vector<std::size_t> indexesLeft(n0.numInputs());
-    std::vector<std::size_t> indexesRight(n1.numInputs());
-    for (std::size_t i = 0u; i < n0.numInputs(); ++i)
-        indexesLeft[i] = i;
-    for (std::size_t i = 0u; i < n1.numInputs(); ++i)
-        indexesRight[i] = n0.numInputs() + i;
-
-    auto n(concatenate(n0, n1));
-    addOddEvenMerger(n, indexesLeft, indexesRight);
-    n.compress();
-    return n;
+    return combineOddEvenMerge_(n0, n1);
 }
 
 bool Network::bruteForceIsSortingNetwork() const {
