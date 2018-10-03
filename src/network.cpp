@@ -288,9 +288,8 @@ Network Network::makeBitonicMergeSort(std::size_t numItems) {
         r.compress();
         return r;
     } else {
-        auto r(combineBitonicMerge_(
-                   makeBitonicMergeSort(numItemsLeft),
-                   makeBitonicMergeSort(numItemsRight)));
+        auto r(combineBitonicMerge_(makeBitonicMergeSort(numItemsLeft),
+                                    makeBitonicMergeSort(numItemsRight)));
         r.compress();
         return r;
     }
