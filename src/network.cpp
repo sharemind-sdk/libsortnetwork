@@ -207,44 +207,48 @@ Network combineOddEvenMerge_(Network const & n0, Network const & n1) {
 }
 
 void createPairwiseInternal(Network & n,
-                            std::vector<std::size_t> const & inputs)
+                            std::size_t const numIndexes,
+                            std::size_t const offset,
+                            std::size_t const skip)
 {
-    for (std::size_t i = 1u; i < inputs.size(); i += 2u)
-        n.addComparator(Comparator(inputs[i - 1u], inputs[i]));
-    if (inputs.size() <= 2)
+    for (std::size_t i = 1u; i < numIndexes; i += 2u) {
+        auto const b = offset + (i * skip);
+        assert(b < n.numInputs());
+        auto const a = b - skip;
+        assert(a < n.numInputs());
+        n.addComparator(Comparator(a, b));
+    }
+    if (numIndexes <= 2)
         return;
 
     {
-        std::vector<std::size_t> inputsCopy;
-        inputsCopy.reserve((inputs.size() + 1u) / 2u);
-
         /* Sort "pairs" recursively. Like with odd-even mergesort, odd and even
            lines are handled recursively and later reunited. */
-        for (std::size_t i = 0u; i < inputs.size(); i += 2u)
-            inputsCopy.emplace_back(inputs[i]);
-        /* Recursive call #1 with first set of lines */
-        createPairwiseInternal(n, inputsCopy);
 
-        inputsCopy.clear();
-        for (std::size_t i = 1u; i < inputs.size(); i += 2u)
-            inputsCopy.emplace_back(inputs[i]);
+        /* Recursive call #1 with first set of lines */
+        auto const numOddIndexes = numIndexes / 2u;
+        auto const numEvenIndexes = numIndexes - numOddIndexes;
+        createPairwiseInternal(n, numEvenIndexes, offset, skip * 2u);
+
         /* Recursive call #2 with second set of lines */
-        createPairwiseInternal(n, inputsCopy);
+        createPairwiseInternal(n, numOddIndexes, offset + skip, skip * 2u);
     }
 
     /* m is the "amplitude" of the sorted pairs. This is a bit tricky to read
        due to different indices being used in the paper, unfortunately. */
-    auto m = (inputs.size() + 1u) / 2u;
+    auto m = (numIndexes + 1u) / 2u;
     while (m > 1u) {
         auto len = m;
         if ((m % 2u) == 0)
             --len;
 
-        for (std::size_t i = 1u; (i + len) < inputs.size(); i += 2u) {
-            auto const left = i;
-            auto const right = i + len;
+        for (std::size_t i = 1u; i + len < numIndexes; i += 2u) {
+            auto const left = offset + (i * skip);
+            assert(left < n.numInputs());
+            auto const right = offset + ((i + len) * skip);
             assert(left < right);
-            n.addComparator(Comparator(inputs[left], inputs[right]));
+            assert(right < n.numInputs());
+            n.addComparator(Comparator(left, right));
         }
 
         m = (m + 1u) / 2u;
@@ -335,11 +339,7 @@ Network Network::makeBitonicMergeSort(std::size_t numItems)
 
 Network Network::makePairwiseSort(std::size_t numItems) {
     Network r(numItems);
-    std::vector<std::size_t> inputs(numItems);
-    for (std::size_t i = 0; i < numItems; ++i)
-        inputs[i] = i;
-
-    createPairwiseInternal(r, inputs);
+    createPairwiseInternal(r, numItems, 0u, 1u);
     r.compress();
     return r;
 }
