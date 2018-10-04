@@ -23,12 +23,34 @@
 #include <sharemind/TestAssert.h>
 
 
+#if 0
+#include <iostream>
+template <typename Net>
+void printNetwork(Net & net) noexcept {
+    std::cout << "Network (size " << net.numInputs() << "):\n";
+    for (auto const & stage : net.stages()) {
+        std::cout << " Stage:\n";
+        for (auto const & comp : stage.comparators())
+            std::cout << "  Comp: " << comp.min() << "-" << comp.max() << "\n";
+    }
+    std::cout << std::flush;
+}
+
+#define PRINT_NET(net) printNetwork(net);
+#else
+#define PRINT_NET(net)
+#endif
+
+
 constexpr std::size_t const sizeLimit = 12u;
 
 template <typename NetworkGenerator>
 void testSorting(NetworkGenerator && g) {
-    for (std::size_t size = 0u; size < sizeLimit; ++size)
-        SHAREMIND_TESTASSERT(g(size).bruteForceIsSortingNetwork());
+    for (std::size_t size = 0u; size < sizeLimit; ++size) {
+        auto const net(g(size));
+        PRINT_NET(net)
+        SHAREMIND_TESTASSERT(net.bruteForceIsSortingNetwork());
+    }
 }
 
 int main() {
