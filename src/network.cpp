@@ -130,16 +130,20 @@ Network combineBitonicMerge_(Network const & n0, Network const & n1) {
 }
 
 void addOddEvenMerger(Network & n,
-                      std::vector<std::size_t> const & indexesLeft,
-                      std::vector<std::size_t> const & indexesRight)
+                      std::size_t const numLeftIndexes,
+                      std::size_t const leftOffset,
+                      std::size_t const leftSkip,
+                      std::size_t const numRightIndexes,
+                      std::size_t const rightOffset,
+                      std::size_t const rightSkip)
 {
-    assert(std::numeric_limits<std::size_t>::max() - indexesLeft.size()
-           >= indexesRight.size());
-    if (indexesLeft.empty() || indexesRight.empty())
+    assert(std::numeric_limits<std::size_t>::max() - numLeftIndexes
+           >= numRightIndexes);
+    if (!numLeftIndexes || !numRightIndexes)
         return;
 
-    if ((indexesLeft.size() == 1u) && (indexesRight.size() == 1u)) {
-        Comparator c(indexesLeft.front(), indexesRight.front());
+    if ((numLeftIndexes == 1u) && (numRightIndexes == 1u)) {
+        Comparator c(leftOffset, rightOffset);
         auto & stage = n.appendStage();
         stage.addComparator(std::move(c));
         return;
@@ -147,28 +151,26 @@ void addOddEvenMerger(Network & n,
 
     {
         /* Merge odd sequences */
-        std::vector<std::size_t> tmpLeft(
-                    indexesLeft.size() - indexesLeft.size() / 2u);
-        for (std::size_t i = 0u; i < tmpLeft.size(); ++i)
-            tmpLeft[i] = indexesLeft[2u * i];
-        std::vector<std::size_t> tmpRight(
-                    indexesRight.size() - indexesRight.size() / 2u);
-        for (std::size_t i = 0u; i < tmpRight.size(); ++i)
-            tmpRight[i] = indexesRight[2u * i];
-        addOddEvenMerger(n, tmpLeft, tmpRight);
+        addOddEvenMerger(n,
+                         numLeftIndexes - numLeftIndexes / 2u,
+                         leftOffset,
+                         leftSkip * 2u,
+                         numRightIndexes - numRightIndexes / 2u,
+                         rightOffset,
+                         rightSkip * 2u);
 
         /* Merge even sequences */
-        tmpLeft.resize(indexesLeft.size() / 2u);
-        for (std::size_t i = 0u; i < tmpLeft.size(); ++i)
-            tmpLeft[i] = indexesLeft[2u * i + 1u];
-        tmpRight.resize(indexesRight.size() / 2u);
-        for (std::size_t i = 0u; i < tmpRight.size(); ++i)
-            tmpRight[i] = indexesRight[2u * i + 1u];
-        addOddEvenMerger(n, tmpLeft, tmpRight);
+        addOddEvenMerger(n,
+                         numLeftIndexes / 2u,
+                         leftOffset + leftSkip,
+                         leftSkip * 2u,
+                         numRightIndexes / 2u,
+                         rightOffset + rightSkip,
+                         rightSkip * 2u);
     }
 
     /* Apply ``comparison-interchange'' operations. */
-    std::size_t maxIndex = indexesLeft.size() + indexesRight.size();
+    std::size_t maxIndex = numLeftIndexes + numRightIndexes;
     assert(maxIndex > 2u);
     if (maxIndex % 2u) {
         maxIndex -= 2u;
@@ -180,12 +182,12 @@ void addOddEvenMerger(Network & n,
     for (std::size_t i = 1u; i <= maxIndex; i += 2u)
         s.addComparator(
                     Comparator(
-                        (i < indexesLeft.size())
-                        ? indexesLeft[i]
-                        : indexesRight[i - indexesLeft.size()],
-                        ((i + 1u) < indexesLeft.size())
-                        ? indexesLeft[i + 1u]
-                        : indexesRight[i - indexesLeft.size() + 1u]));
+                        (i < numLeftIndexes)
+                        ? (leftOffset + i * leftSkip)
+                        : (rightOffset + (i - numLeftIndexes) * rightSkip),
+                        ((i + 1u) < numLeftIndexes)
+                        ? (leftOffset + (i + 1u) * leftSkip)
+                        : (rightOffset + (i - numLeftIndexes + 1u) * rightSkip)));
     if (!s.empty())
         n.appendStage(std::move(s));
 }
@@ -193,15 +195,8 @@ void addOddEvenMerger(Network & n,
 Network combineOddEvenMerge_(Network const & n0, Network const & n1) {
     assert(std::numeric_limits<decltype(n0.numInputs())>::max() - n0.numInputs()
            >= n1.numInputs());
-    std::vector<std::size_t> indexesLeft(n0.numInputs());
-    std::vector<std::size_t> indexesRight(n1.numInputs());
-    for (std::size_t i = 0u; i < n0.numInputs(); ++i)
-        indexesLeft[i] = i;
-    for (std::size_t i = 0u; i < n1.numInputs(); ++i)
-        indexesRight[i] = n0.numInputs() + i;
-
     auto n(concatenate(n0, n1));
-    addOddEvenMerger(n, indexesLeft, indexesRight);
+    addOddEvenMerger(n, n0.numInputs(), 0u, 1u, n1.numInputs(), n0.numInputs(), 1u);
     n.compress();
     return n;
 }
