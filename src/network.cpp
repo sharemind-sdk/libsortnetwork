@@ -129,46 +129,83 @@ Network combineBitonicMerge_(Network const & n0, Network const & n1) {
     return n;
 }
 
-void addOddEvenMerger(Network & n,
-                      std::size_t const numLeftIndexes,
-                      std::size_t const leftOffset,
-                      std::size_t const leftSkip,
-                      std::size_t const numRightIndexes,
-                      std::size_t const rightOffset,
-                      std::size_t const rightSkip)
+struct OddEvenMergerJob {
+    std::size_t const m_numLeftIndexes;
+    std::size_t const m_leftOffset;
+    std::size_t const m_leftSkip;
+    std::size_t const m_numRightIndexes;
+    std::size_t const m_rightOffset;
+    std::size_t const m_rightSkip;
+    bool const m_isRecursive;
+};
+
+std::list<OddEvenMergerJob> oddEvenMergerRecursive(
+        std::size_t const numLeftIndexes,
+        std::size_t const leftOffset,
+        std::size_t const leftSkip,
+        std::size_t const numRightIndexes,
+        std::size_t const rightOffset,
+        std::size_t const rightSkip,
+        Network & n)
 {
     assert(std::numeric_limits<std::size_t>::max() - numLeftIndexes
            >= numRightIndexes);
+
+    std::list<OddEvenMergerJob> jobs;
     if (!numLeftIndexes || !numRightIndexes)
-        return;
+        return jobs;
 
     if ((numLeftIndexes == 1u) && (numRightIndexes == 1u)) {
         Comparator c(leftOffset, rightOffset);
         auto & stage = n.appendStage();
         stage.addComparator(std::move(c));
-        return;
+        return jobs;
     }
 
     {
         /* Merge odd sequences */
-        addOddEvenMerger(n,
-                         numLeftIndexes - numLeftIndexes / 2u,
-                         leftOffset,
-                         leftSkip * 2u,
-                         numRightIndexes - numRightIndexes / 2u,
-                         rightOffset,
-                         rightSkip * 2u);
+        jobs.emplace_back(
+                    OddEvenMergerJob{
+                        numLeftIndexes - numLeftIndexes / 2u,
+                        leftOffset,
+                        leftSkip * 2u,
+                        numRightIndexes - numRightIndexes / 2u,
+                        rightOffset,
+                        rightSkip * 2u,
+                        true});
 
         /* Merge even sequences */
-        addOddEvenMerger(n,
-                         numLeftIndexes / 2u,
-                         leftOffset + leftSkip,
-                         leftSkip * 2u,
-                         numRightIndexes / 2u,
-                         rightOffset + rightSkip,
-                         rightSkip * 2u);
+        jobs.emplace_back(
+                    OddEvenMergerJob{
+                        numLeftIndexes / 2u,
+                        leftOffset + leftSkip,
+                        leftSkip * 2u,
+                        numRightIndexes / 2u,
+                        rightOffset + rightSkip,
+                        rightSkip * 2u,
+                        true});
     }
 
+    jobs.emplace_back(
+                OddEvenMergerJob{numLeftIndexes,
+                                 leftOffset,
+                                 leftSkip,
+                                 numRightIndexes,
+                                 rightOffset,
+                                 rightSkip,
+                                 false});
+    return jobs;
+}
+
+void oddEvenMergerNonRecursive(
+        std::size_t const numLeftIndexes,
+        std::size_t const leftOffset,
+        std::size_t const leftSkip,
+        std::size_t const numRightIndexes,
+        std::size_t const rightOffset,
+        std::size_t const rightSkip,
+        Network & n)
+{
     /* Apply ``comparison-interchange'' operations. */
     std::size_t maxIndex = numLeftIndexes + numRightIndexes;
     assert(maxIndex > 2u);
@@ -196,7 +233,36 @@ Network combineOddEvenMerge_(Network const & n0, Network const & n1) {
     assert(std::numeric_limits<decltype(n0.numInputs())>::max() - n0.numInputs()
            >= n1.numInputs());
     auto n(concatenate(n0, n1));
-    addOddEvenMerger(n, n0.numInputs(), 0u, 1u, n1.numInputs(), n0.numInputs(), 1u);
+
+    auto jobs(oddEvenMergerRecursive(n0.numInputs(),
+                                        0u,
+                                        1u,
+                                        n1.numInputs(),
+                                        n0.numInputs(),
+                                        1u,
+                                        n));
+    while (!jobs.empty()) {
+        auto const job(std::move(jobs.front()));
+        jobs.pop_front();
+        if (job.m_isRecursive) {
+            jobs.splice(jobs.begin(),
+                        oddEvenMergerRecursive(job.m_numLeftIndexes,
+                                                  job.m_leftOffset,
+                                                  job.m_leftSkip,
+                                                  job.m_numRightIndexes,
+                                                  job.m_rightOffset,
+                                                  job.m_rightSkip,
+                                                  n));
+        } else {
+            oddEvenMergerNonRecursive(job.m_numLeftIndexes,
+                                         job.m_leftOffset,
+                                         job.m_leftSkip,
+                                         job.m_numRightIndexes,
+                                         job.m_rightOffset,
+                                         job.m_rightSkip,
+                                         n);
+        }
+    }
     n.compress();
     return n;
 }
