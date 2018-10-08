@@ -46,8 +46,8 @@ public: /* Types: */
 public: /* Methods: */
 
     /**
-       Creates an empty sorting network for the given number of items.
-       \param[in] numInputs The number of items to sort.
+       Creates an empty sorting network for the given number of inputs.
+       \param[in] numInputs The number of inputs to sort.
     */
     Network(std::size_t numInputs) noexcept;
 
@@ -57,20 +57,20 @@ public: /* Methods: */
     /**
       Creates a new sorting network using Batcher's Odd-Even-Mergesort
       algorithm.
-      \param[in] numInputs The number of items to sort.
+      \param[in] numInputs The number of inputs to sort.
     */
     static Network makeOddEvenMergeSort(std::size_t numInputs);
 
     /**
       Creates a new sort network using Batcher's Bitonic-Mergesort algorithm.
-      \param[in] numInputs The number of items to sort.
+      \param[in] numInputs The number of inputs to sort.
     */
     static Network makeBitonicMergeSort(std::size_t numInputs);
 
     /**
       Creates a new sorting network using the Pairwise sorting algorithm
       published by Ian Parberry.
-      \param[in] numInputs The number of items to sort.
+      \param[in] numInputs The number of inputs to sort.
     */
     static Network makePairwiseSort(std::size_t numInputs);
 

@@ -300,14 +300,14 @@ std::list<StrideJob> pairwiseRecursive(Network & n,
 }
 
 template <typename Conquer>
-Network makeSortWithDivideAndConquer(std::size_t numItems, Conquer & conquer) {
-    if (numItems <= 2u) {
-        if (numItems == 2u) {
+Network makeSortWithDivideAndConquer(std::size_t numInputs, Conquer & conquer) {
+    if (numInputs <= 2u) {
+        if (numInputs == 2u) {
             Network n(2u);
             n.addComparator(Comparator(0u, 1u));
             return n;
         }
-        return Network(numItems);
+        return Network(numInputs);
     }
 
     // Use a stack machine instead of recursion:
@@ -316,30 +316,30 @@ Network makeSortWithDivideAndConquer(std::size_t numItems, Conquer & conquer) {
     std::vector<DivideAndConquerOp> operationStack;
     operationStack.emplace_back(Recurse);
     std::vector<std::size_t> argumentStack; // arguments for creating networks
-    argumentStack.emplace_back(numItems);
+    argumentStack.emplace_back(numInputs);
 
     do {
         auto const operation(operationStack.back());
         operationStack.pop_back();
         if (operation == Recurse) {
             assert(!argumentStack.empty());
-            numItems = argumentStack.back();
+            numInputs = argumentStack.back();
             argumentStack.pop_back();
-            if (numItems <= 1u) {
-                networkStack.emplace_back(numItems);
-            } else if (numItems == 2u) {
-                networkStack.emplace_back(numItems);
+            if (numInputs <= 1u) {
+                networkStack.emplace_back(numInputs);
+            } else if (numInputs == 2u) {
+                networkStack.emplace_back(numInputs);
                 networkStack.back().addComparator(Comparator(0u, 1u));
             } else {
-                auto const numItemsLeft = numItems / 2u;
-                auto const numItemsRight = numItems - numItemsLeft;
-                if (numItemsLeft == numItemsRight) {
-                    argumentStack.emplace_back(numItemsLeft);
+                auto const numInputsLeft = numInputs / 2u;
+                auto const numInputsRight = numInputs - numInputsLeft;
+                if (numInputsLeft == numInputsRight) {
+                    argumentStack.emplace_back(numInputsLeft);
                     operationStack.emplace_back(ConquerOneDouble);
                     operationStack.emplace_back(Recurse);
                 } else {
-                    argumentStack.emplace_back(numItemsRight);
-                    argumentStack.emplace_back(numItemsLeft);
+                    argumentStack.emplace_back(numInputsRight);
+                    argumentStack.emplace_back(numInputsLeft);
                     operationStack.emplace_back(ConquerTwo);
                     operationStack.emplace_back(Recurse);
                     operationStack.emplace_back(Recurse);
@@ -375,15 +375,15 @@ Network::Network(std::size_t numInputs) noexcept
 Network::Network(Network &&) noexcept = default;
 Network::Network(Network const &) = default;
 
-Network Network::makeOddEvenMergeSort(std::size_t numItems)
-{ return makeSortWithDivideAndConquer(numItems, combineOddEvenMerge_); }
+Network Network::makeOddEvenMergeSort(std::size_t numInputs)
+{ return makeSortWithDivideAndConquer(numInputs, combineOddEvenMerge_); }
 
-Network Network::makeBitonicMergeSort(std::size_t numItems)
-{ return makeSortWithDivideAndConquer(numItems, combineBitonicMerge_); }
+Network Network::makeBitonicMergeSort(std::size_t numInputs)
+{ return makeSortWithDivideAndConquer(numInputs, combineBitonicMerge_); }
 
-Network Network::makePairwiseSort(std::size_t numItems) {
-    Network n(numItems);
-    auto jobs(pairwiseRecursive(n, numItems, 0u, 1u));
+Network Network::makePairwiseSort(std::size_t numInputs) {
+    Network n(numInputs);
+    auto jobs(pairwiseRecursive(n, numInputs, 0u, 1u));
     while (!jobs.empty()) {
         StrideJob job(std::move(jobs.front()));
         jobs.pop_front();
