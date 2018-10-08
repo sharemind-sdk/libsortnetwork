@@ -50,6 +50,11 @@ void testSorting(NetworkGenerator && g) {
         auto const net(g(size));
         PRINT_NET(net)
         SHAREMIND_TESTASSERT(net.bruteForceIsSortingNetwork());
+        SHAREMIND_TESTASSERT(net.compressed() == net);
+        SHAREMIND_TESTASSERT(net.normalized().bruteForceIsSortingNetwork());
+        SHAREMIND_TESTASSERT(net.normalized().compressed()
+                                    .bruteForceIsSortingNetwork());
+        SHAREMIND_TESTASSERT(net.unified().bruteForceIsSortingNetwork());
     }
 }
 
