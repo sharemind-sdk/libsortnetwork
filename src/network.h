@@ -81,8 +81,6 @@ public: /* Methods: */
 
     std::size_t numInputs() const noexcept { return m_numInputs; }
 
-    Stages & stages() noexcept { return m_stages; }
-
     Stages const & stages() const noexcept { return m_stages; }
 
     Stage & stage(std::size_t stageIndex) noexcept
