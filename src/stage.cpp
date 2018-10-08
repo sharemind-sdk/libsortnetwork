@@ -47,12 +47,11 @@ Stage & Stage::operator=(Stage const &) = default;
 
 void Stage::addComparator(Comparator comparator) {
     assert(getConflictsWith(comparator) == NoConflict);
-    /// \todo Can std::lower_bound be used here?
-    auto posIt(std::find_if(m_comparators.begin(),
-                            m_comparators.end(),
-                            [&comparator](Comparator const & c)
-                            { return comparator <= c; }));
+    auto posIt(std::lower_bound(m_comparators.begin(),
+                                m_comparators.end(),
+                                comparator));
     m_comparators.insert(std::move(posIt), std::move(comparator));
+    assert(std::is_sorted(m_comparators.begin(), m_comparators.end()));
 }
 
 void Stage::removeComparator(std::size_t index) noexcept {
