@@ -63,7 +63,6 @@ Network concatenate(Network const & n0, Network const & n1) {
 }
 
 struct StrideJob {
-    void execute(Network & n, std::list<StrideJob> & jobs);
     std::size_t const m_numIndexes;
     std::size_t const m_offset;
     std::size_t const m_skip;
@@ -92,25 +91,25 @@ std::list<StrideJob> bitonicMergerRecursive(std::size_t const numIndexes,
     return jobs;
 }
 
-void StrideJob::execute(Network & n, std::list<StrideJob> & jobs) {
-    if (m_isRecursive) {
-        jobs.splice(jobs.begin(),
-                    bitonicMergerRecursive(m_numIndexes, m_offset, m_skip));
-    } else {
-        assert(m_numIndexes > 1u);
-        for (std::size_t i = 1u; i < m_numIndexes; i += 2u) {
-            auto const secondIndex = m_offset + (m_skip * i);
-            n.addComparator(Comparator(secondIndex - m_skip, secondIndex));
-        }
-    }
-}
-
 void addBitonicMerger(Network & n, std::size_t const numIndexes) {
     auto jobs(bitonicMergerRecursive(numIndexes, 0u, 1u));
     while (!jobs.empty()) {
-        StrideJob job(std::move(jobs.front()));
+        StrideJob const job(std::move(jobs.front()));
         jobs.pop_front();
-        job.execute(n, jobs);
+
+        if (job.m_isRecursive) {
+            jobs.splice(jobs.begin(),
+                        bitonicMergerRecursive(job.m_numIndexes,
+                                               job.m_offset,
+                                               job.m_skip));
+        } else {
+            assert(job.m_numIndexes > 1u);
+            for (std::size_t i = 1u; i < job.m_numIndexes; i += 2u) {
+                auto const secondIndex = job.m_offset + (job.m_skip * i);
+                n.addComparator(Comparator(secondIndex - job.m_skip,
+                                           secondIndex));
+            }
+        }
     }
 }
 
