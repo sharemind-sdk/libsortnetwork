@@ -37,29 +37,6 @@ namespace sharemind {
 namespace SortingNetwork {
 namespace {
 
-/* `Glues' two networks together, resulting in a comparator network with twice
- * as many inputs but one that doesn't really sort anymore. It produces a
- * bitonic sequence, though, that can be used by the mergers below. */
-Network concatenate(Network const & n0, Network const & n1) {
-    auto const inputsInN0 = n0.numInputs();
-    assert(std::numeric_limits<decltype(n0.numInputs())>::max() - inputsInN0
-           >= n1.numInputs());
-    Network n(n0.numInputs() + n1.numInputs());
-    auto const stagesInN0 = n0.numStages();
-    auto const stagesInN1 = n1.numStages();
-    auto const numStages = std::max(stagesInN0, stagesInN1);
-    for (std::size_t i = 0u; i < numStages; ++i) {
-        auto & stage = n.composeWithEmptyStage();
-        if (i < stagesInN0)
-            stage = n0.stage(i);
-        if (i < stagesInN1)
-            for (auto const & comp : n1.stage(i).comparators())
-                stage.addComparator(Comparator(comp.min() + inputsInN0,
-                                               comp.max() + inputsInN0));
-    }
-    return n;
-}
-
 struct StrideJob {
     std::size_t const m_numIndexes;
     std::size_t const m_offset;
@@ -121,7 +98,8 @@ Network combineBitonicMerge_(Network const & n0, Network const & n1) {
        addBitonicMerger() from comparing (z_0,z_1), (z_2,z_3), ... to comparing
        ...,  (z_{n-4},z_{n-3}), (z_{n-2},z_{n-1}), i.e. bound to the end of the
        list, possibly leaving z_0 uncompared. */
-    auto n(concatenate(n0.inverted(), n1));
+    auto n(n0.inverted());
+    n.joinWith(n1);
     addBitonicMerger(n, n0.numInputs() + n1.numInputs());
     return n;
 }
@@ -229,7 +207,8 @@ void oddEvenMergerNonRecursive(
 Network combineOddEvenMerge_(Network const & n0, Network const & n1) {
     assert(std::numeric_limits<decltype(n0.numInputs())>::max() - n0.numInputs()
            >= n1.numInputs());
-    auto n(concatenate(n0, n1));
+    auto n(n0);
+    n.joinWith(n1);
 
     auto jobs(oddEvenMergerRecursive(n0.numInputs(),
                                         0u,
@@ -431,6 +410,31 @@ std::size_t Network::numComparators() const noexcept {
     for (auto const & stage : m_stages)
         r += stage.numComparators();
     return r;
+}
+
+void Network::joinWith(Network const & other) {
+    auto const oldNumInputs = m_numInputs;
+    addInputs(other.m_numInputs);
+    auto const oldNumStages = m_stages.size();
+    try {
+        m_stages.resize(std::max(oldNumStages, other.m_stages.size()));
+        try {
+            auto stageIt(m_stages.begin());
+            for (auto const & stage : other.m_stages) {
+                for (auto const & comp : stage.comparators())
+                    stageIt->addComparator(
+                                Comparator(comp.min() + oldNumInputs,
+                                           comp.max() + oldNumInputs));
+                ++stageIt;
+            }
+        } catch (...) {
+            m_stages.resize(oldNumStages);
+            throw;
+        }
+    } catch (...) {
+        m_numInputs = oldNumInputs;
+        throw;
+    }
 }
 
 void Network::composeWith(Network && other) {
