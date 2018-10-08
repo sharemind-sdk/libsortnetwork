@@ -95,10 +95,10 @@ public: /* Methods: */
               SHAREMIND_REQUIRES_CONCEPTS(RandomAccessIterator(It))>
     void sortValues(It first) const {
         for (auto const & c : m_comparators) {
-            auto const cMin(c.min());
-            auto const cMax(c.max());
-            if (first[cMin] > first[cMax])
-                std::swap(first[cMin], first[cMax]);
+            auto & minValue = first[c.min()];
+            auto & maxValue = first[c.max()];
+            if (minValue > maxValue)
+                std::swap(minValue, maxValue);
         }
     }
 
