@@ -102,7 +102,7 @@ public: /* Methods: */
         for (auto const & c : m_comparators) {
             auto & minValue = first[c.min()];
             auto & maxValue = first[c.max()];
-            if (minValue > maxValue)
+            if (maxValue < minValue)
                 std::swap(minValue, maxValue);
         }
     }
