@@ -24,7 +24,6 @@
 #include "network.h"
 
 #include <algorithm>
-#include <iterator>
 #include <limits>
 #include <list>
 #include <stdexcept>

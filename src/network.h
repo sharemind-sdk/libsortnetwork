@@ -26,6 +26,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <iterator>
 #include <sharemind/Concepts.h>
 #include <sharemind/Iterator.h>
 #include <vector>
@@ -201,7 +202,11 @@ public: /* Methods: */
            of the comparator network.
      */
     template <typename It,
-              SHAREMIND_REQUIRES_CONCEPTS(RandomAccessIterator(It))>
+              SHAREMIND_REQUIRES_CONCEPTS(
+                    RandomAccessIterator(It),
+                    LessThanComparable(
+                            typename std::iterator_traits<It>::value_type),
+                    Swappable(typename std::iterator_traits<It>::value_type))>
     void sortValues(It first) const {
         for (auto const & stage : m_stages)
             stage.sortValues(first);
