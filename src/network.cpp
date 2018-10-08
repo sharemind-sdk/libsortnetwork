@@ -62,19 +62,19 @@ Network concatenate(Network const & n0, Network const & n1) {
     return n;
 }
 
-struct BitonicMergeJob {
-    void execute(Network & n, std::list<BitonicMergeJob> & jobs);
+struct StrideJob {
+    void execute(Network & n, std::list<StrideJob> & jobs);
     std::size_t const m_numIndexes;
     std::size_t const m_offset;
     std::size_t const m_skip;
     bool const m_isRecursive;
 };
 
-std::list<BitonicMergeJob> bitonicMergerRecursive(std::size_t const numIndexes,
-                                                  std::size_t const offset,
-                                                  std::size_t const skip)
+std::list<StrideJob> bitonicMergerRecursive(std::size_t const numIndexes,
+                                            std::size_t const offset,
+                                            std::size_t const skip)
 {
-    std::list<BitonicMergeJob> jobs;
+    std::list<StrideJob> jobs;
     assert(numIndexes > 0u);
     if (numIndexes <= 1u)
         return jobs;
@@ -84,15 +84,15 @@ std::list<BitonicMergeJob> bitonicMergerRecursive(std::size_t const numIndexes,
         auto const even_indizes_num = numIndexes - odd_indizes_num;
 
         jobs.emplace_back(
-                    BitonicMergeJob{even_indizes_num, offset, 2u * skip, true});
+                    StrideJob{even_indizes_num, offset, 2u * skip, true});
         jobs.emplace_back(
-                    BitonicMergeJob{odd_indizes_num, offset + skip, 2u * skip, true});
+                    StrideJob{odd_indizes_num, offset + skip, 2u * skip, true});
     }
-    jobs.emplace_back(BitonicMergeJob{numIndexes, offset, skip, false});
+    jobs.emplace_back(StrideJob{numIndexes, offset, skip, false});
     return jobs;
 }
 
-void BitonicMergeJob::execute(Network & n, std::list<BitonicMergeJob> & jobs) {
+void StrideJob::execute(Network & n, std::list<StrideJob> & jobs) {
     if (m_isRecursive) {
         jobs.splice(jobs.begin(),
                     bitonicMergerRecursive(m_numIndexes, m_offset, m_skip));
@@ -108,7 +108,7 @@ void BitonicMergeJob::execute(Network & n, std::list<BitonicMergeJob> & jobs) {
 void addBitonicMerger(Network & n, std::size_t const numIndexes) {
     auto jobs(bitonicMergerRecursive(numIndexes, 0u, 1u));
     while (!jobs.empty()) {
-        BitonicMergeJob job(std::move(jobs.front()));
+        StrideJob job(std::move(jobs.front()));
         jobs.pop_front();
         job.execute(n, jobs);
     }
@@ -267,10 +267,10 @@ Network combineOddEvenMerge_(Network const & n0, Network const & n1) {
     return n;
 }
 
-std::list<BitonicMergeJob> pairwiseRecursive(Network & n,
-                                             std::size_t const numIndexes,
-                                             std::size_t const offset,
-                                             std::size_t const skip)
+std::list<StrideJob> pairwiseRecursive(Network & n,
+                                       std::size_t const numIndexes,
+                                       std::size_t const offset,
+                                       std::size_t const skip)
 {
     for (std::size_t i = 1u; i < numIndexes; i += 2u) {
         auto const b = offset + (i * skip);
@@ -279,7 +279,7 @@ std::list<BitonicMergeJob> pairwiseRecursive(Network & n,
         assert(a < n.numInputs());
         n.addComparator(Comparator(a, b));
     }
-    std::list<BitonicMergeJob> jobs;
+    std::list<StrideJob> jobs;
     if (numIndexes <= 2)
         return jobs;
 
@@ -290,22 +290,20 @@ std::list<BitonicMergeJob> pairwiseRecursive(Network & n,
         /* Recursive call #1 with first set of lines */
         auto const numOddIndexes = numIndexes / 2u;
         auto const numEvenIndexes = numIndexes - numOddIndexes;
-        jobs.emplace_back(
-                    BitonicMergeJob{numEvenIndexes, offset, skip * 2u, true});
+        jobs.emplace_back(StrideJob{numEvenIndexes, offset, skip * 2u, true});
 
         /* Recursive call #2 with second set of lines */
         jobs.emplace_back(
-                    BitonicMergeJob{numOddIndexes, offset + skip, skip * 2u, true});
+                    StrideJob{numOddIndexes, offset + skip, skip * 2u, true});
     }
-    jobs.emplace_back(
-                BitonicMergeJob{numIndexes, offset, skip, false});
+    jobs.emplace_back(StrideJob{numIndexes, offset, skip, false});
     return jobs;
 }
 
 void createPairwiseInternal(Network & n, std::size_t const numIndexes) {
     auto jobs(pairwiseRecursive(n, numIndexes, 0u, 1u));
     while (!jobs.empty()) {
-        BitonicMergeJob job(std::move(jobs.front()));
+        StrideJob job(std::move(jobs.front()));
         jobs.pop_front();
         if (job.m_isRecursive) {
             jobs.splice(jobs.begin(),
