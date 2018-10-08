@@ -56,7 +56,6 @@ Network concatenate(Network const & n0, Network const & n1) {
             for (auto const & comp : n1.stage(i).comparators())
                 stage.addComparator(Comparator(comp.min() + inputsInN0,
                                                comp.max() + inputsInN0));
-        n.appendStage(std::move(stage));
     }
     return n;
 }
