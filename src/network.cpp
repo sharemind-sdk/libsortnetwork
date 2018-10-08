@@ -373,6 +373,13 @@ Network::Network(std::size_t numInputs) noexcept
 Network::Network(Network &&) noexcept = default;
 Network::Network(Network const &) = default;
 
+void Network::addInputs(std::size_t numInputsToAdd) {
+    if (std::numeric_limits<std::size_t>::max() - numInputsToAdd < m_numInputs)
+        throw std::length_error("Resulting comparator network exceeds "
+                                "implementation limits!");
+    m_numInputs += numInputsToAdd;
+}
+
 Network Network::makeOddEvenMergeSort(std::size_t numInputs)
 { return makeSortWithDivideAndConquer(numInputs, combineOddEvenMerge_); }
 

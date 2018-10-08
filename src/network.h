@@ -81,6 +81,14 @@ public: /* Methods: */
 
     std::size_t numInputs() const noexcept { return m_numInputs; }
 
+    /**
+      Adds the given number of inputs to this network.
+      \param[in] numInputsToAdd The number of inputs to add.
+      \throws std::length_error if the resulting network exceeds implementation
+                                limits.
+    */
+    void addInputs(std::size_t numInputsToAdd);
+
     Stages const & stages() const noexcept { return m_stages; }
 
     Stage & stage(std::size_t stageIndex) noexcept
