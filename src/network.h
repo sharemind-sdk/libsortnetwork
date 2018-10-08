@@ -109,23 +109,36 @@ public: /* Methods: */
     }
 
     /**
-      Appends another network to this network.
-      \param[in] network The network to be appended to this network.
+      Composes this network with the given network.
+      \param[in] network The network to be composed to this network.
     */
-    void addNetwork(Network network);
+    void composeWith(Network && network);
 
     /**
-      Appends a new empty stage to this network.
-      \returns a reference to the newly appended stage.
+      Composes this network with the given network.
+      \param[in] network The network to be composed to this network.
     */
-    Stage & appendStage();
+    void composeWith(Network const & network);
 
     /**
-      Appends a new stage to this network.
-      \param[in] stage The stage to append.
-      \returns a reference to the newly appended stage.
+      Composes this network with a new empty stage.
+      \returns a reference to the newly added stage.
     */
-    Stage & appendStage(Stage stage);
+    Stage & composeWithEmptyStage();
+
+    /**
+      Composes this network with the given stage.
+      \param[in] stage The stage to be composed to this network.
+      \returns a reference to the newly added stage.
+    */
+    Stage & composeWith(Stage && stage);
+
+    /**
+      Composes this network with the given stage.
+      \param[in] stage The stage to be composed to this network.
+      \returns a reference to the newly added stage.
+    */
+    Stage & composeWith(Stage const & stage);
 
     /**
       Removes a stage from this network.
@@ -135,13 +148,14 @@ public: /* Methods: */
     void removeStage(std::size_t index);
 
     /**
-      Adds a comparator to a comparator network. The code tries to add the
+      Composes this network with the given comparator. The code tries to add the
       comparator to the last stage, i.e. the stage closest to the outputs. If
       this is not possible, because one line is used by another comparator, a
-      new stage is created and appended to the sorting network.
-      \param[in] comparator Reference to a comparator to add.
+      new stage with the given comparator is created and composed to the sorting
+      network.
+      \param[in] comparator The comparator to compose to this network.
      */
-    void addComparator(Comparator comparator);
+    void composeWith(Comparator comparator);
 
     /** Inverts this network by switching the direction of all comparators. */
     void invert() noexcept;

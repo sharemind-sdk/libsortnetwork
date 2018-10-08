@@ -49,7 +49,7 @@ Network concatenate(Network const & n0, Network const & n1) {
     auto const stagesInN1 = n1.numStages();
     auto const numStages = std::max(stagesInN0, stagesInN1);
     for (std::size_t i = 0u; i < numStages; ++i) {
-        auto & stage = n.appendStage();
+        auto & stage = n.composeWithEmptyStage();
         if (i < stagesInN0)
             stage = n0.stage(i);
         if (i < stagesInN1)
@@ -104,8 +104,8 @@ void addBitonicMerger(Network & n, std::size_t const numIndexes) {
             assert(job.m_numIndexes > 1u);
             for (std::size_t i = 1u; i < job.m_numIndexes; i += 2u) {
                 auto const secondIndex = job.m_offset + (job.m_skip * i);
-                n.addComparator(Comparator(secondIndex - job.m_skip,
-                                           secondIndex));
+                n.composeWith(Comparator(secondIndex - job.m_skip,
+                                         secondIndex));
             }
         }
     }
@@ -154,7 +154,7 @@ std::list<OddEvenMergerJob> oddEvenMergerRecursive(
 
     if ((numLeftIndexes == 1u) && (numRightIndexes == 1u)) {
         Comparator c(leftOffset, rightOffset);
-        auto & stage = n.appendStage();
+        auto & stage = n.composeWithEmptyStage();
         stage.addComparator(std::move(c));
         return jobs;
     }
@@ -223,7 +223,7 @@ void oddEvenMergerNonRecursive(
                         ? (leftOffset + (i + 1u) * leftSkip)
                         : (rightOffset + (i - numLeftIndexes + 1u) * rightSkip)));
     if (!s.empty())
-        n.appendStage(std::move(s));
+        n.composeWith(std::move(s));
 }
 
 Network combineOddEvenMerge_(Network const & n0, Network const & n1) {
@@ -274,7 +274,7 @@ std::list<StrideJob> pairwiseRecursive(Network & n,
         assert(b < n.numInputs());
         auto const a = b - skip;
         assert(a < n.numInputs());
-        n.addComparator(Comparator(a, b));
+        n.composeWith(Comparator(a, b));
     }
     std::list<StrideJob> jobs;
     if (numIndexes <= 2)
@@ -302,7 +302,7 @@ Network makeSortWithDivideAndConquer(std::size_t numInputs, Conquer & conquer) {
     if (numInputs <= 2u) {
         if (numInputs == 2u) {
             Network n(2u);
-            n.addComparator(Comparator(0u, 1u));
+            n.composeWith(Comparator(0u, 1u));
             return n;
         }
         return Network(numInputs);
@@ -327,7 +327,7 @@ Network makeSortWithDivideAndConquer(std::size_t numInputs, Conquer & conquer) {
                 networkStack.emplace_back(numInputs);
             } else if (numInputs == 2u) {
                 networkStack.emplace_back(numInputs);
-                networkStack.back().addComparator(Comparator(0u, 1u));
+                networkStack.back().composeWith(Comparator(0u, 1u));
             } else {
                 auto const numInputsLeft = numInputs / 2u;
                 auto const numInputsRight = numInputs - numInputsLeft;
@@ -410,7 +410,7 @@ Network Network::makePairwiseSort(std::size_t numInputs) {
                     auto const right = job.m_offset + ((i + len) * job.m_skip);
                     assert(left < right);
                     assert(right < n.numInputs());
-                    n.addComparator(Comparator(left, right));
+                    n.composeWith(Comparator(left, right));
                 }
 
                 m = (m + 1u) / 2u;
@@ -433,18 +433,29 @@ std::size_t Network::numComparators() const noexcept {
     return r;
 }
 
-void Network::addNetwork(Network other) {
+void Network::composeWith(Network && other) {
     auto const oldSize = m_stages.size();
     try {
-        for (auto & newStage : other.m_stages)
-            m_stages.emplace_back(std::move(newStage));
+        for (auto & otherStage : other.m_stages)
+            m_stages.emplace_back(std::move(otherStage));
     } catch (...) {
         m_stages.resize(oldSize);
         throw;
     }
 }
 
-Stage & Network::appendStage() {
+void Network::composeWith(Network const & other) {
+    auto const oldSize = m_stages.size();
+    try {
+        for (auto & otherStage : other.m_stages)
+            m_stages.emplace_back(otherStage);
+    } catch (...) {
+        m_stages.resize(oldSize);
+        throw;
+    }
+}
+
+Stage & Network::composeWithEmptyStage() {
     #if __cplusplus > 201402L
     return m_stages.emplace_back();
     #else
@@ -453,11 +464,20 @@ Stage & Network::appendStage() {
     #endif
 }
 
-Stage & Network::appendStage(Stage stage) {
+Stage & Network::composeWith(Stage && stage) {
     #if __cplusplus > 201402L
     return m_stages.emplace_back(std::move(stage));
     #else
     m_stages.emplace_back(std::move(stage));
+    return m_stages.back();
+    #endif
+}
+
+Stage & Network::composeWith(Stage const & stage) {
+    #if __cplusplus > 201402L
+    return m_stages.emplace_back(stage);
+    #else
+    m_stages.emplace_back(stage);
     return m_stages.back();
     #endif
 }
@@ -468,14 +488,14 @@ void Network::removeStage(std::size_t index) {
     m_stages.erase(std::next(m_stages.begin(), static_cast<D>(index)));
 }
 
-void Network::addComparator(Comparator comparator) {
+void Network::composeWith(Comparator comparator) {
     if (!m_stages.empty()) {
         Stage & lastStage = m_stages.back();
         if (lastStage.getConflictsWith(comparator) == Stage::NoConflict)
             return lastStage.addComparator(std::move(comparator));
     }
 
-    appendStage().addComparator(std::move(comparator));
+    composeWithEmptyStage().addComparator(std::move(comparator));
 }
 
 void Network::invert() noexcept {
