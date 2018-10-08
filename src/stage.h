@@ -108,6 +108,36 @@ public: /* Methods: */
     }
 
     /**
+      Applies this Stage to a range of values.
+
+      \pre The number of values pointed to must be at least the number of
+           inputs of the comparator network.
+      \param[in] first Iterator to the first value to sort.
+      \param[in] comp The comparison function object which returns true if its
+                      first argument is less than (i.e. is ordered before) its
+                      second argument. The comparison function object must be
+                      callable as comp(first[i], first[j]) for any valid i and j
+                      and must not modify the objects passed to it.
+    */
+    template <typename It,
+              typename Comp,
+              SHAREMIND_REQUIRES_CONCEPTS(
+                    RandomAccessIterator(It),
+                    Swappable(typename std::iterator_traits<It>::value_type),
+                    BinaryPredicate(
+                            Comp,
+                            typename std::iterator_traits<It>::value_type,
+                            typename std::iterator_traits<It>::value_type))>
+    void sortValues(It first, Comp comp) const {
+        for (auto const & c : m_comparators) {
+            auto & minValue = first[c.min()];
+            auto & maxValue = first[c.max()];
+            if (comp(maxValue, minValue))
+                std::swap(minValue, maxValue);
+        }
+    }
+
+    /**
       Checks whether the given comparator can be added to this stage, i.e. if
       neither line is used by another comparator.
       \param[in] comparator A reference to the comparator.

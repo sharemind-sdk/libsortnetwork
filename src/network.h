@@ -213,6 +213,31 @@ public: /* Methods: */
     }
 
     /**
+      Applies a comparator network to the given array of integers.
+      \pre The number of values pointed to must be at least the number of inputs
+           of the comparator network.
+      \param[in] first Iterator to the first value to sort.
+      \param[in] comp The comparison function object which returns true if its
+                      first argument is less than (i.e. is ordered before) its
+                      second argument. The comparison function object must be
+                      callable as comp(first[i], first[j]) for any valid i and j
+                      and must not modify the objects passed to it.
+     */
+    template <typename It,
+              typename Comp,
+              SHAREMIND_REQUIRES_CONCEPTS(
+                    RandomAccessIterator(It),
+                    Swappable(typename std::iterator_traits<It>::value_type),
+                    BinaryPredicate(
+                            Comp,
+                            typename std::iterator_traits<It>::value_type,
+                            typename std::iterator_traits<It>::value_type))>
+    void sortValues(It first, Comp comp) const {
+        for (auto const & stage : m_stages)
+            stage.sortValues<It, Comp &>(first, comp);
+    }
+
+    /**
       Compresses this network by moving all comparators to the earliest possible
       stage and removing all remaining empty stages.
     */
