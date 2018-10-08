@@ -119,6 +119,17 @@ public: /* Methods: */
     void joinWith(Network const & other);
 
     /**
+      Joins this network and another network, resulting in a comparator network
+      with twice as many inputs.
+      \warning When joining two sorting networks, the resulting network might
+               not properly sort anymore.
+      \throws std::length_error if the resulting network exceeds implementation
+                                limits.
+      \returns the joined network.
+    */
+    Network joinedWith(Network other) const;
+
+    /**
       Composes this network with the given network.
       \param[in] network The network to be composed to this network.
     */

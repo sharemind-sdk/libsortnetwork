@@ -98,8 +98,7 @@ Network combineBitonicMerge_(Network const & n0, Network const & n1) {
        addBitonicMerger() from comparing (z_0,z_1), (z_2,z_3), ... to comparing
        ...,  (z_{n-4},z_{n-3}), (z_{n-2},z_{n-1}), i.e. bound to the end of the
        list, possibly leaving z_0 uncompared. */
-    auto n(n0.inverted());
-    n.joinWith(n1);
+    auto n(n0.inverted().joinedWith(n1));
     addBitonicMerger(n, n0.numInputs() + n1.numInputs());
     return n;
 }
@@ -207,8 +206,7 @@ void oddEvenMergerNonRecursive(
 Network combineOddEvenMerge_(Network const & n0, Network const & n1) {
     assert(std::numeric_limits<decltype(n0.numInputs())>::max() - n0.numInputs()
            >= n1.numInputs());
-    auto n(n0);
-    n.joinWith(n1);
+    auto n(n0.joinedWith(n1));
 
     auto jobs(oddEvenMergerRecursive(n0.numInputs(),
                                         0u,
@@ -435,6 +433,20 @@ void Network::joinWith(Network const & other) {
         m_numInputs = oldNumInputs;
         throw;
     }
+}
+
+Network Network::joinedWith(Network other) const {
+    other.addInputs(m_numInputs);
+    auto const oldNumStages = other.m_stages.size();
+    other.shift(m_numInputs);
+    other.m_stages.resize(std::max(oldNumStages, m_stages.size()));
+    auto stageIt(other.m_stages.begin());
+    for (auto const & stage : m_stages) {
+        for (auto const & comp : stage.comparators())
+            stageIt->addComparator(comp);
+        ++stageIt;
+    }
+    return other;
 }
 
 void Network::composeWith(Network && other) {
