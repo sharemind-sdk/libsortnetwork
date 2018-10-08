@@ -299,38 +299,6 @@ std::list<StrideJob> pairwiseRecursive(Network & n,
     return jobs;
 }
 
-void createPairwiseInternal(Network & n, std::size_t const numIndexes) {
-    auto jobs(pairwiseRecursive(n, numIndexes, 0u, 1u));
-    while (!jobs.empty()) {
-        StrideJob job(std::move(jobs.front()));
-        jobs.pop_front();
-        if (job.m_isRecursive) {
-            jobs.splice(jobs.begin(),
-                        pairwiseRecursive(n, job.m_numIndexes, job.m_offset, job.m_skip));
-        } else {
-            /* m is the "amplitude" of the sorted pairs. This is a bit tricky to read
-               due to different indices being used in the paper, unfortunately. */
-            auto m = (job.m_numIndexes + 1u) / 2u;
-            while (m > 1u) {
-                auto len = m;
-                if ((m % 2u) == 0)
-                    --len;
-
-                for (std::size_t i = 1u; i + len < job.m_numIndexes; i += 2u) {
-                    auto const left = job.m_offset + (i * job.m_skip);
-                    assert(left < n.numInputs());
-                    auto const right = job.m_offset + ((i + len) * job.m_skip);
-                    assert(left < right);
-                    assert(right < n.numInputs());
-                    n.addComparator(Comparator(left, right));
-                }
-
-                m = (m + 1u) / 2u;
-            } /* while (m > 1u) */
-        }
-    }
-}
-
 template <typename Conquer>
 Network makeSortWithDivideAndConquer(std::size_t numItems, Conquer & conquer) {
     if (numItems <= 2u) {
@@ -414,10 +382,38 @@ Network Network::makeBitonicMergeSort(std::size_t numItems)
 { return makeSortWithDivideAndConquer(numItems, combineBitonicMerge_); }
 
 Network Network::makePairwiseSort(std::size_t numItems) {
-    Network r(numItems);
-    createPairwiseInternal(r, numItems);
-    r.compress();
-    return r;
+    Network n(numItems);
+    auto jobs(pairwiseRecursive(n, numItems, 0u, 1u));
+    while (!jobs.empty()) {
+        StrideJob job(std::move(jobs.front()));
+        jobs.pop_front();
+        if (job.m_isRecursive) {
+            jobs.splice(jobs.begin(),
+                        pairwiseRecursive(n, job.m_numIndexes, job.m_offset, job.m_skip));
+        } else {
+            /* m is the "amplitude" of the sorted pairs. This is a bit tricky to read
+               due to different indices being used in the paper, unfortunately. */
+            auto m = (job.m_numIndexes + 1u) / 2u;
+            while (m > 1u) {
+                auto len = m;
+                if ((m % 2u) == 0)
+                    --len;
+
+                for (std::size_t i = 1u; i + len < job.m_numIndexes; i += 2u) {
+                    auto const left = job.m_offset + (i * job.m_skip);
+                    assert(left < n.numInputs());
+                    auto const right = job.m_offset + ((i + len) * job.m_skip);
+                    assert(left < right);
+                    assert(right < n.numInputs());
+                    n.addComparator(Comparator(left, right));
+                }
+
+                m = (m + 1u) / 2u;
+            } /* while (m > 1u) */
+        }
+    }
+    n.compress();
+    return n;
 }
 
 Network::~Network() noexcept = default;
