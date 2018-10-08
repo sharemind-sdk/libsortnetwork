@@ -66,10 +66,6 @@ public: /* Methods: */
     /** \returns the number of comparators in this stage. */
     std::size_t numComparators() const noexcept { return m_comparators.size(); }
 
-    /** \returns a reference to the vector of comparators in this stage. */
-    Comparators & comparators() noexcept
-    { return m_comparators; }
-
     /** \returns a const reference to the vector of comparators in this stage.*/
     Comparators const & comparators() const noexcept
     { return m_comparators; }
