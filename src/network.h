@@ -261,7 +261,16 @@ public: /* Methods: */
     */
     Network normalized() const;
 
+    /**
+      Converts this network to a canonical form by normalization, compression
+      and sorting the comparators in each stage.
+    */
     void unify();
+
+    /**
+      Returns a copy of this network on which unify() has been called.
+      \returns A canonicalized version of this network.
+    */
     Network unified() const;
 
     /**
