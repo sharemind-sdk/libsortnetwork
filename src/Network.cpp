@@ -29,7 +29,6 @@
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
-#include "Comparator.h"
 
 
 namespace sharemind {
