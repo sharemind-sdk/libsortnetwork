@@ -21,7 +21,7 @@
  * Modified by Cybernetica AS <sharemind-support at cyber.ee>
  */
 
-#include "comparator.h"
+#include "Comparator.h"
 
 #include <cassert>
 #include <utility>

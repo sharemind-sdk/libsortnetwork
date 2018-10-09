@@ -30,8 +30,8 @@
 #include <sharemind/Concepts.h>
 #include <sharemind/Iterator.h>
 #include <vector>
-#include "comparator.h"
-#include "stage.h"
+#include "Comparator.h"
+#include "Stage.h"
 
 
 namespace sharemind {

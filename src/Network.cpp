@@ -21,7 +21,7 @@
  * Modified by Cybernetica AS <sharemind-support at cyber.ee>
  */
 
-#include "network.h"
+#include "Network.h"
 
 #include <algorithm>
 #include <limits>
@@ -29,7 +29,7 @@
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
-#include "comparator.h"
+#include "Comparator.h"
 
 
 namespace sharemind {

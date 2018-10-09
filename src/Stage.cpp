@@ -21,14 +21,14 @@
  * Modified by Cybernetica AS <sharemind-support at cyber.ee>
  */
 
-#include "stage.h"
+#include "Stage.h"
 
 #include <algorithm>
 #include <cassert>
 #include <iterator>
 #include <type_traits>
 #include <utility>
-#include "comparator.h"
+#include "Comparator.h"
 
 
 namespace sharemind {

@@ -17,7 +17,7 @@
  *
  */
 
-#include "../src/network.h"
+#include "../src/Network.h"
 
 #include <cstddef>
 #include <ios>
