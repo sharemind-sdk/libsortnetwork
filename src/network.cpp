@@ -312,8 +312,8 @@ Network makeSortWithDivideAndConquer(std::size_t numInputs, Conquer & conquer) {
                     operationStack.emplace_back(ConquerOneDouble);
                     operationStack.emplace_back(Recurse);
                 } else {
-                    argumentStack.emplace_back(numInputsRight);
                     argumentStack.emplace_back(numInputsLeft);
+                    argumentStack.emplace_back(numInputsRight);
                     operationStack.emplace_back(ConquerTwo);
                     operationStack.emplace_back(Recurse);
                     operationStack.emplace_back(Recurse);
