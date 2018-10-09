@@ -54,7 +54,7 @@ void testSorting(NetworkGenerator && g) {
         SHAREMIND_TESTASSERT(net.normalized().bruteForceIsSortingNetwork());
         SHAREMIND_TESTASSERT(net.normalized().compressed()
                                     .bruteForceIsSortingNetwork());
-        SHAREMIND_TESTASSERT(net.unified().bruteForceIsSortingNetwork());
+        SHAREMIND_TESTASSERT(net.canonicalized().bruteForceIsSortingNetwork());
     }
 }
 

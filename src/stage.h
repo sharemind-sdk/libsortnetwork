@@ -159,7 +159,7 @@ public: /* Methods: */
     void shift(std::size_t offset, std::size_t numInputs) noexcept;
 
     /** Canonicalized this stage by sorting its comparators. */
-    void unify();
+    void canonicalize();
 
     /**
       Swaps two lines. This is used by the algorithm in Network::normalize() to

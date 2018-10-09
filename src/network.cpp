@@ -604,16 +604,16 @@ Network Network::normalized() const {
     return n;
 }
 
-void Network::unify() {
+void Network::canonicalize() {
     normalize();
     compress();
     for (auto & stage : m_stages)
-        stage.unify();
+        stage.canonicalize();
 }
 
-Network Network::unified() const {
+Network Network::canonicalized() const {
     Network n(*this);
-    n.unify();
+    n.canonicalize();
     return n;
 }
 

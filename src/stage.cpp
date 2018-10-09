@@ -99,7 +99,8 @@ void Stage::shift(std::size_t offset, std::size_t numInputs) noexcept {
         comp.shift(offset, numInputs);
 }
 
-void Stage::unify() { std::sort(m_comparators.begin(), m_comparators.end()); }
+void Stage::canonicalize()
+{ std::sort(m_comparators.begin(), m_comparators.end()); }
 
 void Stage::swapIndexes(std::size_t index1, std::size_t index2) noexcept {
     for (auto & comp : m_comparators)

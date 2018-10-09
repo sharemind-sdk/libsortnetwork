@@ -265,13 +265,13 @@ public: /* Methods: */
       Converts this network to a canonical form by normalization, compression
       and sorting the comparators in each stage.
     */
-    void unify();
+    void canonicalize();
 
     /**
-      Returns a copy of this network on which unify() has been called.
+      Returns a copy of this network on which canonicalize() has been called.
       \returns A canonicalized version of this network.
     */
-    Network unified() const;
+    Network canonicalized() const;
 
     /**
       Removes an input and all comparators touching that input from the
