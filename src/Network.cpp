@@ -470,7 +470,7 @@ void Network::composeWith(Network const & other) {
 }
 
 Stage & Network::composeWithEmptyStage() {
-    #if __cplusplus > 201402L
+    #if __cplusplus >= 201703L
     return m_stages.emplace_back();
     #else
     m_stages.emplace_back();
@@ -479,7 +479,7 @@ Stage & Network::composeWithEmptyStage() {
 }
 
 Stage & Network::composeWith(Stage && stage) {
-    #if __cplusplus > 201402L
+    #if __cplusplus >= 201703L
     return m_stages.emplace_back(std::move(stage));
     #else
     m_stages.emplace_back(std::move(stage));
@@ -488,7 +488,7 @@ Stage & Network::composeWith(Stage && stage) {
 }
 
 Stage & Network::composeWith(Stage const & stage) {
-    #if __cplusplus > 201402L
+    #if __cplusplus >= 201703L
     return m_stages.emplace_back(stage);
     #else
     m_stages.emplace_back(stage);
