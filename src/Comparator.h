@@ -49,15 +49,9 @@ public: /* Methods: */
     constexpr Comparator(Comparator &&) noexcept = default;
     constexpr Comparator(Comparator const &) noexcept = default;
 
-    #if __cplusplus >= 201402L
-    constexpr
-    #endif
-    Comparator & operator=(Comparator &&) noexcept = default;
-
-    #if __cplusplus >= 201402L
-    constexpr
-    #endif
-    Comparator & operator=(Comparator const &) noexcept = default;
+    constexpr Comparator & operator=(Comparator && move) noexcept = default;
+    constexpr Comparator & operator=(Comparator const & copy) noexcept
+        = default;
 
     /** \returns the "left" line, i.e. the line with the smaller index. */
     constexpr std::size_t left() const noexcept
