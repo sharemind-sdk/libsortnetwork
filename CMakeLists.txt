@@ -75,6 +75,7 @@ SharemindAddComponentPackage("dev"
         "libsharemind-sortnetwork (= ${SharemindLibSortNetwork_DEB_lib_PACKAGE_VERSION})"
         "libc6-dev (>= 2.19)"
         "libstdc++-dev"
+        "libsharemind-cxxheaders-dev (>= 0.5.0)"
 )
 SharemindAddComponentPackage("debug"
     NAME "libsharemind-sortnetwork-dbg"
