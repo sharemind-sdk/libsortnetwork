@@ -4,9 +4,9 @@ PROJECT(SharemindLibSortNetwork VERSION 0.2.0 LANGUAGES CXX)
 INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/config.local" OPTIONAL)
 INCLUDE("${CMAKE_CURRENT_BINARY_DIR}/config.local" OPTIONAL)
 
-FIND_PACKAGE(SharemindCMakeHelpers 1.4 REQUIRED)
+FIND_PACKAGE(SharemindCMakeHelpers 1.6 REQUIRED)
 
-FIND_PACKAGE(SharemindCxxHeaders 0.5 REQUIRED)
+FIND_PACKAGE(SharemindCxxHeaders 0.8.0 REQUIRED)
 
 # Headers:
 FILE(GLOB SharemindLibSortNetwork_HEADERS
@@ -22,38 +22,24 @@ INSTALL(FILES ${SharemindLibSortNetwork_HEADERS}
 SharemindSetCxx14CompileOptions()
 FILE(GLOB_RECURSE SharemindLibSortNetwork_SOURCES
      "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
-SharemindAddSharedLibrary(libsortnetwork
+SharemindAddSharedLibrary(LibSortNetwork
     OUTPUT_NAME "sharemind_sortnetwork"
-    SOURCES
-        ${SharemindLibSortNetwork_SOURCES}
-    INCLUDE_DIRECTORIES
-        "${SharemindCxxHeaders_INCLUDE_DIRS}"
-    LEGACY_DEFINITIONS
-        "${SharemindCxxHeaders_DEFINITIONS}"
-    LINK_LIBRARIES
-        "${SharemindCxxHeaders_LIBRARIES}"
+    SOURCES ${SharemindLibSortNetwork_SOURCES}
 )
-
+TARGET_LINK_LIBRARIES(LibSortNetwork PUBLIC "Sharemind::CxxHeaders")
+TARGET_INCLUDE_DIRECTORIES(LibSortNetwork
+    INTERFACE
+        # $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src> # TODO
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>
+    )
+SharemindCreateCMakeFindFilesForTarget(LibSortNetwork
+    DEPENDENCIES
+        "SharemindCxxHeaders 0.8.0"
+    )
 
 # Tests:
 SharemindAddSimpleTests("${CMAKE_CURRENT_SOURCE_DIR}/tests/Test*.cpp"
-    INCLUDE_DIRECTORIES
-        "${SharemindCxxHeaders_INCLUDE_DIRS}"
-    LEGACY_DEFINITIONS
-        "${SharemindCxxHeaders_DEFINITIONS}"
-    LINK_LIBRARIES
-        "${SharemindCxxHeaders_LIBRARIES}"
-        "libsortnetwork"
-)
-
-
-# Install CMake files:
-SharemindCreateCMakeFindFiles(
-    INCLUDE_DIRS
-        "${CMAKE_INSTALL_PREFIX}/include"
-    LIBRARIES
-        "-L${CMAKE_INSTALL_PREFIX}/lib"
-        "-lsharemind_sortnetwork"
+    LINK_LIBRARIES LibSortNetwork
 )
 
 
@@ -75,7 +61,7 @@ SharemindAddComponentPackage("dev"
         "libsharemind-sortnetwork (= ${SharemindLibSortNetwork_DEB_lib_PACKAGE_VERSION})"
         "libc6-dev (>= 2.19)"
         "libstdc++-dev"
-        "libsharemind-cxxheaders-dev (>= 0.5.0)"
+        "libsharemind-cxxheaders-dev (>= 0.8.0)"
 )
 SharemindAddComponentPackage("debug"
     NAME "libsharemind-sortnetwork-dbg"
