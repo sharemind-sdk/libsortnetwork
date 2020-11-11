@@ -37,10 +37,14 @@ SharemindCreateCMakeFindFilesForTarget(LibSortNetwork
         "SharemindCxxHeaders 0.8.0"
     )
 
+
 # Tests:
-SharemindAddSimpleTests("${CMAKE_CURRENT_SOURCE_DIR}/tests/Test*.cpp"
-    LINK_LIBRARIES LibSortNetwork
-)
+FILE(GLOB LibSortNetwork_TESTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/Test*.cpp")
+FOREACH(testFile IN LISTS LibSortNetwork_TESTS)
+    GET_FILENAME_COMPONENT(testName "${testFile}" NAME_WE)
+    SharemindAddTest("${testName}" SOURCES "${testFile}")
+    TARGET_LINK_LIBRARIES("${testName}" PRIVATE LibSortNetwork)
+ENDFOREACH()
 
 
 # Packaging:
