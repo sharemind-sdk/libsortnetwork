@@ -19,7 +19,6 @@ INSTALL(FILES ${SharemindLibSortNetwork_HEADERS}
 
 
 # The library:
-SharemindSetCxx14CompileOptions()
 FILE(GLOB_RECURSE SharemindLibSortNetwork_SOURCES
      "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 SharemindAddSharedLibrary(LibSortNetwork
