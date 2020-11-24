@@ -29,7 +29,7 @@ TARGET_LINK_LIBRARIES(LibSortNetwork PUBLIC "Sharemind::CxxHeaders")
 TARGET_INCLUDE_DIRECTORIES(LibSortNetwork
     INTERFACE
         # $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src> # TODO
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>
+        $<INSTALL_INTERFACE:include>
     )
 SharemindCreateCMakeFindFilesForTarget(LibSortNetwork
     DEPENDENCIES
