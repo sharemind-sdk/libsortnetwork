@@ -33,7 +33,7 @@ TARGET_INCLUDE_DIRECTORIES(LibSortNetwork
     )
 SharemindCreateCMakeFindFilesForTarget(LibSortNetwork
     DEPENDENCIES
-        "SharemindCxxHeaders 0.8.0"
+        "SharemindCxxHeaders 0.9.0"
     )
 
 
@@ -64,7 +64,7 @@ SharemindAddComponentPackage("dev"
         "libsharemind-sortnetwork (= ${SharemindLibSortNetwork_DEB_lib_PACKAGE_VERSION})"
         "libc6-dev (>= 2.19)"
         "libstdc++-dev"
-        "libsharemind-cxxheaders-dev (>= 0.8.0)"
+        "libsharemind-cxxheaders-dev (>= 0.9.0)"
 )
 SharemindAddComponentPackage("debug"
     NAME "libsharemind-sortnetwork-dbg"
